@@ -72,6 +72,30 @@ class SweepResult:
     out_dir: Path
 
 
+def _partition(params: dict[str, Any]) -> tuple[dict, dict, dict]:
+    """Split a flat ``params`` dict into (strategy, risk, exec).
+
+    Keys with a dotted prefix are routed:
+      - ``risk.foo`` → risk override ``foo``
+      - ``exec.foo`` → exec override ``foo``
+      - ``strategy.foo`` → strategy kwarg ``foo``
+      - everything else → strategy kwarg (backwards-compat default)
+    """
+    strat: dict[str, Any] = {}
+    risk: dict[str, Any] = {}
+    exec_: dict[str, Any] = {}
+    for k, v in params.items():
+        if k.startswith("risk."):
+            risk[k[len("risk."):]] = v
+        elif k.startswith("exec."):
+            exec_[k[len("exec."):]] = v
+        elif k.startswith("strategy."):
+            strat[k[len("strategy."):]] = v
+        else:
+            strat[k] = v
+    return strat, risk, exec_
+
+
 def _enumerate_grid(grid: dict[str, list[Any]]) -> list[dict[str, Any]]:
     keys = list(grid.keys())
     if not keys:
@@ -114,15 +138,19 @@ def run_sweep(
 
     with open(index_path, "w", encoding="utf-8") as idx_f:
         for i, params in enumerate(combos):
-            strat: BaseStrategy = get_strategy(cfg.strategy_name, **params)
-            broker = PaperBroker(instrument=cfg.instrument, **cfg.exec_defaults)
+            strat_params, risk_overrides, exec_overrides = _partition(params)
+            strat: BaseStrategy = get_strategy(cfg.strategy_name, **strat_params)
+            broker = PaperBroker(
+                instrument=cfg.instrument,
+                **{**cfg.exec_defaults, **exec_overrides},
+            )
             risk = RiskManager(
                 starting_balance=cfg.starting_balance,
                 max_leverage=cfg.max_leverage,
                 instrument=cfg.instrument,
                 account_currency=cfg.account_currency,
                 fx=cfg.fx,
-                **cfg.risk_defaults,
+                **{**cfg.risk_defaults, **risk_overrides},
             )
             engine = BacktestEngine(strategy=strat, risk=risk, broker=broker)
             result: BacktestResult = engine.run(df)

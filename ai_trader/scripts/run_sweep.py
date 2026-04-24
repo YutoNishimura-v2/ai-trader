@@ -37,6 +37,8 @@ def main() -> int:
     ap.add_argument("--config", required=True, type=Path)
     ap.add_argument("--csv", required=True, type=Path)
     ap.add_argument("--sweep-id", required=True)
+    ap.add_argument("--strategy", default=None,
+                    help="Override cfg['strategy']['name'] for this sweep.")
     ap.add_argument("--max-trials", type=int, default=20)
     ap.add_argument("--objective", default="profit_factor")
     # Plan v3 as of 2026-04-24: recent-regime performance dominates.
@@ -70,10 +72,26 @@ def main() -> int:
         "window are demoted to the bottom of the ranking. 20 is "
         "the plan-v3 rule-of-thumb floor for trustable metrics.",
     )
+    ap.add_argument(
+        "--grid", action="append", default=[],
+        help="Grid entry as key=v1,v2,v3 (strategy.*, risk.*, exec.* "
+        "prefixes route the key). Repeatable. If given, replaces the "
+        "built-in default grid entirely.",
+    )
+    ap.add_argument(
+        "--max-research-dd-pct",
+        type=float,
+        default=None,
+        help="Optional filter: demote trials whose research max_drawdown_pct "
+        "is worse than -abs(this). E.g. --max-research-dd-pct 15 demotes "
+        "anything with DD worse than -15 %%.",
+    )
     args = ap.parse_args()
 
     log = get_logger("ai_trader.sweep")
     cfg = load_config(args.config)
+    if args.strategy:
+        cfg["strategy"] = {"name": args.strategy, "params": {}}
 
     df = load_ohlcv_csv(args.csv)
     if args.split_mode == "recent":
@@ -125,11 +143,29 @@ def main() -> int:
 
     # A deliberately modest grid. Plan v3 caps total trials; we stay
     # under the cap so adding a small dimension later is easy.
-    grid = {
+    # Override via --grid key=v1,v2[,v3] (repeatable).
+    grid: dict[str, list] = {
         "sl_atr_mult": [1.0, 1.5, 2.0],
         "tp_rr": [1.5, 2.0, 3.0],
         "cooldown_bars": [6, 12],
-    }  # 3 * 3 * 2 = 18 <= max_trials (20)
+    }
+    if args.grid:
+        grid = {}
+        for spec in args.grid:
+            if "=" not in spec:
+                raise SystemExit(f"bad --grid spec (need key=v1,v2,...): {spec!r}")
+            k, vs = spec.split("=", 1)
+            values: list = []
+            for v in vs.split(","):
+                v = v.strip()
+                try:
+                    values.append(int(v))
+                except ValueError:
+                    try:
+                        values.append(float(v))
+                    except ValueError:
+                        values.append(v)
+            grid[k.strip()] = values
 
     sweep_cfg = SweepConfig(
         sweep_id=args.sweep_id,
@@ -152,18 +188,20 @@ def main() -> int:
     # Verify every trial on the validation window so we can either
     # (a) confirm the research winner or (b) rank by validation
     # depending on --score-on.
+    from ..backtest.sweep import _partition
     per_trial_validation: list[dict] = []
     for trial in result.trials:
-        strat = get_strategy(cfg["strategy"]["name"], **trial.params)
+        strat_params, risk_overrides, exec_overrides = _partition(trial.params)
+        strat = get_strategy(cfg["strategy"]["name"], **strat_params)
         risk = RiskManager(
             starting_balance=sweep_cfg.starting_balance,
             max_leverage=sweep_cfg.max_leverage,
             instrument=instrument,
             account_currency=sweep_cfg.account_currency,
             fx=fx,
-            **risk_defaults,
+            **{**risk_defaults, **risk_overrides},
         )
-        broker = PaperBroker(instrument=instrument, **exec_defaults)
+        broker = PaperBroker(instrument=instrument, **{**exec_defaults, **exec_overrides})
         engine = BacktestEngine(strategy=strat, risk=risk, broker=broker)
         v_result = engine.run(split.validation)
         v_metrics = compute_metrics(v_result, starting_balance=sweep_cfg.starting_balance)
@@ -180,6 +218,8 @@ def main() -> int:
     # not a good score).
     floor = args.min_validation_trades
 
+    dd_cap = abs(args.max_research_dd_pct) if args.max_research_dd_pct is not None else None
+
     def _score(row: dict) -> float:
         m = row["validation_metrics"] if args.score_on == "validation" else row["research_metrics"]
         trades = int(m.get("trades", 0))
@@ -191,9 +231,11 @@ def main() -> int:
         if v != v or v == float("inf"):
             v = float("-inf")
         if trades < floor:
-            # Trust floor: sort these below any trial that cleared
-            # the threshold, regardless of their headline metric.
             v = float("-inf") + trades
+        if dd_cap is not None:
+            research_dd = abs(float(row["research_metrics"].get("max_drawdown_pct", 0.0)))
+            if research_dd > dd_cap:
+                v = float("-inf") + trades * 1e-9
         return v
 
     winner = max(per_trial_validation, key=_score) if per_trial_validation else None
