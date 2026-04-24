@@ -27,6 +27,7 @@ from ..indicators import (
     fib_retracement_zone,
     find_swings,
 )
+from ..indicators.swings import SwingSeries
 from ..indicators.trend import TrendState
 from .base import BaseStrategy, Signal, SignalLeg, SignalSide
 from .registry import register_strategy
@@ -70,6 +71,20 @@ class TrendPullbackFib(BaseStrategy):
         )
         self._last_signal_iloc: int = -(10**9)
         self.min_history = min_history or max(swing_lookback * 4, atr_period * 3, 60)
+        # Backtest-only precomputed series (set by ``prepare``).
+        self._atr_cache: pd.Series | None = None
+        self._swings_cache: SwingSeries | None = None
+
+    def prepare(self, df: pd.DataFrame) -> None:
+        """Precompute full-series indicators once.
+
+        Both ATR and the swing masks are strictly causal (row i only
+        depends on rows <= i), so reading them at bar n during the
+        bar-loop does not violate the no-lookahead contract.
+        """
+        p = self.params
+        self._atr_cache = atr(df, period=p["atr_period"])
+        self._swings_cache = SwingSeries(df, lookback=p["swing_lookback"])
 
     def _build_signal(
         self,
@@ -110,7 +125,21 @@ class TrendPullbackFib(BaseStrategy):
         tail_bars = max(p["swing_lookback"] * p["min_trend_legs"] * 8, 200)
         tail = history.iloc[-tail_bars:] if len(history) > tail_bars else history
 
-        swings = find_swings(tail, lookback=p["swing_lookback"])
+        if self._swings_cache is not None:
+            # Fast path: query precomputed masks. Important: a swing
+            # at iloc i is only *confirmable* at bar i + k, so at
+            # "now" = bar n-1 we may only see swings with
+            # iloc < n - k (i.e. both sides of the fractal window
+            # are historical). Not trimming this is a look-ahead
+            # bug and it materially changes results.
+            k = p["swing_lookback"] // 2
+            needed = max(2 * p["min_trend_legs"] + 2, 6)
+            swings = self._swings_cache.tail(
+                end_iloc_exclusive=max(0, n - k),
+                max_count=needed,
+            )
+        else:
+            swings = find_swings(tail, lookback=p["swing_lookback"])
         if len(swings) < 2 * p["min_trend_legs"]:
             return None
 
@@ -129,7 +158,10 @@ class TrendPullbackFib(BaseStrategy):
 
         last = history.iloc[-1]
         prev = history.iloc[-2] if n >= 2 else last
-        atr_val = atr(tail, period=p["atr_period"]).iloc[-1]
+        if self._atr_cache is not None and len(self._atr_cache) >= n:
+            atr_val = float(self._atr_cache.iloc[n - 1])
+        else:
+            atr_val = float(atr(tail, period=p["atr_period"]).iloc[-1])
         if pd.isna(atr_val) or atr_val <= 0:
             return None
 

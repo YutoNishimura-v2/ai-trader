@@ -78,6 +78,11 @@ class BacktestEngine:
         if len(df) < 2:
             raise ValueError("need at least 2 bars")
 
+        # Backtest-only optimisation: let the strategy precompute
+        # full-series indicators once. Causal (no future peek) by
+        # contract. Not called in live mode.
+        self.strategy.prepare(df)
+
         trades: list[ClosedTradeRecord] = []
         equity_times: list[pd.Timestamp] = []
         equity_values: list[float] = []

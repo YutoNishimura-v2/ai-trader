@@ -99,6 +99,26 @@ class BaseStrategy(ABC):
     def __init__(self, **params: Any) -> None:
         self.params = params
 
+    def prepare(self, df: pd.DataFrame) -> None:
+        """Optional backtest-only optimisation hook.
+
+        For backtests the engine knows the full OHLCV up front and
+        can hand it to the strategy once for precomputation of
+        per-bar indicator series that would otherwise be recomputed
+        on every ``on_bar`` call.
+
+        Important contract: the strategy must still NOT peek into
+        the future. ``prepare`` may compute full-series indicators
+        (which are causal: value at row ``i`` depends only on rows
+        ``<= i``), and ``on_bar`` may only read entries up to and
+        including the current row index.
+
+        The engine calls ``prepare`` once before the bar loop in
+        backtest mode and does NOT call it in live mode (where no
+        such lookahead exists). Default: no-op.
+        """
+        return
+
     @abstractmethod
     def on_bar(self, history: pd.DataFrame) -> Signal | None:
         """Called after every completed bar.
