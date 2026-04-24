@@ -91,7 +91,14 @@ def main() -> int:
     log = get_logger("ai_trader.sweep")
     cfg = load_config(args.config)
     if args.strategy:
-        cfg["strategy"] = {"name": args.strategy, "params": {}}
+        # Preserve config-provided params if the strategy name matches;
+        # otherwise reset params (strategy mismatch means old params are
+        # invalid for the new strategy's constructor).
+        existing = cfg.get("strategy", {})
+        if existing.get("name") == args.strategy:
+            cfg["strategy"] = {"name": args.strategy, "params": existing.get("params", {})}
+        else:
+            cfg["strategy"] = {"name": args.strategy, "params": {}}
 
     df = load_ohlcv_csv(args.csv)
     if args.split_mode == "recent":
@@ -178,6 +185,7 @@ def main() -> int:
         fx=fx,
         risk_defaults=risk_defaults,
         exec_defaults=exec_defaults,
+        strategy_defaults=cfg.get("strategy", {}).get("params", {}) or {},
         max_trials=args.max_trials,
         objective=args.objective,
         higher_is_better=True,
@@ -190,9 +198,11 @@ def main() -> int:
     # depending on --score-on.
     from ..backtest.sweep import _partition
     per_trial_validation: list[dict] = []
+    base_strategy_params = cfg.get("strategy", {}).get("params", {}) or {}
     for trial in result.trials:
         strat_params, risk_overrides, exec_overrides = _partition(trial.params)
-        strat = get_strategy(cfg["strategy"]["name"], **strat_params)
+        merged_strat = {**base_strategy_params, **strat_params}
+        strat = get_strategy(cfg["strategy"]["name"], **merged_strat)
         risk = RiskManager(
             starting_balance=sweep_cfg.starting_balance,
             max_leverage=sweep_cfg.max_leverage,

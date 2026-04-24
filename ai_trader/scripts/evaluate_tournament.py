@@ -100,6 +100,11 @@ def main() -> int:
 
     params = _parse_params(args.param)
     strat_params, risk_overrides, exec_overrides = _partition(params)
+    # Merge any config-provided base strategy params (e.g. ensemble's
+    # members list) so we don't drop them when the CLI overrides only
+    # risk/exec knobs.
+    base_strategy_params = cfg.get("strategy", {}).get("params", {}) or {}
+    strat_params = {**base_strategy_params, **strat_params}
 
     risk_cfg = cfg["risk"]
     exec_cfg = cfg["execution"]

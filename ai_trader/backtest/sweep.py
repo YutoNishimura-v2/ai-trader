@@ -51,6 +51,7 @@ class SweepConfig:
     fx: FXConverter | None
     risk_defaults: dict[str, Any]
     exec_defaults: dict[str, Any]
+    strategy_defaults: dict[str, Any] = field(default_factory=dict)
     max_trials: int = 20
     objective: str = "profit_factor"
     higher_is_better: bool = True
@@ -139,7 +140,8 @@ def run_sweep(
     with open(index_path, "w", encoding="utf-8") as idx_f:
         for i, params in enumerate(combos):
             strat_params, risk_overrides, exec_overrides = _partition(params)
-            strat: BaseStrategy = get_strategy(cfg.strategy_name, **strat_params)
+            merged_strat = {**cfg.strategy_defaults, **strat_params}
+            strat: BaseStrategy = get_strategy(cfg.strategy_name, **merged_strat)
             broker = PaperBroker(
                 instrument=cfg.instrument,
                 **{**cfg.exec_defaults, **exec_overrides},
