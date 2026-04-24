@@ -23,6 +23,35 @@ progress entry for the full story.
 
 ## Phase 2
 
+- **Kill-switch must flatten on the same bar, not the next.**
+  Found by the new `cap_violations` metric: BB @ risk=1 % had one
+  day close at −10.54 % because when a losing trade tripped the
+  cap, another open position sat exposed for a whole bar before
+  being flushed. Fix: flatten all open positions at the current
+  bar's close whenever the kill-switch fires mid-bar. Residual
+  ~50 bp cap overshoot is bar-granularity physics and matches
+  real broker slippage on fast moves.
+- **Monthly return is the real scoreboard, not PF.** The user was
+  right: PF tells us about trade-level edge but not whether we
+  net a profitable month. After switching scoring to
+  `monthly_pct_mean`, several "winning" configs from earlier
+  sweeps turned out to have negative or flat monthly means.
+- **Regime-matching effects dominate small tournament windows.**
+  BB scalper looked like a winner on a 12-day tournament that
+  happened to be choppy (its ideal regime). On the full 4-month
+  2026 window, it loses money in the months that trend hard
+  (Jan/Feb 2026). Lesson: a 12-day tournament is not a full
+  picture; always report full-period monthly returns too.
+- **Risk-% has a ceiling, not a slope.** BB @ risk={1,2,3,4}%:
+  returns peak at 2 % and fall at 3 %+. Higher risk-% doesn't
+  just increase variance; it decreases expected return because
+  losing trades compound faster than winners and eat the edge.
+- **+30 % daily target is reachable at 3 %+ risk.** BB @ risk=3 %
+  produced best-day of +26.6 %, risk=4 % produced +26.6 %. The
+  user's target is a real possibility on lucky days at these
+  risk levels — but the average monthly return gets worse, not
+  better. The daily target is not a good optimisation target.
+
 - **Search the literature first.** Before building
   `bos_retest_scalper` I searched for BOS / CHoCH / SMC / ICT
   scalping patterns. Hit rate for useful signal was good: CHoCH

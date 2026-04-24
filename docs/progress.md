@@ -3,6 +3,140 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`.
 
+## 2026-04-24 — Risk-stack honesty; daily/monthly metrics; kill-switch fix
+
+Accumulated iterations: iter6 (ensemble), iter9 (BB SL sweep), iter10
+(BOS freq), iter11 (3-member mega-ensemble, falsified), iter12
+(risk-stack on BB monthly), iter13 (risk-stack on ensemble
+monthly). See per-iter JSONL logs in `artifacts/sweeps/`.
+
+### New metrics (plan v3 §A.3 alignment)
+
+Added to every backtest output:
+
+- Per-day realized P&L in account currency and %
+- Best / worst / mean / median day %
+- Daily target-hit count (days ≥ +30 %)
+- Daily max-loss-hit count (days ≤ −10 %)
+- **cap_violations**: days closing worse than −10.5 %. Non-zero
+  means the kill-switch leaked.
+- Monthly returns (mean / median / min / max), profitable month
+  count.
+
+User direction 2026-04-24: "all that matters is being profitable
+by the end of the month." These metrics make monthly return the
+primary scoreboard alongside cap-violation verification.
+
+### Kill-switch bug found and fixed
+
+First run after the new metrics showed `cap_violations: 1` on BB
+@ 1 %. Root cause: when a losing trade trips the −10 % cap, any
+*other* open positions were only flushed at the **next** bar's
+close, letting unrealized losses become realized. Fixed by
+flattening all open positions at the current bar's close when the
+kill-switch fires on this bar. Regression locked in
+`tests/test_killswitch_tight.py`.
+
+Note: at M1 bar granularity, the cap can still overshoot by ~50 bp
+because the flush uses bar-close prices (not SL). A 50 bp
+overshoot matches real-broker behaviour on fast moves. Documented.
+
+### Honest picture on 2026-only M1 (4 months)
+
+Previously I reported BB scalper winners from the 22-month data
+file. On **2026-only** (the 4 months that actually reflect the
+current regime), the picture is different:
+
+| strategy (default config) | monthly mean | worst month | profitable months |
+|---|---|---|---|
+| BB @ risk=1 % | **−13.1 %** | −28.2 % | **0 / 4** |
+| BOS @ risk=1 % (London+NY) | −0.6 % | −4.0 % | 2 / 4 |
+
+**BB scalper loses money hard over the full 4-month 2026 window**
+because Jan and Feb 2026 were strongly trending (+13 % / +9.5 %)
+and mean-reversion bleeds into trends. Its prior tournament PF of
+1.14 was a regime accident — the tournament window happened to be
+choppy (post-March).
+
+### Risk-stack sweep on BB (iter12, scored on monthly mean)
+
+| risk % | 12-day tournament ret | DD | best day | worst day | cap viol |
+|---|---|---|---|---|---|
+| 1.0 | +12.08 % | −11.5 % | +8.8 % | −3.1 % | 0 |
+| 2.0 | +10.68 % | −19.5 % | +12.5 % | −9.9 % | 0 |
+| 3.0 | +4.77 % | −32.1 % | +26.6 % | −10.5 % | 0 |
+| 4.0 | +6.11 % | −36.9 % | +26.6 % | −11.6 % | **3** |
+
+**Risk=2 % is the sweet spot for BB alone**: 12-day return still
+high (+10.7 %), cap never violated, and single best day hits
++12.5 % — showing the +30 % daily target is reachable at this
+risk. At risk ≥ 3 %, return falls and DD blows out: BB's edge
+isn't strong enough to survive 3 %+ per-trade risk.
+
+### Ensemble risk-stack (iter13)
+
+Best config by validation monthly mean: `risk=1.0 %, maxconc=3`:
+
+| window | trades | PF | ret | DD | monthly pace |
+|---|---|---|---|---|---|
+| research (65 d) | 845 | 1.17 | +75.1 % | −27.6 % | +28 %/mo |
+| validation (40 d) | 381 | 1.22 | +42.4 % | −35.1 % | +42 %/mo |
+| **tournament (12 d)** | **228** | — | **+7.1 %** | −17.4 % | **~18 %/mo pace** |
+
+~19 trades/day on tournament (inside user's 15/day target), 6 up
+days / 4 down days, worst day −6.7 % (under cap), 0 cap
+violations.
+
+### Honest gap-to-target
+
+Target: 200 %/month. Current best walk-forward-honest pace:
+- BB @ risk=2 %: ~27 %/month on tournament
+- Ensemble @ risk=1 %, maxconc=3: ~18 %/month on tournament
+- Ensemble @ risk=1 %, maxconc=3 on validation: +42 %/month (but
+  with −35 % DD)
+
+Gap to target is roughly **5-10×**. No iteration in this round
+closed it. Options going forward:
+
+1. **Accept the gap.** Run the best walk-forward-honest config.
+   ~20-40 %/month, DD under 35 %, is still a strong result even
+   if it's nowhere near 200 %.
+2. **Genuinely better edge.** Needs a new signal family not yet
+   tried. Next candidates: order-block / liquidity-sweep setups,
+   premium/discount zones, multi-timeframe confluence.
+3. **Instrument breadth.** BTC is killed by spread. Other
+   instruments (silver, stock indices) out of current scope.
+
+Recommend (1)+(2) in parallel: lock BB-risk=2 % or ensemble-r=1
+mc=3 as the current baseline, keep iterating new signal families
+against the same discipline.
+
+### Iterations not covered in their own entries
+
+- **iter9** (BB SL sweep): confirmed SL=0.5 is the winner;
+  validation PF 1.20 at SL=0.5, drops to 1.06 at SL=0.25 and
+  1.08 at SL=1.0. No new candidate.
+- **iter10** (BOS freq): SL=3 doubles frequency at a research-PF
+  cost (1.00 vs 1.17); validation PF comparable (1.28 vs 1.26).
+  No clear upgrade.
+- **iter11** (3-member mega-ensemble): adding a second BOS variant
+  to the ensemble slightly hurt validation (1.36 vs 1.40 PF).
+  Falsified the "more members = better" hypothesis.
+- **iter8** (BB on BTC): PF 0.59-0.89 everything lost, explicitly
+  deprioritised by user (HFM BTC spread ~$10 makes scalping
+  uneconomic).
+- **iter7** (BOS on M5): too low-frequency (1-8 trades/window).
+  Shelved.
+
+### Next
+
+- Explore genuinely new signal families: order blocks + FVG
+  (ICT/SMC family), London-kill-zone opening-range break,
+  liquidity-sweep-into-zone.
+- Fresh-week tournament pass in a few days when more data is
+  available.
+- Visualise equity curve + monthly breakdown for review.
+
 ## 2026-04-24 — Second tournament-clearing candidate: BOS-retest scalper
 
 User feedback (correct): the "trend" they meant is the **structural**

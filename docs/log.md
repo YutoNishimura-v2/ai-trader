@@ -82,3 +82,25 @@ session. Lightweight; mirrors git log but with intent, not diff.
   tournament-clearing configs: `always` (PF 1.06, +1.4 %, 79
   trades) and `london_or_ny` (PF 1.05, +0.6 %, 42 trades). First
   regime-agnostic candidate. 98 tests green.
+- User pushed on three things: aggressive SL tuning; repeated
+  iteration toward 200 %/mo; higher risk-% (2-4 %) backed by
+  the kill-switch. Iters 9, 10, 11 ran sweeps; iter 11
+  falsified "more ensemble members = better". BTC explicitly
+  deprioritised (HFM spread ~$10).
+- Added daily-P&L and monthly-return metrics. Running the new
+  metrics on BB @ risk=1 % showed `cap_violations=1` — traced
+  to a real bug where the kill-switch left open sibling positions
+  exposed for a bar. Fixed by flattening open positions on the
+  same bar when the cap fires. Regression locked.
+- Risk-stack sweep: BB scalper peaks at risk=2 % (+10.7 %/12d,
+  best-day +12.5 %, 0 cap violations). Above 3 % risk, return
+  falls because losing trades compound. Ensemble at risk=1 %
+  maxconc=3: validation +42 %/month, tournament +7.1 %/12d.
+- Honest reconcile: BB scalper losing money on full 4-month
+  2026 (−13 %/month mean) because Jan/Feb were strongly
+  trending; the earlier "PF 1.14" was a 12-day tournament
+  regime accident. Monthly mean is now the primary scoreboard.
+- Honest gap to 200 %/mo target: roughly 5-10×. Current
+  walk-forward-honest pace is 20-40 %/month. Closing the gap
+  needs genuinely new signal families; ICT/SMC order-block
+  variants and London kill-zone break queued.

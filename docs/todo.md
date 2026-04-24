@@ -71,10 +71,20 @@ Phase 2; nothing in this phase tunes parameters.
 - [x] **BOS-retest scalper** (user's structural trend): two
       tournament-clearing configs, PF 1.05–1.06 on held-out
       window, tight DD, regime-agnostic. See `progress.md`.
-- [ ] **Ensemble runner.** Run `bb_scalper` + `bos_retest_scalper`
-      (and optionally `trend_pullback_scalper` under a regime
-      gate) in parallel. Decide concurrency policy vs. the
-      ¥100k lot cap. This is the natural next iteration.
+- [x] **Ensemble runner.** BB + BOS in parallel, priority-ordered
+      polling. Best config (risk=1 %, maxconc=3): validation
+      +42 %/month, tournament +7.1 %/12d (~18 %/month pace).
+- [x] **Daily + monthly metrics.** `cap_violations`, `best_day_pct`,
+      `monthly_pct_mean`. Monthly is now the primary scoreboard
+      per user direction.
+- [x] **Kill-switch fix.** Flatten open positions on same bar
+      when cap fires.
+- [ ] **New signal families.** Order blocks + FVG (ICT/SMC),
+      London kill-zone opening-range break, liquidity-sweep-into-
+      zone. 200 %/month target unreachable at current edges;
+      need better ones.
+- [ ] Fresh-week tournament pass after a week of new data.
+- [ ] Visualise equity curve + monthly breakdown for review.
 - [ ] Session filter (London + NY overlap).
 - [ ] Populated 2026 news-blackout CSV.
 - [ ] Fresh-week tournament pass after time passes.
