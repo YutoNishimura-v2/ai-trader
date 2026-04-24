@@ -44,7 +44,6 @@ class PaperBroker(Broker):
         half_spread = (self.spread_points / 2.0) * tick
         slip = self.slippage_points * tick
         if side == SignalSide.BUY:
-            # Closing a long = selling back.
             return ref - half_spread - slip
         return ref + half_spread + slip
 
@@ -69,6 +68,9 @@ class PaperBroker(Broker):
             take_profit=order.take_profit,
             open_time=now,
             comment=order.comment,
+            group_id=order.group_id,
+            leg_index=order.leg_index,
+            move_siblings_sl_to_on_fill=order.move_siblings_sl_to_on_fill,
         )
         self._positions[pos.id] = pos
         self._next_id += 1
@@ -76,6 +78,18 @@ class PaperBroker(Broker):
 
     def open_positions(self) -> list[Position]:
         return list(self._positions.values())
+
+    def modify_sl(self, position_id: int, *, new_sl: float) -> None:
+        if position_id in self._positions:
+            pos = self._positions[position_id]
+            # Reject SL moves that would be "worse" for the position
+            # (i.e., widening the risk). Break-even tightens, so it's
+            # always accepted.
+            if pos.side == SignalSide.BUY and new_sl < pos.stop_loss:
+                return
+            if pos.side == SignalSide.SELL and new_sl > pos.stop_loss:
+                return
+            pos.stop_loss = float(new_sl)
 
     def close(self, position_id: int, *, price: float, now: datetime, reason: str) -> ClosedTrade:
         pos = self._positions.pop(position_id)
@@ -92,8 +106,12 @@ class PaperBroker(Broker):
     def check_stops(self, bar_high: float, bar_low: float, now: datetime) -> Iterable[ClosedTrade]:
         """Return any positions that should be closed by this bar.
 
-        Conservative rule: if a bar could plausibly hit SL OR TP and
+        Conservative rule: if a bar could plausibly hit SL AND TP and
         we can't tell which came first, assume SL (worst case).
+
+        IMPORTANT: we snapshot position IDs up front so that any SL
+        mutations performed by the engine (break-even after a sibling
+        TP fills) do not affect the iteration here.
         """
         closed: list[ClosedTrade] = []
         for pid in list(self._positions.keys()):
@@ -113,5 +131,12 @@ class PaperBroker(Broker):
                 reason = "tp"
             else:
                 continue
-            closed.append(self.close(pid, price=pos.stop_loss if reason == "sl" else pos.take_profit, now=now, reason=reason))
+            closed.append(
+                self.close(
+                    pid,
+                    price=pos.stop_loss if reason == "sl" else pos.take_profit,
+                    now=now,
+                    reason=reason,
+                )
+            )
         return closed

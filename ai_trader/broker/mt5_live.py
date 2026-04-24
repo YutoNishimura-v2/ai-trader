@@ -107,6 +107,28 @@ class MT5LiveBroker(Broker):
         )
         return OrderResult(ok=True, position=pos)
 
+    def modify_sl(self, position_id: int, *, new_sl: float) -> None:  # pragma: no cover
+        if not self._connected:
+            self.connect()
+        mt5 = self._mt5
+        raw = mt5.positions_get(ticket=int(position_id)) or ()
+        if not raw:
+            return
+        p = raw[0]
+        request = {
+            "action": mt5.TRADE_ACTION_SLTP,
+            "symbol": self.instrument.symbol,
+            "position": int(position_id),
+            "sl": float(new_sl),
+            "tp": float(p.tp),
+            "magic": int(self.magic),
+        }
+        result = mt5.order_send(request)
+        if result is None or result.retcode != mt5.TRADE_RETCODE_DONE:
+            raise RuntimeError(
+                f"modify_sl failed: retcode={getattr(result, 'retcode', None)} err={mt5.last_error()}"
+            )
+
     def open_positions(self) -> list[Position]:  # pragma: no cover
         if not self._connected:
             self.connect()

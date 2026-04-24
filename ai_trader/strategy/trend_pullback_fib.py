@@ -28,7 +28,7 @@ from ..indicators import (
     find_swings,
 )
 from ..indicators.trend import TrendState
-from .base import BaseStrategy, Signal, SignalSide
+from .base import BaseStrategy, Signal, SignalLeg, SignalSide
 from .registry import register_strategy
 
 
@@ -47,6 +47,13 @@ class TrendPullbackFib(BaseStrategy):
         atr_period: int = 14,
         cooldown_bars: int = 6,
         min_history: int | None = None,
+        # Multi-leg mgmt (plan v3 §A.5). When enabled, the signal splits
+        # into two legs: TP1 at tp1_rr * risk (closer), TP2 at tp_rr * risk
+        # (the existing "full" target). When TP1 fills, the runner's SL
+        # moves to entry (break-even).
+        use_two_legs: bool = False,
+        tp1_rr: float = 1.0,
+        leg1_weight: float = 0.5,
     ) -> None:
         super().__init__(
             swing_lookback=swing_lookback,
@@ -57,9 +64,37 @@ class TrendPullbackFib(BaseStrategy):
             tp_rr=tp_rr,
             atr_period=atr_period,
             cooldown_bars=cooldown_bars,
+            use_two_legs=use_two_legs,
+            tp1_rr=tp1_rr,
+            leg1_weight=leg1_weight,
         )
         self._last_signal_iloc: int = -(10**9)
         self.min_history = min_history or max(swing_lookback * 4, atr_period * 3, 60)
+
+    def _build_signal(
+        self,
+        side: SignalSide,
+        entry: float,
+        sl: float,
+        risk: float,
+        reason: str,
+    ) -> Signal:
+        p = self.params
+        tp_full = entry + p["tp_rr"] * risk if side == SignalSide.BUY else entry - p["tp_rr"] * risk
+        if not p.get("use_two_legs"):
+            return Signal(
+                side=side, entry=None, stop_loss=sl, take_profit=float(tp_full), reason=reason,
+            )
+        tp1 = entry + p["tp1_rr"] * risk if side == SignalSide.BUY else entry - p["tp1_rr"] * risk
+        w1 = float(p["leg1_weight"])
+        w2 = 1.0 - w1
+        # Leg 1 (TP1, closer) triggers break-even on the runner.
+        legs = (
+            SignalLeg(weight=w1, take_profit=float(tp1),
+                      move_sl_to_on_fill=float(entry), tag="tp1"),
+            SignalLeg(weight=w2, take_profit=float(tp_full), tag="tp2"),
+        )
+        return Signal(side=side, entry=None, stop_loss=sl, legs=legs, reason=reason)
 
     def on_bar(self, history: pd.DataFrame) -> Signal | None:
         p = self.params
@@ -121,13 +156,12 @@ class TrendPullbackFib(BaseStrategy):
             risk = entry - sl
             if risk <= 0:
                 return None
-            tp = float(entry + p["tp_rr"] * risk)
             self._last_signal_iloc = n
-            return Signal(
+            return self._build_signal(
                 side=SignalSide.BUY,
-                entry=None,
-                stop_loss=sl,
-                take_profit=tp,
+                entry=entry,
+                sl=sl,
+                risk=risk,
                 reason=f"up-trend pullback into fib zone [{zone.low:.2f},{zone.high:.2f}]",
             )
 
@@ -144,13 +178,12 @@ class TrendPullbackFib(BaseStrategy):
             risk = sl - entry
             if risk <= 0:
                 return None
-            tp = float(entry - p["tp_rr"] * risk)
             self._last_signal_iloc = n
-            return Signal(
+            return self._build_signal(
                 side=SignalSide.SELL,
-                entry=None,
-                stop_loss=sl,
-                take_profit=tp,
+                entry=entry,
+                sl=sl,
+                risk=risk,
                 reason=f"down-trend pullback into fib zone [{zone.low:.2f},{zone.high:.2f}]",
             )
 
