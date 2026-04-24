@@ -23,6 +23,7 @@ def get_strategy(name: str, **params) -> BaseStrategy:
     from . import trend_pullback_fib  # noqa: F401
     from . import donchian_retest  # noqa: F401
     from . import bb_scalper  # noqa: F401
+    from . import trend_pullback_scalper  # noqa: F401
     if name not in _REGISTRY:
         raise KeyError(f"Unknown strategy: {name}. Known: {sorted(_REGISTRY)}")
     return _REGISTRY[name](**params)
@@ -32,4 +33,5 @@ def list_strategies() -> list[str]:
     from . import trend_pullback_fib  # noqa: F401
     from . import donchian_retest  # noqa: F401
     from . import bb_scalper  # noqa: F401
+    from . import trend_pullback_scalper  # noqa: F401
     return sorted(_REGISTRY)
