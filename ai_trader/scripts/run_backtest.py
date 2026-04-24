@@ -22,6 +22,7 @@ from ..broker.paper import PaperBroker
 from ..config import load_config
 from ..data.csv_loader import load_ohlcv_csv
 from ..data.synthetic import generate_synthetic_ohlcv
+from ..risk.fx import FixedFX
 from ..risk.manager import InstrumentSpec, RiskManager
 from ..strategy.registry import get_strategy
 from ..utils.logging import get_logger
@@ -50,9 +51,14 @@ def main() -> int:
         contract_size=float(inst_cfg["contract_size"]),
         tick_size=float(inst_cfg["tick_size"]),
         tick_value=float(inst_cfg["tick_value"]),
+        quote_currency=inst_cfg.get("quote_currency", "USD"),
         min_lot=float(inst_cfg.get("min_lot", 0.01)),
         lot_step=float(inst_cfg.get("lot_step", 0.01)),
+        is_24_7=bool(inst_cfg.get("is_24_7", False)),
     )
+
+    account_ccy = cfg["account"].get("currency", "USD")
+    fx = FixedFX.from_config(cfg.get("fx") or {}) if cfg.get("fx") else None
 
     risk_cfg = cfg["risk"]
     risk = RiskManager(
@@ -64,6 +70,9 @@ def main() -> int:
         daily_max_loss_pct=float(risk_cfg["daily_max_loss_pct"]),
         withdraw_half_of_daily_profit=bool(risk_cfg.get("withdraw_half_of_daily_profit", True)),
         max_concurrent_positions=int(risk_cfg.get("max_concurrent_positions", 1)),
+        lot_cap_per_unit_balance=float(risk_cfg.get("lot_cap_per_unit_balance", 0.0)),
+        account_currency=account_ccy,
+        fx=fx,
     )
 
     exec_cfg = cfg["execution"]

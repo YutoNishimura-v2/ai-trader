@@ -98,7 +98,8 @@ class BacktestEngine:
                 bar_low=float(bar["low"]),
                 now=now,
             ):
-                self.risk.on_trade_closed(closed.pnl, when=now)
+                pnl_account = _to_account(self.risk, closed.pnl)
+                self.risk.on_trade_closed(pnl_account, when=now)
                 trades.append(
                     ClosedTradeRecord(
                         open_time=closed.position.open_time,
@@ -107,7 +108,7 @@ class BacktestEngine:
                         lots=closed.position.lots,
                         entry=closed.position.entry_price,
                         exit=closed.close_price,
-                        pnl=closed.pnl,
+                        pnl=pnl_account,
                         reason=closed.reason,
                         group_id=closed.position.group_id,
                         leg_index=closed.position.leg_index,
@@ -140,7 +141,8 @@ class BacktestEngine:
                         now=now,
                         reason="kill-switch",
                     )
-                    self.risk.on_trade_closed(closed.pnl, when=now)
+                    pnl_account = _to_account(self.risk, closed.pnl)
+                    self.risk.on_trade_closed(pnl_account, when=now)
                     trades.append(
                         ClosedTradeRecord(
                             open_time=closed.position.open_time,
@@ -149,7 +151,7 @@ class BacktestEngine:
                             lots=closed.position.lots,
                             entry=closed.position.entry_price,
                             exit=closed.close_price,
-                            pnl=closed.pnl,
+                            pnl=pnl_account,
                             reason=closed.reason,
                             group_id=closed.position.group_id,
                             leg_index=closed.position.leg_index,
@@ -173,7 +175,8 @@ class BacktestEngine:
         last_close = float(df.iloc[-1]["close"])
         for pos in list(self.broker.open_positions()):
             closed = self.broker.close(pos.id, price=last_close, now=last_ts, reason="eod")
-            self.risk.on_trade_closed(closed.pnl, when=last_ts)
+            pnl_account = _to_account(self.risk, closed.pnl)
+            self.risk.on_trade_closed(pnl_account, when=last_ts)
             trades.append(
                 ClosedTradeRecord(
                     open_time=closed.position.open_time,
@@ -182,7 +185,7 @@ class BacktestEngine:
                     lots=closed.position.lots,
                     entry=closed.position.entry_price,
                     exit=closed.close_price,
-                    pnl=closed.pnl,
+                    pnl=pnl_account,
                     reason=closed.reason,
                     group_id=closed.position.group_id,
                     leg_index=closed.position.leg_index,
@@ -271,17 +274,27 @@ class BacktestEngine:
             self._log(f"{ts} no legs opened from signal {sig.reason}")
 
     def _unrealized(self, price: float) -> float:
-        total = 0.0
+        """Open-P&L in the account currency."""
+        total_quote = 0.0
         for pos in self.broker.open_positions():
             diff = price - pos.entry_price
             if pos.side == SignalSide.SELL:
                 diff = -diff
             ticks = diff / self.broker.instrument.tick_size
-            total += ticks * self.broker.instrument.tick_value * pos.lots
-        return total
+            total_quote += ticks * self.broker.instrument.tick_value * pos.lots
+        return _to_account(self.risk, total_quote)
 
 
 def _floor_step(x: float, step: float) -> float:
     if step <= 0:
         return x
     return math.floor(x / step + 1e-9) * step
+
+
+def _to_account(risk: RiskManager, amount_quote: float) -> float:
+    """Convert a quote-currency amount to the account currency."""
+    if risk.instrument.quote_currency == risk.account_currency or risk.fx is None:
+        return amount_quote
+    return risk.fx.convert(
+        amount_quote, risk.instrument.quote_currency, risk.account_currency
+    )
