@@ -1,0 +1,12 @@
+extends: default.yaml
+
+broker:
+  kind: mt5
+  account: null              # set on the live host or via env MT5_LOGIN
+  server: null
+  password_env: MT5_PASSWORD
+
+live:
+  poll_seconds: 5
+  magic_number: 20260424
+  comment: ai-trader-demo

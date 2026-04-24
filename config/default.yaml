@@ -1,0 +1,37 @@
+account:
+  currency: USD
+  starting_balance: 10000.0
+  max_leverage: 100          # 1:100 cap (hard rule)
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M5
+  contract_size: 100         # 1 lot = 100 oz gold
+  tick_size: 0.01            # $0.01 price increment
+  tick_value: 1.0            # USD value per tick per 1 lot
+  min_lot: 0.01
+  lot_step: 0.01
+
+execution:
+  spread_points: 20          # 20 * tick_size = $0.20 spread (typical XAUUSD demo)
+  slippage_points: 2
+  commission_per_lot: 0.0
+
+risk:
+  risk_per_trade_pct: 0.5    # 0.5% of equity per trade
+  daily_profit_target_pct: 2.0
+  daily_max_loss_pct: 1.5
+  withdraw_half_of_daily_profit: true
+  max_concurrent_positions: 1
+
+strategy:
+  name: trend_pullback_fib
+  params:
+    swing_lookback: 20
+    min_trend_legs: 2        # need at least 2 higher highs / lower lows
+    fib_entry_min: 0.382
+    fib_entry_max: 0.500
+    sl_atr_mult: 1.5
+    tp_rr: 2.0               # reward:risk
+    atr_period: 14
+    cooldown_bars: 6
