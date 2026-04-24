@@ -63,17 +63,21 @@ Phase 2; nothing in this phase tunes parameters.
       promotable.
 - [x] Donchian-retest volatility-breakout family. Net-negative on
       research in both regimes. Not promotable.
-- [x] **BB-scalper on 2026-only M1.** First genuine candidate:
-      tournament PF 1.10 with DD 12 %, 10 trades/day. See
-      `progress.md` 2026-04-24 entry.
-- [ ] Before deciding promotion: session filter (London+NY),
-      real news-blackout CSV for 2026 events, regime router for
-      ADX > 40 days.
-- [ ] Second independent tournament pass on a fresh ~1-week window
-      to sanity-check the result (rolls 1 week at a time).
-- [ ] Visualise the tournament equity curve and trade log for the
-      review session.
-- [ ] Review session with the user → promote / reject / iterate.
+- [x] **BB-scalper on 2026 M1.** Tournament PF 1.10 (6d) then
+      confirmed PF 1.14 (12d). Candidate.
+- [x] **Trend-pullback scalper (user's original strategy 1).**
+      Research/validation cleared; tournament failed in a choppy
+      regime. Regime-dependent; hold for router.
+- [ ] **Regime router.** ADX + realized-vol classifier;
+      route trending bars to `trend_pullback_scalper`, choppy
+      bars to `bb_scalper`. Same research/validation/tournament
+      discipline on the ensemble.
+- [ ] Session filter (London + NY overlap).
+- [ ] Populated 2026 news-blackout CSV.
+- [ ] Fresh-week tournament pass after time passes.
+- [ ] Equity-curve + trade-log visualisation for the review
+      session.
+- [ ] Review session → promote / reject / iterate.
 
 ## Phase 3 — 1-week HFM demo
 

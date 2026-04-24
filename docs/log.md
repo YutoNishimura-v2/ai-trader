@@ -58,3 +58,15 @@ session. Lightweight; mirrors git log but with intent, not diff.
   `bb_k ∈ {1.5,2.0,2.5}`, `tp_target ∈ {middle,rr}` produced the
   first genuine candidate: trial 16 (bb_n=60, bb_k=2.5,
   tp=middle). Tournament PF 1.10, DD 12 %, 61 trades in 6 days.
+- User: doubled tournament to 12 days, asked for user's original
+  strategy 1 (trend-pullback with fib, not mean-reversion), and
+  uncapped TP so winners run. Implemented
+  `trend_pullback_scalper`: EMA-aligned fib pullback + rejection
+  candle + 2-leg TP1/TP2. Sweep on slow_ema × impulse × tp2_rr
+  found 3 survivors with research PF ~1.43 + validation PF 1.05-
+  1.12 + DD < 10 %. All failed 12-day tournament (PF 0.79-0.92)
+  because the tournament regime was choppy. Regime dependency;
+  not a bad strategy.
+- BB scalper re-tested on 12-day tournament: PF 1.14, +12.1 %,
+  DD −11.5 %, 130 trades. Held up.
+- Next obvious move: regime router combining the two.

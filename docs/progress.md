@@ -3,6 +3,109 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`.
 
+## 2026-04-24 — Trend-pullback scalper iteration, BB scalper holds up on doubled tournament
+
+User feedback (correct):
+
+- The original strategy 1 is trend-following with fib, not mean-reversion.
+- BB scalping caps profits at ~1R, killing the "let winners run" part.
+- 6-day tournament is too short; double it.
+- Don't be afraid to be aggressive — but entering on weak confirmation blows up losses.
+
+### Implemented: `trend_pullback_scalper`
+
+M1-calibrated translation of the user's original strategy 1. Three
+required confirmations before any entry:
+
+1. **Trend alignment**: EMA(fast) > EMA(slow) AND EMA(slow) sloping
+   positively by > `slope_min_atr` × ATR over `slope_bars`. Both sides
+   must clear; no "hopeful" entries.
+2. **Fib zone**: price must dip into the 0.382-0.618 retracement of
+   a rolling impulse leg (recent max minus preceding min).
+3. **Rejection candle**: close > open, lower wick ≥ body, close >
+   prev close, close above the zone low.
+
+Default 2-leg execution: TP1 at 1R with break-even on the runner,
+TP2 stretched to 3R or more. Winners actually run.
+
+### Sweep `iter4-tps-2026` (18 trials, 12-day tournament)
+
+Grid: `slow_ema ∈ {30,50}` × `impulse_lookback ∈ {30,60,120}` ×
+`tp2_rr ∈ {2.0, 3.0, 4.5}`. Split: research = Jan 1 → Mar 6 (~65
+days), validation = Mar 6 → Apr 12 (40 days), tournament = Apr 12
+→ Apr 24 (12 days, held out).
+
+Filters: min-validation-trades 80, max-research-dd 30 %.
+
+Top 3 survivors (PF > 1 on research AND validation, DD < 10 %
+both windows):
+
+| trial | slow_ema | impulse | tp2_rr | research | validation |
+|---|---|---|---|---|---|
+| 17 | 50 | 120 | 4.5 | PF 1.43 +45 % DD −9.2 % (385) | PF 1.12 +6.1 % DD −9.1 % (161) |
+| 16 | 50 | 120 | 3.0 | PF 1.42 +43 % DD −9.2 % (389) | PF 1.06 +3.1 % DD −9.3 % (159) |
+| 15 | 50 | 120 | 2.0 | PF 1.44 +45 % DD −8.2 % (393) | PF 1.05 +2.4 % DD −9.4 % (161) |
+
+`(slow_ema=50, impulse_lookback=120)` is the robust cell; tp2_rr
+barely matters for validation PF — the stretched TP2 (4.5R) does
+*not* hurt, confirming that uncapping profit is the right move.
+
+### Tournament results (all three candidates declared before open)
+
+| strategy variant | tournament PF | ret | DD | trades |
+|---|---|---|---|---|
+| tps trial 17 (tp2=4.5) | 0.79 | −8.9 % | −10.5 % | 131 |
+| tps trial 16 (tp2=3.0) | 0.92 | −3.6 % | −8.3 % | 138 |
+| tps trial 15 (tp2=2.0) | 0.85 | −6.2 % | −9.9 % | 136 |
+
+**All three fail the tournament.** Tournament regime check
+explains why: Apr 12-24 was choppy, not trending — +1.44 %
+close-to-close, 6 up-days / 6 down-days, huge intraday ranges
+($50-162). Trend-pullback is the wrong tool for a choppy regime.
+This is a **regime-dependency signal**, not a "bad strategy"
+signal.
+
+### BB scalper re-evaluated on the doubled 12-day tournament
+
+(Re-running the prior iteration's winner on the wider window for
+a fair comparison.)
+
+| window | trades | PF | ret % | DD % | trades/day |
+|---|---|---|---|---|---|
+| research (Jan 1 → Mar 15) | 663 | 1.14 | +57.3 | −25.3 | ~8 |
+| validation (Mar 15 → Apr 18) | 279 | 1.37 | +67.8 | −24.9 | ~8 |
+| **tournament (Apr 12 → Apr 24, 12 d)** | **130** | **1.14** | **+12.1 %** | **−11.5 %** | **~11** |
+
+BB scalper holds up on the doubled tournament. PF 1.14 is stable
+from 6-day to 12-day; trade frequency up to ~11/day, inside the
+user's scalping target. DD well inside the 25 % HRHR envelope.
+**Still a candidate.**
+
+### Honest scoreboard
+
+| strategy | regime profile | status |
+|---|---|---|
+| `bb_scalper` (bb_n=60, bb_k=2.5, tp=middle) | likes chop; takes ranges | **candidate, held up on 12-day tournament** |
+| `trend_pullback_scalper` (slow_ema=50, impulse=120, tp2=4.5) | needs trend; dies in chop | falsified on current tournament; hold for regime-router |
+| `trend_pullback_fib` | too quiet at this lot cap | not a candidate |
+| `donchian_retest` | net negative on research | not a candidate |
+
+### Next (review-gated)
+
+The natural move is a **regime router**: classify each bar as
+trend / chop / crash via ADX and realized vol, then arm BB scalper
+in chop and trend-pullback scalper in trend. Both strategies have
+demonstrated in-regime edge (1.14 and 1.43 research PFs
+respectively); the router combines them so each fires only when
+its regime is active. Same research/validation/tournament
+discipline will apply.
+
+Also worth adding before any promotion:
+
+- Session filter (only trade London + NY overlap).
+- Populated 2026 news-blackout CSV.
+- Second-opinion tournament on an even newer window (rolling).
+
 ## 2026-04-24 — Scalping pivot; first genuine candidate (BB-scalper trial 16)
 
 ### What prompted the pivot

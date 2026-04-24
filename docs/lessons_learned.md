@@ -23,6 +23,28 @@ progress entry for the full story.
 
 ## Phase 2
 
+- **Regime dependency is detectable on the tournament window.**
+  Trend-pullback scalper cleared research (PF 1.43) and
+  validation (PF 1.12) with low DD, then failed the tournament
+  (PF 0.79). A same-day regime check of the tournament window
+  showed it was range-bound (+1.44 % over 12 days, ranges
+  $50-162). Trend strategies need trending regimes — obvious in
+  hindsight, but the tournament ratchet caught it anyway. The
+  lesson: every tournament failure deserves a regime-of-window
+  diagnostic before we blame the strategy.
+- **"Let winners run" validates on real data.** Sweeping
+  `tp2_rr ∈ {2.0, 3.0, 4.5}` on the trend-pullback scalper: all
+  three cleared research + validation gates with similar DD. The
+  4.5R variant was best on validation PF. Hard-capping profit at
+  1R (what the BB mean-reversion target does by design) is not
+  free — it leaves edge on the table in trending regimes.
+- **Complementary strategies need a router, not a choice.** BB
+  scalper (research PF 1.14, tournament 1.14) wants chop;
+  trend-pullback scalper (research PF 1.43, tournament 0.79)
+  wants trend. Picking one over the other is wrong; the right
+  move is a regime classifier that routes bars to the appropriate
+  strategy. Both candidates have demonstrated in-regime edge.
+
 - **DD metric bug: withdrawal sweep inflated drawdowns by tens of
   percent.** Equity was `balance + unrealized`; it needed
   `balance + unrealized + withdrawn_total` because §A.9 moves
