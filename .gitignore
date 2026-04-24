@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.env
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+artifacts/*
+!artifacts/.gitkeep
+# Regime profiles are first-class findings; keep them tracked.
+!artifacts/regime/
+data/*.csv
+data/cache/
+!data/.gitkeep
+!data/news/.gitkeep
+!data/news/example.csv
+.DS_Store

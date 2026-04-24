@@ -1,0 +1,21 @@
+# BTCUSD (plan v3 §Instruments + Phase 4).
+# 24/7 operation, distinct instrument spec.
+
+extends: default.yaml
+
+instrument:
+  symbol: BTCUSD
+  timeframe: M5
+  contract_size: 1.0           # 1 lot = 1 BTC on HFM Katana
+  tick_size: 0.1
+  tick_value: 0.1              # $0.1 USD per tick per 1 lot
+  quote_currency: USD
+  min_lot: 0.01
+  lot_step: 0.01
+  is_24_7: true
+
+execution:
+  # BTC spread is materially wider; tune once we have HFM data.
+  spread_points: 40
+  slippage_points: 5
+  commission_per_lot: 0.0

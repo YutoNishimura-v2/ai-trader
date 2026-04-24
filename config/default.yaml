@@ -1,0 +1,60 @@
+# HFM Katana / XAUUSD / JPY account (plan v3).
+
+account:
+  currency: JPY
+  starting_balance: 100000.0   # ¥100,000
+  max_leverage: 100            # 1:100 cap (plan §A.1)
+
+# Fixed FX rates for deterministic backtests. Live runs plug in a
+# live-rate provider; see ai_trader/risk/fx.py.
+fx:
+  USDJPY: 150.0
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M5
+  contract_size: 100           # 1 lot = 100 oz gold
+  tick_size: 0.01
+  tick_value: 1.0              # $1 USD per tick per 1 lot
+  quote_currency: USD
+  min_lot: 0.01
+  lot_step: 0.01
+  is_24_7: false
+
+execution:
+  # HFM Katana: $0.08 spread = 8 points. We pessimise ×1.5 for backtests.
+  spread_points: 12
+  slippage_points: 2
+  commission_per_lot: 0.0
+
+risk:
+  risk_per_trade_pct: 0.5      # seed value; discovered in iteration
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: true
+  max_concurrent_positions: 1   # per-decision (multi-leg is one decision)
+  # Plan v3 §A.2: lots <= 0.1 * balance_JPY / 100_000  → 1.0e-6 per JPY.
+  lot_cap_per_unit_balance: 0.000001
+
+news:
+  # CSV schema: time,impact,instrument,event (see ai_trader/news/calendar.py).
+  # Phase 1 uses a hand-maintained CSV. Leaving this unset disables the
+  # blackout (useful for deterministic CI).
+  csv: null
+  window_minutes: 30
+  impact_filter: [high]
+
+strategy:
+  name: trend_pullback_fib
+  params:
+    swing_lookback: 20
+    min_trend_legs: 2
+    fib_entry_min: 0.382
+    fib_entry_max: 0.500
+    sl_atr_mult: 1.5
+    tp_rr: 2.0
+    atr_period: 14
+    cooldown_bars: 6
+    use_two_legs: true
+    tp1_rr: 1.0
+    leg1_weight: 0.5
