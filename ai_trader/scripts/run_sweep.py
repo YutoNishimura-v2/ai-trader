@@ -18,7 +18,10 @@ from pathlib import Path
 
 from ..backtest.engine import BacktestEngine
 from ..backtest.metrics import compute_metrics
-from ..backtest.splitter import load_with_tournament_held_out
+from ..backtest.splitter import (
+    load_recent_held_out,
+    load_with_tournament_held_out,
+)
 from ..backtest.sweep import SweepConfig, run_sweep
 from ..broker.paper import PaperBroker
 from ..config import load_config
@@ -36,16 +39,51 @@ def main() -> int:
     ap.add_argument("--sweep-id", required=True)
     ap.add_argument("--max-trials", type=int, default=20)
     ap.add_argument("--objective", default="profit_factor")
+    # Plan v3 as of 2026-04-24: recent-regime performance dominates.
+    # Default split is date-based: tournament = last N days,
+    # validation = M days before that. --split-mode ratio restores
+    # the proportional split.
+    ap.add_argument(
+        "--split-mode",
+        default="recent",
+        choices=["recent", "ratio"],
+        help="recent=date-based tournament window (default); "
+        "ratio=proportional split (legacy).",
+    )
+    ap.add_argument("--tournament-days", type=int, default=30)
+    ap.add_argument("--validation-days", type=int, default=60)
+    # Weight each sweep trial by how much of its profit came from
+    # the *validation* period — i.e. the recent regime. Defaults
+    # off because it changes the objective; on for recent-regime
+    # evaluation runs.
+    ap.add_argument(
+        "--score-on",
+        default="research",
+        choices=["research", "validation"],
+        help="Which window's metrics the sweep ranks trials by.",
+    )
     args = ap.parse_args()
 
     log = get_logger("ai_trader.sweep")
     cfg = load_config(args.config)
 
     df = load_ohlcv_csv(args.csv)
-    split = load_with_tournament_held_out(df)
+    if args.split_mode == "recent":
+        split = load_recent_held_out(
+            df,
+            tournament_days=args.tournament_days,
+            validation_days=args.validation_days,
+        )
+        split_desc = (
+            f"recent (tournament_days={args.tournament_days}, "
+            f"validation_days={args.validation_days})"
+        )
+    else:
+        split = load_with_tournament_held_out(df)
+        split_desc = "ratio (0.75/0.17/held-out)"
     log.info(
-        "loaded %s bars; research=%s validation=%s tournament=held-out",
-        len(df), len(split.research), len(split.validation),
+        "loaded %s bars; split=%s; research=%s validation=%s tournament=held-out",
+        len(df), split_desc, len(split.research), len(split.validation),
     )
 
     inst_cfg = cfg["instrument"]
@@ -103,10 +141,12 @@ def main() -> int:
 
     result = run_sweep(sweep_cfg, split.research)
 
-    # Verify the best candidate on the validation window.
-    validation_metrics: dict[str, float] = {}
-    if result.best is not None and len(split.validation) > 0:
-        strat = get_strategy(cfg["strategy"]["name"], **result.best.params)
+    # Verify every trial on the validation window so we can either
+    # (a) confirm the research winner or (b) rank by validation
+    # depending on --score-on.
+    per_trial_validation: list[dict] = []
+    for trial in result.trials:
+        strat = get_strategy(cfg["strategy"]["name"], **trial.params)
         risk = RiskManager(
             starting_balance=sweep_cfg.starting_balance,
             max_leverage=sweep_cfg.max_leverage,
@@ -118,24 +158,56 @@ def main() -> int:
         broker = PaperBroker(instrument=instrument, **exec_defaults)
         engine = BacktestEngine(strategy=strat, risk=risk, broker=broker)
         v_result = engine.run(split.validation)
-        validation_metrics = compute_metrics(v_result, starting_balance=sweep_cfg.starting_balance)
+        v_metrics = compute_metrics(v_result, starting_balance=sweep_cfg.starting_balance)
+        per_trial_validation.append({
+            "trial_id": trial.trial_id,
+            "params": trial.params,
+            "research_metrics": trial.metrics,
+            "validation_metrics": v_metrics,
+        })
+
+    # Choose the winner by the user-selected window.
+    def _score(row: dict) -> float:
+        m = row["validation_metrics"] if args.score_on == "validation" else row["research_metrics"]
+        v = m.get(args.objective, float("nan"))
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            v = float("nan")
+        return v if v == v else float("-inf")
+
+    winner = max(per_trial_validation, key=_score) if per_trial_validation else None
 
     summary = {
         "sweep_id": args.sweep_id,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "csv": str(args.csv),
+        "split_mode": args.split_mode,
+        "score_on": args.score_on,
         "research_bars": len(split.research),
         "validation_bars": len(split.validation),
+        "research_range": [str(split.research.index[0]), str(split.research.index[-1])],
+        "validation_range": [str(split.validation.index[0]), str(split.validation.index[-1])],
         "tournament_held_out": True,
-        "best_trial_id": result.best.trial_id if result.best else None,
-        "best_params": result.best.params if result.best else None,
-        "best_research_metrics": result.best.metrics if result.best else None,
-        "validation_metrics": validation_metrics,
+        "winner": winner,
+        "trials": per_trial_validation,
     }
     summary_path = result.out_dir / "summary.json"
     summary_path.write_text(json.dumps(summary, indent=2, default=str))
     log.info("wrote %s", summary_path)
-    print(json.dumps(summary, indent=2, default=str))
+
+    # Print a concise one-line comparison per trial, then the winner.
+    for row in sorted(per_trial_validation, key=_score, reverse=True):
+        rm = row["research_metrics"]; vm = row["validation_metrics"]
+        print(
+            f"trial={row['trial_id']:2d} params={row['params']} "
+            f"research: PF={rm.get('profit_factor', 0):.2f} ret={rm.get('return_pct', 0):+.2f}% "
+            f"DD={rm.get('max_drawdown_pct', 0):.2f}% trades={rm.get('trades', 0)}  "
+            f"validation: PF={vm.get('profit_factor', 0):.2f} ret={vm.get('return_pct', 0):+.2f}% "
+            f"DD={vm.get('max_drawdown_pct', 0):.2f}% trades={vm.get('trades', 0)}"
+        )
+    if winner is not None:
+        print(f"\n[winner by {args.score_on}.{args.objective}] trial={winner['trial_id']} params={winner['params']}")
     return 0
 
 
