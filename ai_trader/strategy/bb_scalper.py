@@ -28,9 +28,12 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from datetime import time as dtime
+
 from ..indicators import atr
 from .base import BaseStrategy, Signal, SignalLeg, SignalSide
 from .registry import register_strategy
+from .session import check_session
 
 
 @register_strategy
@@ -50,6 +53,7 @@ class BBScalper(BaseStrategy):
         use_two_legs: bool = False,
         tp1_rr: float = 0.6,
         leg1_weight: float = 0.5,
+        session: str = "always",
         min_history: int | None = None,
     ) -> None:
         super().__init__(
@@ -64,6 +68,7 @@ class BBScalper(BaseStrategy):
             use_two_legs=use_two_legs,
             tp1_rr=tp1_rr,
             leg1_weight=leg1_weight,
+            session=session,
         )
         self._last_signal_iloc: int = -(10**9)
         self.min_history = min_history or max(bb_n * 3, atr_period * 3, 60)
@@ -126,6 +131,15 @@ class BBScalper(BaseStrategy):
             return None
         if n - self._last_signal_iloc < p["cooldown_bars"]:
             return None
+
+        # Session gate. 'always' is a no-op; other modes restrict
+        # to London / NY / overlap etc.
+        session = p.get("session", "always")
+        if session != "always":
+            ts = history.index[-1]
+            t = ts.time() if hasattr(ts, "time") else dtime(0, 0)
+            if not check_session(t, session):
+                return None
 
         # Caches expected for scalping; slow path is prohibitive.
         if self._mid is None or self._atr_cache is None:

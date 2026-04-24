@@ -57,8 +57,10 @@ class InstrumentDukascopy:
 
 _INSTRUMENTS: dict[str, InstrumentDukascopy] = {
     "XAUUSD": InstrumentDukascopy(symbol_url="XAUUSD", decimal_factor=1000.0),
-    "BTCUSD": InstrumentDukascopy(symbol_url="BTCUSD", decimal_factor=1000.0),
-    # Add more as needed.
+    # BTCUSD on Dukascopy uses decimal_factor=10 (confirmed empirically:
+    # a Jan 2026 bar with raw ask=895406 resolves to $89,540.6, which
+    # matches the actual BTCUSD price range.)
+    "BTCUSD": InstrumentDukascopy(symbol_url="BTCUSD", decimal_factor=10.0),
 }
 
 
