@@ -23,6 +23,24 @@ progress entry for the full story.
 
 ## Phase 2
 
+- **Default-off feature flags rot.** `BBScalper.use_two_legs`
+  defaulted to False and the yaml never set it. Every BB result
+  reported across multiple iterations was running without the
+  break-even feature I'd added two PRs earlier. Going forward:
+  any strategy with single-leg and 2-leg modes should default to
+  2-leg+BE, and configs should declare it explicitly so it can't
+  be silently dropped.
+- **Bug fixes can retroactively invalidate every prior backtest.**
+  The kill-switch intra-bar fix was correct, but re-running prior
+  winners shows they'd been benefiting from the leak: positions
+  that should have been flushed at the cap were running into the
+  next bar and netting out. The honest numbers are 10-20 %-points
+  worse on tournament return than I reported. Rule: any change
+  to engine semantics must trigger a re-evaluation of every
+  prior "winning candidate" before any further claims.
+- **Hard TP/SL and entry-at-next-open were always correct.**
+  Locked as invariants now (`test_fills_intra_bar.py`).
+
 - **Kill-switch must flatten on the same bar, not the next.**
   Found by the new `cap_violations` metric: BB @ risk=1 % had one
   day close at −10.54 % because when a losing trade tripped the

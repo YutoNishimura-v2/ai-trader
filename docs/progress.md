@@ -3,6 +3,105 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`.
 
+## 2026-04-24 — BE was off on BB; kill-switch fix retroactively wiped prior wins
+
+User caught two bugs at once:
+
+### 1. Break-even was silently off on the BB scalper
+
+`use_two_legs` defaults to False on `BBScalper`, and
+`config/bb_scalper.yaml` never set it. **Every BB result reported
+across iters 3, 6, 9, 11, 12, 13 was single-leg with no break-
+even.** Other strategies (`bos_retest_scalper`,
+`trend_pullback_scalper`) had BE hard-coded on; BB did not. Fixed:
+yaml now sets `use_two_legs: true, tp1_rr: 0.6, leg1_weight: 0.5`.
+
+Same issue in `config/ensemble_bb_bos.yaml` BB member; fixed.
+
+### 2. Re-running with the kill-switch fix + BE produces materially
+   worse numbers than reported in iter6/iter13
+
+Quantified head-to-head on the iter13 winner (ensemble at
+risk=1, mc=3) tournament window:
+
+| metric | reported (iter13) | actual now |
+|---|---|---|
+| return | +7.1 % | **−8.1 %** |
+| trades | 228 | 325 (more, because losing trades close at SL on the same bar instead of running into the next) |
+| DD | −17.4 % | −16.2 % |
+
+BB-alone tournament:
+
+| metric | reported (iter3) | actual now |
+|---|---|---|
+| return | +12.1 % | **−2.7 %** |
+| PF | 1.14 | 0.94 |
+| trades | 130 | 237 |
+
+**The kill-switch leak from previous iterations was masking
+losses.** Positions that should have been flushed at the cap
+were running into the next bar; that next bar often produced
+small wins which netted out the original loss in a way that
+inflated "monthly return" measures. With the leak fixed, the
+strategies' true edge shows up: thin-to-negative on real 2026
+M1 data.
+
+### Re-sweep iter14 (post-fix, post-BE)
+
+Ranked by validation `monthly_pct_mean`, all 9 trials of ensemble
+risk × concurrency:
+
+| trial | risk % | maxconc | research ret | val ret | val DD |
+|---|---|---|---|---|---|
+| 6 | 2.0 | 1 | −27.2 % | +17.6 % | −22.9 % |
+| 8 | 2.0 | 3 | −48.1 % | +14.2 % | −27.3 % |
+| 1 | 0.5 | 2 | −19.9 % | +7.8 % | −15.0 % |
+| 2 | 0.5 | 3 | −19.9 % | +7.8 % | −15.0 % |
+| ... | | | (all research negative) | | |
+
+**Every research result is negative** under tight cap enforcement.
+Validation only positive at risk=2 % (and only +17 %). Tournament
+return on the new "winner": probably negative again.
+
+### Honest interpretation
+
+Two possibilities:
+
+1. The strategies have a small edge that the prior leak
+   amplified into apparent profits, but isn't strong enough to
+   survive realistic risk discipline.
+2. The strategies have no edge and the prior numbers were
+   entirely artefactual.
+
+Ensemble validation PF 1.04-1.17 with positive validation return
+suggests case 1, not case 2 — there *is* an edge, but it's small
+enough that bar-granularity slippage and tight cap enforcement
+eat most of it. The 200 %/month aspiration is far out of reach
+with current strategies.
+
+### Hard TP/SL behaviour (user q2)
+
+User asked: "are you actually using hard TP/SL? You don't need
+to wait for the bar to close." Answer: yes, the engine has been
+doing this from day one, but I added explicit regression tests
+(`tests/test_fills_intra_bar.py`) that lock three invariants:
+
+- TP fills intra-bar at the TP price, not bar close.
+- SL fills intra-bar at the SL price, not bar close.
+- Entry fills at the next bar's open after the signal bar
+  closes (no-lookahead discipline).
+
+All three pass.
+
+### What's queued (not done this turn — turn was conflict-cleanup
+   + bug-disclosure + verify-fills)
+
+- Mixed-period and recent-only splitter modes (user q4).
+- High-frequency micro-pullback scalper (user q3).
+- ICT-style order block / FVG strategy (queued earlier).
+
+Next turn picks these up.
+
 ## 2026-04-24 — Risk-stack honesty; daily/monthly metrics; kill-switch fix
 
 Accumulated iterations: iter6 (ensemble), iter9 (BB SL sweep), iter10
