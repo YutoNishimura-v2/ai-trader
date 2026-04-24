@@ -3,6 +3,73 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`.
 
+## 2026-04-24 — Phase 2 kick-off on real XAUUSD + perf pass
+
+### What changed
+
+1. **Performance.** Vectorised `find_swings` with
+   `numpy.sliding_window_view`, added `BaseStrategy.prepare(df)` hook,
+   `TrendPullbackFib` now caches full-series ATR and a `SwingSeries`
+   once. Found and fixed a look-ahead bug in the first draft (cache
+   queried at `n` instead of `n - k`); new test
+   `test_perf_and_lookahead.py` locks the invariant. Measured: pytest
+   26 s → 9 s, 180-day backtest 53 s → 6 s (~9× each).
+2. **Cross-platform data.** `ai_trader/data/dukascopy.py` +
+   `scripts/fetch_dukascopy.py`. LZMA-decoded tick → resampled OHLCV,
+   caches per-hour `.bi5` files under `data/cache/dukascopy/` so re-
+   runs are incremental. Works on Linux / macOS / Windows.
+3. **First real data.** Pulled 12 months of M5 XAUUSD for 2024:
+   **71,193 bars**, `data/xauusd_m5_2024.csv` (6.2 MB, gitignored).
+
+### First walk-forward sweep on real XAUUSD 2024
+
+Sweep id `seed-xau-2024-v1`, 18 trials (under the 20 cap), objective
+= profit_factor, research window ≈ 9 months (53,394 bars),
+validation ≈ 2 months (12,102 bars), tournament held out.
+
+**Best research trial:** `sl_atr_mult=2.0, tp_rr=1.5, cooldown_bars=6`
+
+| window | trades | PF | win % | ret % | max DD % |
+|---|---|---|---|---|---|
+| research (9 mo) | 129 | **1.50** | 51.9 | +12.6 | −4.9 |
+| validation (2 mo) | 18 | **0.33** | 22.2 | −4.1 | −5.4 |
+
+### What the numbers mean
+
+The seed strategy *looks* promising on the research window (PF 1.50,
+DD under 5 %) but **collapses to PF 0.33 on validation**. That
+collapse is the classic overfitting signature and it's exactly what
+the walk-forward framework is designed to catch. We caught it **before
+touching the tournament window** — the ratchet worked as intended.
+
+In plain terms: `trend_pullback_fib` with these parameters is **not
+promotable**. Research performance is the result of the sweep finding
+the one combination that happened to fit the research window's noise.
+
+This is a useful finding, not a failure:
+
+- **Framework validated end-to-end on real data.** Data → walk-forward
+  split → bounded sweep → honest verification → overfitting detected.
+  The harness is doing its job.
+- **Seed strategy is insufficient as-is.** The trend-pullback thesis
+  may still be right but needs regime filtering or a better entry
+  trigger; a small 3-dim grid sweep is not going to rescue it.
+- **12 months is not enough research data for a 2-month validation
+  window to be stable.** With only 18 trades in validation, one
+  bad streak dominates. More data (2+ years) is the cheapest fix.
+
+### Next
+
+- Pull 2022–2024 so we have 3 years of data for research /
+  validation / tournament splits that aren't single-regime-
+  dominated.
+- Add a regime-router stub: only arm the trend-pullback strategy
+  when a volatility/trend classifier says "trending". The
+  hypothesis is that the seed entry is fine in trending markets
+  and terrible in ranges; a filter decides when to disarm.
+- In parallel, seed a second candidate (volatility breakout) so we
+  have a non-pullback baseline to compare against.
+
 ## 2026-04-24 — Phase 1 framework landed
 
 Plan v3 Phase 1 is complete. The framework is in place; no real

@@ -23,3 +23,15 @@ session. Lightweight; mirrors git log but with intent, not diff.
   harness, crash-safe state, review triggers + packets, news
   blackout, BTCUSD config. 62 tests green. No strategy tuning
   yet — that's Phase 2 and it needs real HFM data first.
+- User asked about Windows / VPS. We agreed to unblock Phase 2
+  with Dukascopy data (cross-platform) while waiting for HFM's
+  free-VPS response. Windows becomes necessary only for Phase 3
+  live demo.
+- User also asked for perf work ("the verification was taking
+  quite a long time"). Profiled, vectorised find_swings, added
+  BaseStrategy.prepare hook. ~9× speedup on both pytest and
+  backtest runtime; caught a look-ahead bug in the first cache
+  draft.
+- First real backtest on Dukascopy XAUUSD 2024: seed strategy
+  overfits (research PF 1.50 → validation PF 0.33). Framework
+  caught it as designed. Next: more data + regime router.

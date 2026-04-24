@@ -21,6 +21,30 @@ progress entry for the full story.
   Quiet days are data. If we only review on triggers, we bias the
   corpus toward losing days.
 
+## Phase 2
+
+- **The walk-forward ratchet actually catches overfitting.** First
+  real sweep on 2024 XAUUSD: research PF 1.50 → validation PF 0.33
+  on the same parameters. Without the splitter + validation step
+  we would have happily promoted a fake edge. Keep the ratchet
+  tight; don't be tempted to loosen it when early candidates fail.
+- **Dukascopy works as an HFM stand-in for research.** Spread is
+  wider (~40 pts vs HFM's ~8 pts) and the pessimistic spread model
+  in the engine already over-estimates costs. Net: a candidate that
+  clears Dukascopy-based research will *probably* clear HFM, but
+  the promotion-window test must still run on HFM data once we
+  have it.
+- **Lookahead bugs are easy to introduce via caches.** A swing at
+  iloc `i` is only confirmable at bar `i + k`. When precomputing
+  full-series masks in `prepare`, `on_bar` at bar `n` must query
+  with `end_iloc_exclusive = n - k`. Missing this silently
+  improves backtest metrics (I saw PF 1.42 → 0.90 change shape —
+  not "better", just *different*, and the shape told me it was
+  wrong). Added `test_perf_and_lookahead.py` as a regression guard.
+- **Single-year data isn't enough.** A 2-month validation window
+  with 18 trades is dominated by one losing streak. Next pull: 3
+  years. Rule of thumb: aim for 50+ validation trades at a minimum.
+
 ## Phase 1
 
 - **JPY lot cap collides with min_lot for multi-leg.** With plan v3's

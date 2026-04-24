@@ -49,12 +49,23 @@ Phase 2; nothing in this phase tunes parameters.
 
 ## Phase 2 — strategy discovery loop
 
-- [ ] Run seed strategy `trend_pullback_fib` through the framework on
-      12 mo of HFM XAUUSD. Publish review packet.
-- [ ] Parameter sweep on the seed strategy within the try-cap.
-- [ ] Propose & backtest 2–3 new candidates (volatility breakout,
-      session opener, regime router).
-- [ ] Iterate until one candidate clears the promotion review.
+- [x] Run seed `trend_pullback_fib` on 1 yr real XAUUSD (Dukascopy).
+      Result: research PF 1.50 → validation PF 0.33. Overfit caught
+      by the walk-forward ratchet. See `progress.md` 2026-04-24.
+- [x] First bounded parameter sweep on seed strategy (18 trials,
+      sweep id `seed-xau-2024-v1`).
+- [ ] Pull 3 years of real XAUUSD (2022–2024) so validation has 50+
+      trades.
+- [ ] Add a regime-router stub (volatility/trend classifier) that
+      disarms the seed strategy in ranges. Hypothesis: seed edge is
+      trend-only.
+- [ ] Seed a second candidate family (volatility breakout,
+      Donchian-style).
+- [ ] Seed a third candidate (session-opener pop-and-retrace).
+- [ ] Iterate until one candidate (or ensemble) clears a
+      **validation** window cleanly (not just research).
+- [ ] Only then: evaluate on the **tournament** window. Promote
+      (with your approval in a review session) to Phase 3.
 
 ## Phase 3 — 1-week HFM demo
 
