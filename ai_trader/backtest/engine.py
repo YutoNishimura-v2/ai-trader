@@ -29,6 +29,7 @@ import pandas as pd
 
 from ..broker.base import Order
 from ..broker.paper import PaperBroker
+from ..news.calendar import NewsCalendar, NoNewsCalendar
 from ..risk.manager import RiskManager
 from ..strategy.base import BaseStrategy, Signal, SignalSide
 
@@ -63,11 +64,13 @@ class BacktestEngine:
         risk: RiskManager,
         broker: PaperBroker,
         *,
+        news: NewsCalendar | None = None,
         log: Optional[Callable[[str], None]] = None,
     ) -> None:
         self.strategy = strategy
         self.risk = risk
         self.broker = broker
+        self.news = news or NoNewsCalendar()
         self._log = log or (lambda _msg: None)
         self._next_group_id = 1
 
@@ -204,6 +207,12 @@ class BacktestEngine:
 
     # ------------------------------------------------------------------
     def _submit_signal(self, sig: Signal, *, bar_open: float, now: datetime, ts: pd.Timestamp) -> None:
+        # News blackout (plan v3 §A.7).
+        event = self.news.in_blackout(self.broker.instrument.symbol, now)
+        if event is not None:
+            self._log(f"{ts} signal skipped: news blackout '{event.event}'")
+            return
+
         # Count *distinct entry decisions* that are still open, not
         # individual legs. Two legs from the same Signal share a
         # group_id and count as one conceptual position.

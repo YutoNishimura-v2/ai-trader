@@ -36,6 +36,14 @@ risk:
   # Plan v3 §A.2: lots <= 0.1 * balance_JPY / 100_000  → 1.0e-6 per JPY.
   lot_cap_per_unit_balance: 0.000001
 
+news:
+  # CSV schema: time,impact,instrument,event (see ai_trader/news/calendar.py).
+  # Phase 1 uses a hand-maintained CSV. Leaving this unset disables the
+  # blackout (useful for deterministic CI).
+  csv: null
+  window_minutes: 30
+  impact_filter: [high]
+
 strategy:
   name: trend_pullback_fib
   params:

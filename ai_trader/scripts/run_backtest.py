@@ -22,6 +22,7 @@ from ..broker.paper import PaperBroker
 from ..config import load_config
 from ..data.csv_loader import load_ohlcv_csv
 from ..data.synthetic import generate_synthetic_ohlcv
+from ..news.calendar import NewsCalendar, NoNewsCalendar, load_news_csv
 from ..risk.fx import FixedFX
 from ..risk.manager import InstrumentSpec, RiskManager
 from ..strategy.registry import get_strategy
@@ -99,8 +100,21 @@ def main() -> int:
         df = load_ohlcv_csv(args.csv)
         data_tag = f"csv({args.csv})"
 
+    news_cfg = cfg.get("news", {}) or {}
+    news_csv = news_cfg.get("csv")
+    news: NewsCalendar
+    if news_csv:
+        news = NewsCalendar(
+            events=load_news_csv(news_csv),
+            window_minutes=int(news_cfg.get("window_minutes", 30)),
+            impact_filter=tuple(news_cfg.get("impact_filter", ["high"])),
+        )
+        log.info("loaded %s news events from %s", len(news.events), news_csv)
+    else:
+        news = NoNewsCalendar()
+
     log.info("running backtest on %s bars", len(df))
-    engine = BacktestEngine(strategy=strategy, risk=risk, broker=broker, log=log.info)
+    engine = BacktestEngine(strategy=strategy, risk=risk, broker=broker, news=news, log=log.info)
     result = engine.run(df)
     metrics = compute_metrics(result, starting_balance=float(cfg["account"]["starting_balance"]))
 
