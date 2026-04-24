@@ -1,0 +1,39 @@
+extends: default.yaml
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+execution:
+  spread_points: 12
+  slippage_points: 2
+  commission_per_lot: 0.0
+
+risk:
+  risk_per_trade_pct: 1.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: true
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000001
+
+strategy:
+  __replace__: true
+  name: bos_retest_scalper
+  params:
+    __replace__: true
+    swing_lookback: 10
+    min_legs: 2
+    atr_period: 14
+    retest_tolerance_atr: 0.5
+    sl_atr_buffer: 0.3
+    tp1_rr: 1.0
+    tp2_rr: 3.0
+    leg1_weight: 0.5
+    cooldown_bars: 5
+    setup_ttl_bars: 60
+    session: london_or_ny

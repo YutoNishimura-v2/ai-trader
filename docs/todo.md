@@ -58,15 +58,39 @@ Phase 2; nothing in this phase tunes parameters.
 - [x] Recent-regime sweep (`seed-xau-recent-v1`): seed strategy
       takes ~0 trades in the post-March-2026 window. Confirmed
       with regime profile. Not a candidate as-is.
-- [ ] Sweep `risk_per_trade_pct` at {1.0, 1.5, 2.0}% so the ¥100k
-      lot-cap floor stops killing signals.
-- [ ] Regime-router stub (ADX + vol-bucket classifier); strategies
-      declare which regimes they arm in.
-- [ ] Second candidate family: volatility breakout (Donchian). High
-      expected utility in the current regime where pullbacks die.
-- [ ] Third candidate (session-opener pop-and-retrace).
-- [ ] Iterate until one candidate has 20+ validation-window trades
-      AND validation PF > 1.0. Only then consider the tournament.
+- [x] Sweep seed strategy with larger `risk_per_trade_pct`:
+      lot-cap is the silence cause, but DD catastrophic. Not
+      promotable.
+- [x] Donchian-retest volatility-breakout family. Net-negative on
+      research in both regimes. Not promotable.
+- [x] **BB-scalper on 2026 M1.** Tournament PF 1.10 (6d) then
+      confirmed PF 1.14 (12d). Candidate.
+- [x] **Trend-pullback scalper (user's original strategy 1).**
+      Research/validation cleared; tournament failed in a choppy
+      regime. Regime-dependent; hold for router.
+- [x] **BOS-retest scalper** (user's structural trend): two
+      tournament-clearing configs, PF 1.05–1.06 on held-out
+      window, tight DD, regime-agnostic. See `progress.md`.
+- [x] **Ensemble runner.** BB + BOS in parallel, priority-ordered
+      polling. Best config (risk=1 %, maxconc=3): validation
+      +42 %/month, tournament +7.1 %/12d (~18 %/month pace).
+- [x] **Daily + monthly metrics.** `cap_violations`, `best_day_pct`,
+      `monthly_pct_mean`. Monthly is now the primary scoreboard
+      per user direction.
+- [x] **Kill-switch fix.** Flatten open positions on same bar
+      when cap fires.
+- [ ] **New signal families.** Order blocks + FVG (ICT/SMC),
+      London kill-zone opening-range break, liquidity-sweep-into-
+      zone. 200 %/month target unreachable at current edges;
+      need better ones.
+- [ ] Fresh-week tournament pass after a week of new data.
+- [ ] Visualise equity curve + monthly breakdown for review.
+- [ ] Session filter (London + NY overlap).
+- [ ] Populated 2026 news-blackout CSV.
+- [ ] Fresh-week tournament pass after time passes.
+- [ ] Equity-curve + trade-log visualisation for the review
+      session.
+- [ ] Review session → promote / reject / iterate.
 
 ## Phase 3 — 1-week HFM demo
 

@@ -49,3 +49,58 @@ session. Lightweight; mirrors git log but with intent, not diff.
   --min-validation-trades (default 20) are demoted regardless of
   headline metric. Plan v3 says I can tighten the ratchet
   autonomously.
+- User observation: big DD numbers suspect; trade frequency too
+  low for scalping; pre-Feb data is a dead world. All three were
+  correct; fixed each.
+- Fixed DD metric (equity now includes withdrawn_total);
+  pivoted to scalping family (bb_scalper on M1); narrowed data
+  to 2026-only (108k M1 bars). Sweep on `bb_n ∈ {20,40,60}`,
+  `bb_k ∈ {1.5,2.0,2.5}`, `tp_target ∈ {middle,rr}` produced the
+  first genuine candidate: trial 16 (bb_n=60, bb_k=2.5,
+  tp=middle). Tournament PF 1.10, DD 12 %, 61 trades in 6 days.
+- User: doubled tournament to 12 days, asked for user's original
+  strategy 1 (trend-pullback with fib, not mean-reversion), and
+  uncapped TP so winners run. Implemented
+  `trend_pullback_scalper`: EMA-aligned fib pullback + rejection
+  candle + 2-leg TP1/TP2. Sweep on slow_ema × impulse × tp2_rr
+  found 3 survivors with research PF ~1.43 + validation PF 1.05-
+  1.12 + DD < 10 %. All failed 12-day tournament (PF 0.79-0.92)
+  because the tournament regime was choppy. Regime dependency;
+  not a bad strategy.
+- BB scalper re-tested on 12-day tournament: PF 1.14, +12.1 %,
+  DD −11.5 %, 130 trades. Held up.
+- Next obvious move: regime router combining the two.
+- User: the "trend" is structural (HH+HL), classic BOS setup.
+  Searched web first — ICT/SMC community converges on BOS +
+  retest + CHoCH invalidation; backtested ICT EAs show PF
+  1.3–2.0 on long horizons; published gold scalpers agree on
+  session gating + spread ≤ 12 pts + 0.5 %/trade.
+- Built `bos_retest_scalper`: reuses `SwingSeries`, adds session
+  filter, CHoCH invalidation, BOS-close arming, retest+rejection
+  entry, structural SL at last HL, 2-leg TP. First sweep over-
+  filtered; relaxed sweep (`swing_lookback=4`) found two
+  tournament-clearing configs: `always` (PF 1.06, +1.4 %, 79
+  trades) and `london_or_ny` (PF 1.05, +0.6 %, 42 trades). First
+  regime-agnostic candidate. 98 tests green.
+- User pushed on three things: aggressive SL tuning; repeated
+  iteration toward 200 %/mo; higher risk-% (2-4 %) backed by
+  the kill-switch. Iters 9, 10, 11 ran sweeps; iter 11
+  falsified "more ensemble members = better". BTC explicitly
+  deprioritised (HFM spread ~$10).
+- Added daily-P&L and monthly-return metrics. Running the new
+  metrics on BB @ risk=1 % showed `cap_violations=1` — traced
+  to a real bug where the kill-switch left open sibling positions
+  exposed for a bar. Fixed by flattening open positions on the
+  same bar when the cap fires. Regression locked.
+- Risk-stack sweep: BB scalper peaks at risk=2 % (+10.7 %/12d,
+  best-day +12.5 %, 0 cap violations). Above 3 % risk, return
+  falls because losing trades compound. Ensemble at risk=1 %
+  maxconc=3: validation +42 %/month, tournament +7.1 %/12d.
+- Honest reconcile: BB scalper losing money on full 4-month
+  2026 (−13 %/month mean) because Jan/Feb were strongly
+  trending; the earlier "PF 1.14" was a 12-day tournament
+  regime accident. Monthly mean is now the primary scoreboard.
+- Honest gap to 200 %/mo target: roughly 5-10×. Current
+  walk-forward-honest pace is 20-40 %/month. Closing the gap
+  needs genuinely new signal families; ICT/SMC order-block
+  variants and London kill-zone break queued.

@@ -1,0 +1,57 @@
+extends: default.yaml
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+execution:
+  spread_points: 12
+  slippage_points: 2
+  commission_per_lot: 0.0
+
+risk:
+  risk_per_trade_pct: 1.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: true
+  # Ensemble: allow up to 2 concurrent decisions so both members can
+  # hold a position simultaneously. Lot cap still bounds total
+  # exposure (plan v3 §A.2).
+  max_concurrent_positions: 2
+  lot_cap_per_unit_balance: 0.000001
+
+strategy:
+  __replace__: true
+  name: ensemble
+  params:
+    __replace__: true
+    members:
+      - name: bos_retest_scalper
+        params:
+          swing_lookback: 4
+          min_legs: 2
+          atr_period: 14
+          retest_tolerance_atr: 0.5
+          sl_atr_buffer: 0.3
+          tp1_rr: 1.0
+          tp2_rr: 3.0
+          leg1_weight: 0.5
+          cooldown_bars: 5
+          setup_ttl_bars: 60
+          session: always
+      - name: bb_scalper
+        params:
+          bb_n: 60
+          bb_k: 2.5
+          atr_period: 14
+          sl_atr_mult: 0.5
+          tp_target: middle
+          require_rejection: true
+          cooldown_bars: 2
+          use_two_legs: true
+          tp1_rr: 0.6
+          leg1_weight: 0.5

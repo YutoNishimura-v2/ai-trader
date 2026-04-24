@@ -1,0 +1,15 @@
+time,impact,instrument,event
+2026-01-06T15:00:00Z,high,*,ISM Services PMI
+2026-01-09T13:30:00Z,high,*,US Non-Farm Payrolls
+2026-01-14T13:30:00Z,high,*,US CPI
+2026-01-28T19:00:00Z,high,*,FOMC Rate Decision
+2026-02-06T13:30:00Z,high,*,US Non-Farm Payrolls
+2026-02-11T13:30:00Z,high,*,US CPI
+2026-02-27T13:30:00Z,high,*,US Core PCE
+2026-03-06T13:30:00Z,high,*,US Non-Farm Payrolls
+2026-03-11T12:30:00Z,high,*,US CPI
+2026-03-18T18:00:00Z,high,*,FOMC Rate Decision
+2026-03-27T12:30:00Z,high,*,US Core PCE
+2026-04-03T12:30:00Z,high,*,US Non-Farm Payrolls
+2026-04-10T12:30:00Z,high,*,US CPI
+2026-04-24T12:30:00Z,high,*,US Core PCE

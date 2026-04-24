@@ -1,0 +1,37 @@
+extends: default.yaml
+
+instrument:
+  symbol: BTCUSD
+  timeframe: M1
+  contract_size: 1.0       # 1 lot = 1 BTC on HFM
+  tick_size: 0.1
+  tick_value: 0.1          # USD per tick per 1 lot
+  quote_currency: USD
+  is_24_7: true
+
+execution:
+  # BTC spread is much wider than gold on typical feeds; pessimistic.
+  spread_points: 50
+  slippage_points: 5
+  commission_per_lot: 0.0
+
+risk:
+  risk_per_trade_pct: 1.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: true
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000001
+
+strategy:
+  __replace__: true
+  name: bb_scalper
+  params:
+    __replace__: true
+    bb_n: 60
+    bb_k: 2.5
+    atr_period: 14
+    sl_atr_mult: 0.5
+    tp_target: middle
+    require_rejection: true
+    cooldown_bars: 2

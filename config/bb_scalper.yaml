@@ -1,0 +1,43 @@
+extends: default.yaml
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+execution:
+  # HFM Katana ~$0.08 spread = 8 points nominal.
+  # Pessimistic ×1.5 for backtests.
+  spread_points: 12
+  slippage_points: 2
+  commission_per_lot: 0.0
+
+risk:
+  risk_per_trade_pct: 1.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: true
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000001
+
+strategy:
+  __replace__: true
+  name: bb_scalper
+  params:
+    __replace__: true
+    bb_n: 20
+    bb_k: 2.0
+    sl_atr_mult: 0.5
+    tp_target: middle
+    require_rejection: true
+    cooldown_bars: 2
+    # 2-leg mode with break-even on TP1 fill. Previously off by
+    # default (oversight). TP1 at 0.6R closer than the middle-band
+    # target; half the position there, the runner goes to
+    # break-even and chases the middle.
+    use_two_legs: true
+    tp1_rr: 0.6
+    leg1_weight: 0.5
