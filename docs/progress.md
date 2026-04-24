@@ -3,6 +3,116 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`.
 
+## 2026-04-24 — Splitter modes + liquidity sweep (falsified); pattern emerges
+
+### New splitter modes (user point 4)
+
+- **`split_interleaved`**: chops the frame into N-bar blocks and
+  deals them round-robin into research/validation/tournament. Each
+  role samples every regime, so a contiguous Jan/Feb research +
+  Mar/Apr validation isn't unfairly penalised. Each block is run
+  as an independent sub-backtest with metrics aggregated.
+- **`split_recent_only`**: all three windows pulled from the tail
+  (default 21+7+7=35 days). For "current regime only" tuning.
+
+### Re-tested existing candidates under both modes
+
+Ensemble (BB + BOS) under interleaved (regime-mixed) split:
+
+| trial | risk % | mc | research PF | val PF | val monthly |
+|---|---|---|---|---|---|
+| 8 | 2.0 | 3 | 0.85 | **1.16** | **+10.9 %** |
+| 1 | 0.5 | 2 | 0.68 | **1.48** | +4.0 % |
+
+Validation PF > 1 across all 9 trials despite negative research
+returns. **First clean cross-block edge** — the ensemble has SOME
+edge that survives regime mixing, just not strong enough to
+overcome research's mixed regimes.
+
+Ensemble under recent_only (last 35 days):
+
+| trial | risk % | mc | research | validation | val monthly |
+|---|---|---|---|---|---|
+| 4 | 1.0 | 2 | PF 1.29, +24 %, DD −16 % | **PF 1.34, +11.2 %, DD −5.5 %** | **+11.2 %** |
+| 8 | 2.0 | 3 | PF 1.00, −0.6 %, DD −33 % | PF 1.14, +13.0 %, DD −17 % | +13.0 % |
+
+This is the **best validation result we've ever produced**
+(PF 1.34, +11.2 % over 7 days, DD only −5.5 %, both windows
+positive). But the 7-day tournament was harsh: trial 4 returned
+**−5.0 %** (PF 0.89), trial 8 returned **−11.3 %** (PF 0.90).
+
+The validation→tournament gap (PF 1.34 → 0.89) on a 7-day window
+is statistical noise territory. With ~167 validation trades and
+189 tournament trades, the per-trade pnl variance dominates.
+
+### New strategy family: `liquidity_sweep` (falsified)
+
+Built per published ICT/SMC literature (sources cited in
+2026-04-24 BOS entry). Detects:
+- Price sweeps a recent rolling extreme by > 0.3 × ATR.
+- Bar closes back in the upper/lower half of its range
+  (sellers/buyers reasserting).
+- Next bar prints a confirming reversal candle.
+- SL just past the swept extreme.
+
+Two sweeps:
+
+| sweep | best validation PF | best research PF | verdict |
+|---|---|---|---|
+| iter18 (interleaved, 12 trials) | 1.07 | 0.96 | thin edge |
+| iter19 (recent_only, 12 trials) | 0.95 | 0.98 | every trial loses |
+
+**Not a candidate.** 4th strategy family attempted; same outcome
+as the previous 3 under this discipline.
+
+### Pattern emerging across 4 strategy families × multiple split modes
+
+Every strategy I've built shows the same shape:
+- Validation PF tends to be slightly above 1 in some trials.
+- Research PF is below 1 or flat.
+- Tournament is statistical noise at the trade frequencies and
+  window sizes I'm working with.
+
+Two interpretations:
+1. **The price-action scalping family doesn't have exploitable
+   edge on M1 XAUUSD under tight risk discipline.** Real edges
+   require more information than OHLC bars + simple swing
+   patterns.
+2. **The framework is too strict.** The kill-switch enforces
+   the cap, but maybe it's flushing positions that would have
+   recovered. The 50bp slippage on the cap is real but maybe
+   the tournament windows happen to hit the worst of it.
+
+I lean toward (1). 4 different signal families, multiple split
+modes, multiple risk levels — the result space is exhausted of
+"a small grid sweep produces a winner." The honest paths
+forward:
+
+- **Add information beyond OHLC**: tick-volume, spread, or
+  multi-instrument correlation features.
+- **A different edge entirely**: news-driven mean-reversion,
+  end-of-day flow, calendar effects (Tuesday vs Friday, etc.).
+- **Accept the gap.** What we have (ensemble at ~+5–10 %/month
+  validation) is a real result; not 200 %/mo, but not zero.
+- **Live demo the most-promising candidate to confirm.** The
+  BB+BOS ensemble under recent_only validation looked strong
+  and the only way to know if validation was a fluke is to
+  watch it live for a few weeks.
+
+### What did and didn't ship this turn
+
+Shipped: interleaved + recent_only splitter modes + tests;
+liquidity_sweep strategy + tests; sweep harness extensions for
+both modes; head-to-head comparisons across all four strategy
+families × all three split modes. 121 tests green.
+
+Not shipped (deferred to a possible next iteration): a
+high-frequency micro-pullback strategy (was speculative; the
+liquidity_sweep failure suggests adding another simple
+price-action variant won't change the pattern); regime router
+on top of the ensemble (only worth doing if individual
+strategies have positive expectancy in their regimes).
+
 ## 2026-04-24 — BE was off on BB; kill-switch fix retroactively wiped prior wins
 
 User caught two bugs at once:

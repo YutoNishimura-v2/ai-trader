@@ -104,3 +104,23 @@ session. Lightweight; mirrors git log but with intent, not diff.
   walk-forward-honest pace is 20-40 %/month. Closing the gap
   needs genuinely new signal families; ICT/SMC order-block
   variants and London kill-zone break queued.
+- BE was secretly off on BB scalper (use_two_legs=False
+  default; yaml never set it). Every prior BB tournament
+  number was single-leg. Fixed in yaml.
+- Kill-switch fix from previous session, when re-applied to
+  the prior 'winners', revealed they'd been benefiting from
+  the leak: BB tournament went +12% -> -2.7%, ensemble
+  +7.1% -> -8.1%. Honest numbers materially worse than
+  reported.
+- Splitter modes added (user point 4): split_interleaved
+  (block round-robin, regime-mixing) and split_recent_only
+  (last 35 days).
+- Liquidity-sweep strategy built and falsified. Validation
+  PF caps at 1.07 interleaved, every trial loses on
+  recent_only. 4 strategy families tried; same outcome.
+- Honest pattern: simple price-action scalping on M1
+  XAUUSD doesn't have edge under tight risk discipline.
+  Recommended next steps: (a) live-demo the BB+BOS
+  ensemble to settle whether validation edge is real,
+  (b) add information beyond OHLC (tick volume, DXY,
+  news), (c) calendar/event-driven strategies.

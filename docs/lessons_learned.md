@@ -23,6 +23,30 @@ progress entry for the full story.
 
 ## Phase 2
 
+- **Interleaved splits are the most honest test.** Contiguous
+  Jan/Feb-research / Mar/Apr-validation puts each role in one
+  regime; if the regimes are different, you're just measuring
+  regime-mismatch. Block-based round-robin makes both roles see
+  every regime. The ensemble's validation PF jumped from
+  unhelpful to 1.16-1.48 under interleaved — that's where its
+  real signal showed up.
+- **Recent-only is the loudest test for current-regime edge.**
+  Compresses everything into the last ~35 days. Found the highest
+  validation PF (1.34) we've seen, but tournament was 7 days of
+  statistical noise — strategies that look great on validation
+  can lose -5 to -11% on the next 7 days. **Window length floors
+  matter:** ~7 days is too short for a meaningful tournament at
+  ~20-30 trades/day.
+- **4 strategy families, 0 clean walk-forward winners.** Trend-
+  pullback (EMA + fib), BOS retest, BB scalper, liquidity sweep
+  — all show the same pattern: validation PF mildly positive in
+  some trials, research PF below 1, tournament noise. This isn't
+  one bad strategy; it's evidence that **simple price-action
+  scalping on M1 XAUUSD doesn't have an exploitable edge under
+  tight risk discipline**. The honest paths forward are: add
+  information beyond OHLC, try entirely different edges (news,
+  calendar, multi-instrument), or accept the gap.
+
 - **Default-off feature flags rot.** `BBScalper.use_two_legs`
   defaulted to False and the yaml never set it. Every BB result
   reported across multiple iterations was running without the

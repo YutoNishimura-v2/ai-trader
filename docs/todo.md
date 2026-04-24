@@ -79,10 +79,23 @@ Phase 2; nothing in this phase tunes parameters.
       per user direction.
 - [x] **Kill-switch fix.** Flatten open positions on same bar
       when cap fires.
-- [ ] **New signal families.** Order blocks + FVG (ICT/SMC),
-      London kill-zone opening-range break, liquidity-sweep-into-
-      zone. 200 %/month target unreachable at current edges;
-      need better ones.
+- [x] Interleaved + recent_only splitter modes (user point 4).
+- [x] **Liquidity sweep** strategy (one new family). Falsified
+      under both interleaved and recent_only sweeps. Kept in
+      registry for future tuning.
+- [ ] **Add information beyond OHLC.** Tick volume from
+      Dukascopy is already in our data but unused; could be a
+      meaningful filter. DXY / real-yield correlations would
+      need extra data feeds.
+- [ ] **Calendar / event-driven edges.** Tuesday-bias, NFP
+      day skip-mode (reverse of news blackout: ONLY trade after
+      news shock with X-bar TTL), end-of-quarter rebalance
+      flow. Needs hand-curated event lists per family.
+- [ ] **Live demo a candidate** to settle whether the
+      validation-positive results are real or a fitting effect.
+      Best bet right now: ensemble (BB+BOS) at risk=1%,
+      maxconc=2, configured for recent_only. Validation looked
+      strong; only forward live data tells us if it holds.
 - [ ] Fresh-week tournament pass after a week of new data.
 - [ ] Visualise equity curve + monthly breakdown for review.
 - [ ] Session filter (London + NY overlap).
