@@ -18,3 +18,8 @@ session. Lightweight; mirrors git log but with intent, not diff.
   mandatory daily reviews; HFM Katana / ¥100k / XAUUSD + BTCUSD.
 - Phase 0 code on PR #1 will be reworked to match v3 before any
   strategy tuning begins. Framework before strategies.
+- Phase 1 (framework) shipped in one session: multi-leg + BE,
+  JPY-native accounting, walk-forward splitter, bounded sweep
+  harness, crash-safe state, review triggers + packets, news
+  blackout, BTCUSD config. 62 tests green. No strategy tuning
+  yet — that's Phase 2 and it needs real HFM data first.

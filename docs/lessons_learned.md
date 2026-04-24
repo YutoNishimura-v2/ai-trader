@@ -21,6 +21,32 @@ progress entry for the full story.
   Quiet days are data. If we only review on triggers, we bias the
   corpus toward losing days.
 
+## Phase 1
+
+- **JPY lot cap collides with min_lot for multi-leg.** With plan v3's
+  0.1 lot cap on ¥100k and an HFM min_lot of 0.01, a 50/50 leg split
+  rounds to 0.05/0.05, which is fine; but a risk-% decision of 0.09
+  lots splits into 0.045/0.045 which rounds *down* to 0.04/0.04 —
+  losing 0.01 lots to rounding. The engine's current behaviour is to
+  bias the leftover to the largest leg, which is acceptable but worth
+  revisiting: for a ¥100k account, asymmetric leg weights (e.g.
+  40/60) may waste less to rounding.
+- **Consecutive-SL counter needs win-based AND day-based resets.**
+  Either alone would be wrong: win-based-only wouldn't reset on a
+  flat day with no trades; day-based-only would let a win-loss-loss
+  sequence trigger the 2-SL review even though the trader was mid-
+  correct. Both resets are required and tested.
+- **Tournament-window protection works best with grep-able opt-in.**
+  `i_know_this_is_tournament_evaluation=True` is ugly on purpose; it
+  will surface immediately if anyone (including future-me) tries to
+  use the tournament window in a tuning path.
+- **Broker stays currency-agnostic; RiskManager translates.** The
+  PaperBroker's P&L is in the instrument's quote currency (USD),
+  and the engine converts at the call site via the FXConverter
+  attached to the RiskManager. This keeps the broker interface
+  uniform between backtest and live; MT5 reports JPY directly on a
+  JPY account so no FX translation is needed there.
+
 ## Phase 0
 
 - **MT5 Python API is Windows-only.** Abstracting behind a `Broker`

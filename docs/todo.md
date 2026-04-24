@@ -17,39 +17,35 @@ Current plan: **v3** (see `docs/plan.md`).
 - [x] CLIs for backtest / demo / fetch
 - [x] pytest suite
 
-## Phase 1 — iteration framework (next)
+## Phase 1 — iteration framework ✅
 
-Rework PR #1 to match plan v3. These are framework features, not
-strategy tuning.
+Framework deliverables for plan v3. Strategy tuning happens in
+Phase 2; nothing in this phase tunes parameters.
 
-- [ ] **Multi-leg Signal.** Replace `Signal.take_profit: float` with
-      `Signal.legs: list[Leg]` where each leg has lots + TP + an
-      optional break-even trigger price. One entry decision may open
-      1 or 2 sub-positions (plan §A.5).
-- [ ] **Broker.modify_sl** on `Broker` / `PaperBroker` / `MT5LiveBroker`
-      so break-even can move stops on live legs.
-- [ ] **Engine-side break-even orchestration.** On TP1 fill, move SL
-      on the remaining leg to entry.
-- [ ] **JPY-native accounting.** `tick_value_jpy` computed from live
-      USD/JPY (or config override) so sizing + reporting are in JPY.
-- [ ] **Walk-forward splitter** (research / validation / tournament).
-      Tournament window held out at the file-loader level so no
-      backtest accidentally touches it.
-- [ ] **Parameter-sweep harness** with hard try-cap per iteration.
-      Every tried combo gets a hash + logged run.
-- [ ] **Review-packet generator** writing
-      `artifacts/reviews/<ts>/review.md` + `review.json`.
-- [ ] **Review-trigger engine.** Plumb: end-of-UTC-day (mandatory),
-      2-consecutive-SL, rule violation, weekly wrap. Bot pauses on
-      trigger; resumes on human signal.
-- [ ] **State persistence.** Day ledger, kill-switch, review-pause
-      flag, open positions — survive process restarts and are
-      reconciled on boot.
-- [ ] **News blackout CSV.** Both instruments. Skip new entries in
-      ±30 min windows.
-- [ ] **BTCUSD instrument spec + config** (distinct from XAUUSD).
-- [ ] **HFM data fetch script** verified on a Windows host
-      (need you or a remote Windows runner to do this one).
+- [x] Multi-leg `Signal` with up to 2 sub-legs sharing an initial SL
+      and having distinct TPs (plan §A.5).
+- [x] `Broker.modify_sl` on the interface + PaperBroker +
+      MT5LiveBroker adapter.
+- [x] Engine-side break-even orchestration: on TP1 fill, move the
+      runner's SL to `move_sl_to_on_fill` (typically entry price).
+- [x] JPY-native accounting: `InstrumentSpec.quote_currency`,
+      `RiskManager.account_currency` + `FXConverter`, plan v3 §A.2
+      balance-scaled lot cap (`lot_cap_per_unit_balance`).
+- [x] Walk-forward splitter with research / validation / tournament
+      windows. Held-out loader gated by an explicit opt-in flag.
+- [x] Bounded grid sweep harness with `max_trials` cap, per-trial
+      JSONL log, hashed param+window fingerprint.
+- [x] Review-packet generator (`review.md` + `review.json`).
+- [x] Review-trigger engine: EOD (mandatory), weekly wrap,
+      2-consecutive-SL, kill-switch. Once-per-day rate limiting.
+- [x] State persistence: day ledger, kill-switch, `consecutive_sl`,
+      `withdrawn_total` survive restarts via atomic JSON store.
+- [x] News blackout CSV loader + engine filter (both XAUUSD and
+      BTCUSD).
+- [x] BTCUSD instrument config (24/7 flag).
+- [ ] **Needs Windows host:** run `scripts/fetch_mt5_history.py` on
+      HFM demo and commit the CSV (or attach as release asset).
+      Blocked on you or a remote Windows runner.
 
 ## Phase 2 — strategy discovery loop
 

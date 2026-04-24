@@ -3,6 +3,72 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`.
 
+## 2026-04-24 — Phase 1 framework landed
+
+Plan v3 Phase 1 is complete. The framework is in place; no real
+strategy tuning has happened yet.
+
+**What shipped in this pass (commits on PR #1):**
+
+- Multi-leg `Signal` + `Broker.modify_sl` + engine-side break-even.
+  One entry decision may open up to 2 sub-legs with a shared initial
+  SL; on TP1 fill, the engine moves the runner's SL to
+  `move_sl_to_on_fill` (typically the entry price).
+- JPY-native accounting. `InstrumentSpec` gains `quote_currency` +
+  `is_24_7`; `RiskManager` gains `account_currency` + `FXConverter`
+  + the plan-v3 §A.2 lot cap (`lot_cap_per_unit_balance`).
+  `default.yaml` is now HFM Katana / XAUUSD / ¥100k JPY with the
+  +30 / −10 daily envelope and pessimistic 12-point spread.
+- Walk-forward splitter (`backtest/splitter.py`). Held-out
+  tournament window is only revealed when the caller passes
+  `i_know_this_is_tournament_evaluation=True` — a deliberately
+  grep-able opt-in string.
+- Bounded grid sweep harness (`backtest/sweep.py`) with a hard
+  `max_trials` cap (p-hacking ratchet), per-trial JSONL log, and
+  `best.json` selection.
+- Crash-safe `BotState` persistence (`state/store.py`). RiskManager
+  optionally binds to a `StateStore`; daily ledger, kill-switch,
+  `consecutive_sl` counter, and `withdrawn_total` survive restarts.
+- Review-trigger engine + packet generator (`review/`). EOD
+  (mandatory, including quiet days), weekly wrap, 2-consecutive-SL,
+  kill-switch. Quiet-day packet explicitly records "silence is data".
+- News blackout calendar (`news/calendar.py`). CSV-driven, wired
+  into the backtest engine; signals within ±window_minutes of a
+  high-impact event are dropped before the risk manager sees them.
+- BTCUSD instrument config (`config/btcusd.yaml`, 24/7 flag).
+
+**Baseline backtest (synthetic 180-day M5 XAUUSD, seed=7, JPY
+account, +30/-10 envelope, v3 lot cap)**
+
+| metric | value |
+|---|---|
+| trades | 104 |
+| win rate | 58.7 % |
+| profit factor | 1.42 |
+| expectancy | ¥64.66 / trade |
+| net profit | +¥6,724 |
+| return | +6.72 % |
+| max drawdown | −3.71 % |
+| daily Sharpe | −0.76 |
+| withdrawn (½-sweep) | ¥9,196 |
+
+Still synthetic data — these numbers prove the JPY plumbing and the
+new lot-cap/break-even behaviour work end-to-end. They are **not** a
+market result. The lower trade count vs. the pre-v3 run (104 vs.
+201) reflects the v3 per-instrument lot cap forcing single-leg
+sizing at this balance and the tighter spread model.
+
+**Test suite:** 62 tests, all green in ~26s.
+
+**Next (Phase 2):**
+
+- Pull ≥ 12 months of real HFM XAUUSD M1+M5 data (Windows host).
+- Run the seed strategy `trend_pullback_fib` through the walk-
+  forward protocol with a bounded grid sweep on research, verify on
+  validation. Record in this file.
+- Propose the first few replacement candidates (volatility breakout,
+  session opener, regime router).
+
 ## 2026-04-24 — Plan v3 agreed
 
 Spec finalized after three rounds of review. Key shifts from v1:
