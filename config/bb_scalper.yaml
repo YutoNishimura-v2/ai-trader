@@ -34,3 +34,10 @@ strategy:
     tp_target: middle
     require_rejection: true
     cooldown_bars: 2
+    # 2-leg mode with break-even on TP1 fill. Previously off by
+    # default (oversight). TP1 at 0.6R closer than the middle-band
+    # target; half the position there, the runner goes to
+    # break-even and chases the middle.
+    use_two_legs: true
+    tp1_rr: 0.6
+    leg1_weight: 0.5

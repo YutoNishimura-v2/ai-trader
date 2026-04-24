@@ -52,3 +52,6 @@ strategy:
           tp_target: middle
           require_rejection: true
           cooldown_bars: 2
+          use_two_legs: true
+          tp1_rr: 0.6
+          leg1_weight: 0.5
