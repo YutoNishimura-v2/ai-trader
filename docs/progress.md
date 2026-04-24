@@ -3,6 +3,26 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`.
 
+## 2026-04-24 — Plan v3 agreed
+
+Spec finalized after three rounds of review. Key shifts from v1:
+
+- **Constraints vs. discoveries split.** Policy numbers (per-trade
+  risk %, DD tolerance, SL/TP rules, strategy choice) are outputs
+  of the loop, not pre-committed inputs. Only user constraints are
+  fixed.
+- **HRHR profile.** +30 % / −10 % daily envelope replaces the
+  "steady" framing. Monthly 200 % is aspiration, not a gate.
+- **Multi-leg position management.** One entry decision may open
+  up to 2 sub-positions with separate TPs and a break-even move on
+  TP1. This is a framework feature, shipping in Phase 1.
+- **Mandatory daily reviews.** Every UTC day, including quiet ones.
+  Silence is logged as a lessons_learned entry.
+- **Promotion gates become review-session calls**, not numeric
+  thresholds. The bot produces evidence; you judge.
+- **HFM Katana, ¥100k JPY account, XAUUSD primary, BTCUSD 24/7
+  secondary.**
+
 ## 2026-04-24 — Phase 0: demo environment complete
 
 **What changed**
@@ -59,3 +79,5 @@ Notes:
   `lessons_learned.md`.
 
 - `20260424T135406Z` strat=`trend_pullback_fib` data=`synthetic(days=180,seed=7)` trades=201 pf=1.57 ret=30.70% dd=-9.40% sharpe=-0.13
+
+- `20260424T143106Z` strat=`trend_pullback_fib` data=`synthetic(days=180,seed=7)` trades=202 pf=1.56 ret=30.21% dd=-9.57% sharpe=-0.18

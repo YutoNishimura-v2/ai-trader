@@ -3,6 +3,24 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## Planning
+
+- **Separate user constraints from discoverable policy.** The first
+  two plan drafts pre-committed numbers (risk %, DD thresholds,
+  demo duration) that should have been outputs of the iteration
+  loop. v3 fixes this: only user-imposed rules are locked; numeric
+  policy is discovered and reviewed.
+- **Single-position assumption was too restrictive.** Real
+  discretionary management uses TP1/TP2 + break-even. The Signal
+  abstraction needs to carry multiple legs from day one, not be
+  retrofitted later.
+- **"Steady, consistent" and "high-risk, high-reward" are
+  incompatible framings** unless "steady" is narrowed to "don't
+  blow up". v3 uses the narrow meaning.
+- **Mandatory review cadence matters more than trigger reviews.**
+  Quiet days are data. If we only review on triggers, we bias the
+  corpus toward losing days.
+
 ## Phase 0
 
 - **MT5 Python API is Windows-only.** Abstracting behind a `Broker`
