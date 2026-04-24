@@ -29,7 +29,11 @@ from pathlib import Path
 
 from ..backtest.engine import BacktestEngine
 from ..backtest.metrics import compute_metrics
-from ..backtest.splitter import load_recent_held_out
+from ..backtest.splitter import (
+    load_interleaved_held_out,
+    load_recent_held_out,
+    load_recent_only_held_out,
+)
 from ..backtest.sweep import _partition
 from ..broker.paper import PaperBroker
 from ..config import load_config
@@ -65,6 +69,10 @@ def main() -> int:
     ap.add_argument("--label", required=True)
     ap.add_argument("--tournament-days", type=int, required=True)
     ap.add_argument("--validation-days", type=int, required=True)
+    ap.add_argument("--research-days", type=int, default=30,
+                    help="only used with --split-mode recent_only")
+    ap.add_argument("--split-mode", default="recent",
+                    choices=["recent", "recent_only"])
     ap.add_argument("--param", action="append", default=[])
     args = ap.parse_args()
 
@@ -72,12 +80,21 @@ def main() -> int:
     cfg = load_config(args.config)
 
     df = load_ohlcv_csv(args.csv)
-    split = load_recent_held_out(
-        df,
-        tournament_days=args.tournament_days,
-        validation_days=args.validation_days,
-        i_know_this_is_tournament_evaluation=True,
-    )
+    if args.split_mode == "recent_only":
+        split = load_recent_only_held_out(
+            df,
+            research_days=args.research_days,
+            validation_days=args.validation_days,
+            tournament_days=args.tournament_days,
+            i_know_this_is_tournament_evaluation=True,
+        )
+    else:
+        split = load_recent_held_out(
+            df,
+            tournament_days=args.tournament_days,
+            validation_days=args.validation_days,
+            i_know_this_is_tournament_evaluation=True,
+        )
     if len(split.tournament) == 0:
         raise SystemExit("tournament window is empty; check --tournament-days")
     log.info(
