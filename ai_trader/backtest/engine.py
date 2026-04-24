@@ -99,7 +99,7 @@ class BacktestEngine:
                 now=now,
             ):
                 pnl_account = _to_account(self.risk, closed.pnl)
-                self.risk.on_trade_closed(pnl_account, when=now)
+                self.risk.on_trade_closed(pnl_account, when=now, reason=closed.reason)
                 trades.append(
                     ClosedTradeRecord(
                         open_time=closed.position.open_time,
@@ -142,7 +142,7 @@ class BacktestEngine:
                         reason="kill-switch",
                     )
                     pnl_account = _to_account(self.risk, closed.pnl)
-                    self.risk.on_trade_closed(pnl_account, when=now)
+                    self.risk.on_trade_closed(pnl_account, when=now, reason=closed.reason)
                     trades.append(
                         ClosedTradeRecord(
                             open_time=closed.position.open_time,
@@ -176,7 +176,7 @@ class BacktestEngine:
         for pos in list(self.broker.open_positions()):
             closed = self.broker.close(pos.id, price=last_close, now=last_ts, reason="eod")
             pnl_account = _to_account(self.risk, closed.pnl)
-            self.risk.on_trade_closed(pnl_account, when=last_ts)
+            self.risk.on_trade_closed(pnl_account, when=last_ts, reason=closed.reason)
             trades.append(
                 ClosedTradeRecord(
                     open_time=closed.position.open_time,

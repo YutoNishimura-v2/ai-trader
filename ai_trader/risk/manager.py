@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from typing import Optional
 
+from ..state.store import BotState, StateStore
 from ..strategy.base import Signal
 from .fx import FXConverter, FixedFX
 
@@ -84,10 +85,16 @@ class RiskManager:
     # currency differs, an FXConverter is required.
     account_currency: str = "USD"
     fx: FXConverter | None = None
+    # Optional persistent-state store. When supplied, the daily
+    # ledger, kill-switch, and consecutive-SL counter survive
+    # restarts (plan v3 §A.8).
+    state_store: StateStore | None = None
 
     balance: float = field(init=False)
     withdrawn_total: float = 0.0
     _ledger: Optional[DailyLedger] = field(default=None, init=False, repr=False)
+    _state: BotState = field(default_factory=BotState, init=False, repr=False)
+    consecutive_sl: int = field(default=0, init=False)
 
     def __post_init__(self) -> None:
         self.balance = float(self.starting_balance)
@@ -100,6 +107,33 @@ class RiskManager:
                 f"differs from account_currency={self.account_currency}; "
                 "an FXConverter is required."
             )
+        if self.state_store is not None:
+            self._state = self.state_store.load()
+            self.withdrawn_total = self._state.withdrawn_total
+            self.consecutive_sl = self._state.consecutive_sl
+            if self._state.day is not None:
+                # Restore the in-memory ledger from persisted state.
+                restored_day = date.fromisoformat(self._state.day)
+                self._ledger = DailyLedger(
+                    day=restored_day,
+                    realized_pnl=self._state.day_realized_pnl,
+                    starting_equity=self._state.day_starting_equity,
+                    kill_switch=self._state.kill_switch,
+                    kill_reason=self._state.kill_reason,
+                )
+
+    def _persist(self) -> None:
+        if self.state_store is None:
+            return
+        ledger = self._ledger
+        self._state.day = ledger.day.isoformat() if ledger else None
+        self._state.day_starting_equity = ledger.starting_equity if ledger else 0.0
+        self._state.day_realized_pnl = ledger.realized_pnl if ledger else 0.0
+        self._state.kill_switch = ledger.kill_switch if ledger else False
+        self._state.kill_reason = ledger.kill_reason if ledger else ""
+        self._state.withdrawn_total = self.withdrawn_total
+        self._state.consecutive_sl = self.consecutive_sl
+        self.state_store.save(self._state)
 
     def tick_value_account(self, ref_price: float | None = None) -> float:
         """``tick_value`` expressed in the account currency."""
@@ -134,16 +168,29 @@ class RiskManager:
                     self.withdrawn_total += sweep
                     self._ledger.withdrawn_today = sweep
             self._ledger = DailyLedger(day=today, starting_equity=self.balance)
+            # Reset the consecutive-SL counter at day boundary: a new
+            # trading day is a fresh slate for the 2-SL trigger.
+            self.consecutive_sl = 0
+            self._persist()
         return self._ledger
 
     # ------------------------------------------------------------------
     # P&L notifications
     # ------------------------------------------------------------------
-    def on_trade_closed(self, pnl: float, when: datetime) -> None:
+    def on_trade_closed(
+        self, pnl: float, when: datetime, *, reason: str = ""
+    ) -> None:
         ledger = self._ensure_day(when)
         self.balance += pnl
         ledger.realized_pnl += pnl
         self._check_kill_switch(ledger)
+        # Consecutive-SL counter for the review-trigger engine.
+        if reason == "sl":
+            self.consecutive_sl += 1
+        elif reason == "tp":
+            # Any winning close resets the streak.
+            self.consecutive_sl = 0
+        self._persist()
 
     def _check_kill_switch(self, ledger: DailyLedger) -> None:
         if ledger.starting_equity <= 0:
