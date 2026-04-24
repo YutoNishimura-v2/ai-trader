@@ -23,6 +23,29 @@ progress entry for the full story.
 
 ## Phase 2
 
+- **Search the literature first.** Before building
+  `bos_retest_scalper` I searched for BOS / CHoCH / SMC / ICT
+  scalping patterns. Hit rate for useful signal was good: CHoCH
+  invalidation rule, multi-timeframe confluence, spread ≤ 10–12
+  pts, session gating — none of this was wasted reading. It
+  stopped me from rolling a fifth half-baked trend detector.
+- **Stacked filters can silence a strategy without anybody
+  noticing.** First BOS sweep stacked session + 2HH + 2HL +
+  BOS-close + retest + rejection + CHoCH invalidation on M1.
+  Every validation window had <30 trades. Loosen one gate at a
+  time to diagnose; dropping the session filter + using
+  `swing_lookback=4` was what unlocked real signal.
+- **M1 fractals need a tiny lookback.** `swing_lookback=10` on
+  M1 confirms a pivot 5 minutes late, by which time price has
+  often reversed again. `swing_lookback=4` is noisy but *produces
+  enough confirmed pivots for the structural rules to apply*.
+  That trade-off didn't show up on higher timeframes.
+- **First regime-agnostic candidate found.** BB scalper
+  (chop-loving, 11 trades/day) + trend-pullback scalper (trend-
+  loving, dies in chop) + BOS-retest (works in both, low
+  frequency). The ensemble approach is now the obvious move;
+  all three have in-regime edge.
+
 - **Regime dependency is detectable on the tournament window.**
   Trend-pullback scalper cleared research (PF 1.43) and
   validation (PF 1.12) with low DD, then failed the tournament

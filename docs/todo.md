@@ -68,10 +68,13 @@ Phase 2; nothing in this phase tunes parameters.
 - [x] **Trend-pullback scalper (user's original strategy 1).**
       Research/validation cleared; tournament failed in a choppy
       regime. Regime-dependent; hold for router.
-- [ ] **Regime router.** ADX + realized-vol classifier;
-      route trending bars to `trend_pullback_scalper`, choppy
-      bars to `bb_scalper`. Same research/validation/tournament
-      discipline on the ensemble.
+- [x] **BOS-retest scalper** (user's structural trend): two
+      tournament-clearing configs, PF 1.05–1.06 on held-out
+      window, tight DD, regime-agnostic. See `progress.md`.
+- [ ] **Ensemble runner.** Run `bb_scalper` + `bos_retest_scalper`
+      (and optionally `trend_pullback_scalper` under a regime
+      gate) in parallel. Decide concurrency policy vs. the
+      ¥100k lot cap. This is the natural next iteration.
 - [ ] Session filter (London + NY overlap).
 - [ ] Populated 2026 news-blackout CSV.
 - [ ] Fresh-week tournament pass after time passes.

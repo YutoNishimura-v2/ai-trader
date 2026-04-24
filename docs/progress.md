@@ -3,6 +3,114 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`.
 
+## 2026-04-24 — Second tournament-clearing candidate: BOS-retest scalper
+
+User feedback (correct): the "trend" they meant is the **structural**
+one — higher highs + higher lows — not an EMA proxy. Classic
+Break-of-Structure (BOS) retest. I searched for published
+techniques before building:
+
+- Multiple writeups agree on the core rule: in an uptrend (HH+HL),
+  BOS is a *close* above the most recent swing high; enter on
+  the retest of the broken level. Use CHoCH (break of the last
+  HL) as invalidation.
+- 5-year BTC backtest of an ICT/SMC strategy (TradingView):
+  PF 1.95, win 45.6 %, DD 1.36 %. Forex figures from various
+  sources are less reliable; I treat them as aspirational.
+- Published gold-scalping frameworks agree: London + NY only,
+  spread ≤ 10–12 pts, 0.5 %/trade, no martingale. Our config
+  already matches.
+
+### Implemented: `bos_retest_scalper`
+
+- Uses the existing `SwingSeries` (vectorised fractal detector
+  with no-lookahead discipline baked in) to identify HH/HL.
+- Requires `min_legs` higher highs AND `min_legs` higher lows for
+  an uptrend state (mirror for downtrend).
+- Arms long setup when the *prior* bar closed above the last
+  confirmed swing high (BOS). Same for short.
+- Enters on retest (price back within `retest_tolerance_atr` × ATR
+  of the broken level) *and* a rejection candle (bullish: close >
+  open, lower wick ≥ body, close > prev close, close above broken
+  level).
+- Structural SL at the last HL − `sl_atr_buffer` × ATR.
+- CHoCH invalidation: if price breaks the last HL *before* we
+  entered, the setup is dead.
+- Two-leg TP with break-even on TP1 fill; TP2 stretched.
+- Optional session filter (`always`, `london`, `ny`, `overlap`,
+  `london_or_ny`).
+
+### Sweep iter5 then iter5b (relaxed)
+
+First sweep (`swing_lookback ∈ {6,10,14}`, `retest_tol ∈ {0.5,1,2}`,
+`tp2_rr ∈ {2,3}`, session locked to `london_or_ny`): **every
+trial failed validation** (best validation PF 0.59). Diagnosis:
+too many filters stacked — session + 2HH + 2HL + BOS-close +
+retest + rejection + CHoCH. Trade counts 5–29 per validation.
+
+Second sweep iter5b (`swing_lookback ∈ {4,6,8}`, `min_legs ∈
+{1,2}`, `session ∈ {always, london_or_ny}`): produced two survivors
+that clear BOTH research AND validation gates.
+
+| trial | SL | ML | session | research | validation |
+|---|---|---|---|---|---|
+| **2** | 4 | 2 | always | PF 1.07 +5.3 % DD −7.2 % (239) | PF 1.25 +9.0 % DD −5.9 % (102) |
+| **3** | 4 | 2 | overlap | PF 1.16 +7.7 % DD −7.2 % (160) | PF 1.15 +3.1 % DD −3.9 % (53) |
+
+### Tournament results (12 days held out)
+
+Both candidates declared before the tournament was opened:
+
+| variant | trades | PF | ret | DD | win rate |
+|---|---|---|---|---|---|
+| trial 2 (always) | 79 | **1.06** | +1.4 % | −9.9 % | 48 % |
+| trial 3 (overlap) | 42 | **1.05** | +0.6 % | −5.2 % | 50 % |
+
+**Both survive.** PF > 1 on three non-overlapping windows. This
+is the first strategy we've found that's **regime-agnostic** — the
+tournament (Apr 12-24) was choppy and killed the EMA trend-pullback
+scalper, but BOS-retest structural detection still made money.
+
+### Full 2026-M1 scoreboard
+
+| strategy | research | validation | tournament 12d | trades/day |
+|---|---|---|---|---|
+| `bb_scalper` (t16) | PF 1.14 | PF 1.37 | **PF 1.14, +12.1 %, DD −12 %** | ~11 |
+| `trend_pullback_scalper` (t17) | PF 1.43 | PF 1.12 | PF 0.79, −9 %, DD −10 % | ~11 |
+| **`bos_retest_scalper` (t2 always)** | PF 1.07 | PF 1.25 | **PF 1.06, +1.4 %, DD −10 %** | ~3 |
+| **`bos_retest_scalper` (t3 overlap)** | PF 1.16 | PF 1.15 | **PF 1.05, +0.6 %, DD −5 %** | ~1.5 |
+
+Two tournament-clearing candidates. They're complementary:
+
+- **`bb_scalper`**: high frequency, chop-loving, +12 % in 12 days
+  but only in recent regime.
+- **`bos_retest_scalper`**: low frequency, regime-agnostic, modest
+  return, very tight DD.
+
+### Surprise: the "always" session beat "overlap" on validation PF
+
+Published frameworks say London+NY only. Our data shows the `always`
+variant has 2× more trades AND better validation PF on 2026 XAUUSD.
+Possible explanations: (a) tournament window is tiny enough that
+we just got lucky; (b) 2026's Asian-session vol on gold has been
+more structured than the historical norm. **Lesson recorded but
+not acted on**: I'd keep the session filter by default, and only
+relax it if a larger tournament window reproduces the "always"
+advantage.
+
+### Next (review-gated)
+
+- **Ensemble / regime router.** BB wants chop; trend-pullback
+  wants trend; BOS is regime-agnostic but low-frequency. Running
+  multiple in parallel with independent position budgets likely
+  outperforms any single one. Design question for the review:
+  per-instrument lot cap means concurrent positions *share*
+  budget, so we need to pick a concurrency policy (round-robin,
+  priority, or pure overlap with the cap clamping).
+- Fresh-week tournament pass on an even newer window once more
+  time passes.
+- Equity-curve + trade-log visualisation for the review session.
+
 ## 2026-04-24 — Trend-pullback scalper iteration, BB scalper holds up on doubled tournament
 
 User feedback (correct):

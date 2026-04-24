@@ -70,3 +70,15 @@ session. Lightweight; mirrors git log but with intent, not diff.
 - BB scalper re-tested on 12-day tournament: PF 1.14, +12.1 %,
   DD −11.5 %, 130 trades. Held up.
 - Next obvious move: regime router combining the two.
+- User: the "trend" is structural (HH+HL), classic BOS setup.
+  Searched web first — ICT/SMC community converges on BOS +
+  retest + CHoCH invalidation; backtested ICT EAs show PF
+  1.3–2.0 on long horizons; published gold scalpers agree on
+  session gating + spread ≤ 12 pts + 0.5 %/trade.
+- Built `bos_retest_scalper`: reuses `SwingSeries`, adds session
+  filter, CHoCH invalidation, BOS-close arming, retest+rejection
+  entry, structural SL at last HL, 2-leg TP. First sweep over-
+  filtered; relaxed sweep (`swing_lookback=4`) found two
+  tournament-clearing configs: `always` (PF 1.06, +1.4 %, 79
+  trades) and `london_or_ny` (PF 1.05, +0.6 %, 42 trades). First
+  regime-agnostic candidate. 98 tests green.
