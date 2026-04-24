@@ -101,11 +101,12 @@ class BacktestEngine:
                 pending_signal = None
 
             # 2) stop/tp check against this bar's range.
-            for closed in self.broker.check_stops(
+            bar_closes = list(self.broker.check_stops(
                 bar_high=float(bar["high"]),
                 bar_low=float(bar["low"]),
                 now=now,
-            ):
+            ))
+            for closed in bar_closes:
                 pnl_account = _to_account(self.risk, closed.pnl)
                 self.risk.on_trade_closed(pnl_account, when=now, reason=closed.reason)
                 trades.append(
@@ -138,6 +139,43 @@ class BacktestEngine:
                             self._log(
                                 f"{ts} break-even: moved pos {sibling.id} SL to {new_sl:.5f}"
                             )
+
+            # 2a) Intra-bar kill-switch handler.
+            #
+            # If any of the just-booked closes pushed the day's realized
+            # P&L past the -10% / +30% envelope, the risk manager's
+            # kill-switch is now set. Without this block, other open
+            # positions would sit exposed until the NEXT bar's
+            # kill-switch flush — meaning the day's realized loss can
+            # easily exceed the -10% cap (unrealized losses become
+            # realized at the next bar's close). Flattening siblings
+            # immediately at the current bar's close enforces the cap
+            # as tightly as bar granularity allows.
+            ledger_now = self.risk._ensure_day(now)
+            if ledger_now.kill_switch and bar_closes:
+                for pos in list(self.broker.open_positions()):
+                    c2 = self.broker.close(
+                        pos.id,
+                        price=float(bar["close"]),
+                        now=now,
+                        reason="kill-switch",
+                    )
+                    pnl_account = _to_account(self.risk, c2.pnl)
+                    self.risk.on_trade_closed(pnl_account, when=now, reason=c2.reason)
+                    trades.append(
+                        ClosedTradeRecord(
+                            open_time=c2.position.open_time,
+                            close_time=c2.close_time,
+                            side=c2.position.side.value,
+                            lots=c2.position.lots,
+                            entry=c2.position.entry_price,
+                            exit=c2.close_price,
+                            pnl=pnl_account,
+                            reason=c2.reason,
+                            group_id=c2.position.group_id,
+                            leg_index=c2.position.leg_index,
+                        )
+                    )
 
             # 3) kill-switch: if the day is done, flatten and skip strat.
             ledger = self.risk._ensure_day(now)
