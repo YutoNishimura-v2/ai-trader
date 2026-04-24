@@ -9,5 +9,8 @@ __pycache__/
 artifacts/
 !artifacts/.gitkeep
 data/*.csv
+data/cache/
 !data/.gitkeep
+!data/news/.gitkeep
+!data/news/example.csv
 .DS_Store
