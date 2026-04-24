@@ -62,6 +62,14 @@ def main() -> int:
         choices=["research", "validation"],
         help="Which window's metrics the sweep ranks trials by.",
     )
+    ap.add_argument(
+        "--min-validation-trades",
+        type=int,
+        default=20,
+        help="Trials with fewer trades than this on the scored "
+        "window are demoted to the bottom of the ranking. 20 is "
+        "the plan-v3 rule-of-thumb floor for trustable metrics.",
+    )
     args = ap.parse_args()
 
     log = get_logger("ai_trader.sweep")
@@ -167,14 +175,26 @@ def main() -> int:
         })
 
     # Choose the winner by the user-selected window.
+    # Any trial with fewer trades than --min-validation-trades on
+    # the scored window is demoted (plan v3 lesson: zero-trades is
+    # not a good score).
+    floor = args.min_validation_trades
+
     def _score(row: dict) -> float:
         m = row["validation_metrics"] if args.score_on == "validation" else row["research_metrics"]
+        trades = int(m.get("trades", 0))
         v = m.get(args.objective, float("nan"))
         try:
             v = float(v)
         except (TypeError, ValueError):
             v = float("nan")
-        return v if v == v else float("-inf")
+        if v != v or v == float("inf"):
+            v = float("-inf")
+        if trades < floor:
+            # Trust floor: sort these below any trial that cleared
+            # the threshold, regardless of their headline metric.
+            v = float("-inf") + trades
+        return v
 
     winner = max(per_trial_validation, key=_score) if per_trial_validation else None
 
@@ -184,6 +204,7 @@ def main() -> int:
         "csv": str(args.csv),
         "split_mode": args.split_mode,
         "score_on": args.score_on,
+        "min_validation_trades": args.min_validation_trades,
         "research_bars": len(split.research),
         "validation_bars": len(split.validation),
         "research_range": [str(split.research.index[0]), str(split.research.index[-1])],

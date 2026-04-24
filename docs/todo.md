@@ -54,18 +54,19 @@ Phase 2; nothing in this phase tunes parameters.
       by the walk-forward ratchet. See `progress.md` 2026-04-24.
 - [x] First bounded parameter sweep on seed strategy (18 trials,
       sweep id `seed-xau-2024-v1`).
-- [ ] Pull 3 years of real XAUUSD (2022–2024) so validation has 50+
-      trades.
-- [ ] Add a regime-router stub (volatility/trend classifier) that
-      disarms the seed strategy in ranges. Hypothesis: seed edge is
-      trend-only.
-- [ ] Seed a second candidate family (volatility breakout,
-      Donchian-style).
-- [ ] Seed a third candidate (session-opener pop-and-retrace).
-- [ ] Iterate until one candidate (or ensemble) clears a
-      **validation** window cleanly (not just research).
-- [ ] Only then: evaluate on the **tournament** window. Promote
-      (with your approval in a review session) to Phase 3.
+- [x] Pull 22 months of real XAUUSD (2024-06 → 2026-04).
+- [x] Recent-regime sweep (`seed-xau-recent-v1`): seed strategy
+      takes ~0 trades in the post-March-2026 window. Confirmed
+      with regime profile. Not a candidate as-is.
+- [ ] Sweep `risk_per_trade_pct` at {1.0, 1.5, 2.0}% so the ¥100k
+      lot-cap floor stops killing signals.
+- [ ] Regime-router stub (ADX + vol-bucket classifier); strategies
+      declare which regimes they arm in.
+- [ ] Second candidate family: volatility breakout (Donchian). High
+      expected utility in the current regime where pullbacks die.
+- [ ] Third candidate (session-opener pop-and-retrace).
+- [ ] Iterate until one candidate has 20+ validation-window trades
+      AND validation PF > 1.0. Only then consider the tournament.
 
 ## Phase 3 — 1-week HFM demo
 

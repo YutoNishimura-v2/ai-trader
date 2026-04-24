@@ -3,6 +3,107 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`.
 
+## 2026-04-24 — Recent-regime focus: seed strategy is silent post-March
+
+Per user direction (2026-04-24): **recent performance dominates**.
+The market "became extremely difficult since March 2026"; up to
+February you could buy dips and win mindlessly. This iteration
+re-orients the sweep harness around the current regime.
+
+### Framework changes
+
+- New `split_by_date` + `split_recent_tournament` + `load_recent_held_out`
+  in `backtest/splitter.py`. Tournament and validation windows are
+  now pinned to specific recent calendar ranges (default:
+  tournament = last 30 days, validation = 60 days before that),
+  not proportional slices.
+- `scripts/run_sweep.py` gains `--split-mode {recent,ratio}`,
+  `--tournament-days`, `--validation-days`, and `--score-on
+  {research,validation}`. Every trial now runs on both windows and
+  the summary records per-trial validation metrics so overfitting
+  is visible at a glance.
+- `scripts/regime_profile.py` writes a per-month table (return,
+  up-day share, realized vol, median ADX14, median range/body) so
+  regime shifts can be shown, not asserted.
+
+### Data
+
+Pulled 2024-06-02 → 2026-04-24 (**134,162 M5 bars**, 11.6 MB CSV,
+`data/xauusd_m5_recent.csv`, gitignored). Fully cached under
+`data/cache/dukascopy/` for resumable re-runs.
+
+### Regime profile (confirms the user's read)
+
+Highlights from `artifacts/regime/xauusd_m5_recent.md`:
+
+| month | days | ret % | up-day % | vol % | ADX med | range/body |
+|---|---|---|---|---|---|---|
+| 2025-12 | 27 | +2.30 | 55.6 | 16.2 | 27.2 | 4.47 |
+| **2026-01** | 26 | **+13.17** | 69.2 | 43.3 | 32.2 | 2.15 |
+| **2026-02** | 24 | **+9.50** | 66.7 | 38.8 | 22.1 | 1.63 |
+| **2026-03** | 27 | **−12.64** | 37.0 | 32.4 | **15.4** | 2.07 |
+| 2026-04 | 20 | +0.18 | 50.0 | 25.9 | 25.0 | 2.01 |
+
+Feb → Mar: up-day share collapses 66.7 % → 37.0 %, ADX halves,
+sign of monthly return flips from +9.5 % to −12.6 %. Regime change
+is real and data-visible.
+
+### Sweep `seed-xau-recent-v1` (scored on validation)
+
+Split: research = 2024-06-02 → 2026-01-24 (~19 mo),
+validation = 2026-01-24 → 2026-03-25 (~60 d, *includes* the March
+crash), tournament = last 30 days (held out).
+
+Best of 18 trials by validation PF:
+
+| window | trades | PF | ret % | max DD % |
+|---|---|---|---|---|
+| research | 312 | 1.15 | +9.38 | −20.00 |
+| validation | **1** | inf (n=1) | +0.62 | −0.31 |
+
+**Interpretation:** the validation window only yielded 0–1 trades
+per trial. That's not a strategy losing — it's the strategy *not
+firing at all* in the current regime. Trial 0's validation PF of
+infinity is one profitable trade, i.e. statistical noise. All
+trials with `sl_atr_mult >= 1.5` took zero validation-window trades.
+
+Two mechanisms cause the silence:
+
+1. **Wider stops blow past the ¥100k lot cap.** At current volatility
+   (ATR ≈ $3–5 on M5), `sl_atr_mult=1.5` gives SL ≈ $5–8. Risk-%
+   sizing at 0.5 % = ¥500 with tick value ≈ ¥15 = ~33 ticks budget.
+   The required SL distance is 500+ ticks → lot size rounds below
+   `min_lot` and the signal is rejected.
+2. **The fib-zone rejection trigger is calibrated for calm-regime
+   pullbacks.** In a trending / high-vol / choppy market the
+   trigger rarely matches.
+
+### Conclusion
+
+`trend_pullback_fib` with any of these parameter combinations is
+**not a candidate for the current regime**. Parameter tuning alone
+won't save it; the strategy doesn't even take trades. Tournament
+window was not evaluated — with 1 validation trade the promotion
+discipline (plan v3) says don't look.
+
+### Next (concrete, next iteration)
+
+1. **Regime-router stub.** A cheap detector (rolling ADX14 + vol
+   bucket on a higher timeframe) that classifies each bar as
+   trending / range / chop / crash, so subsequent strategies can
+   declare which regimes they're allowed to arm in.
+2. **Second strategy family: volatility breakout (Donchian-style).**
+   Enter on a break of the N-bar high/low with an ATR-sized stop.
+   Donchian-style strategies typically do *better* in high-vol
+   choppy markets where mean-reversion pullbacks die. This is the
+   natural complement to the seed.
+3. **Expose risk_per_trade_pct as a swept parameter.** 0.5 % is too
+   conservative for a ¥100k HRHR account; the lot-cap floor kills
+   us before risk-% does. Sweep at 1.0 / 1.5 / 2.0 %.
+4. Only after (1)–(3) produce a candidate with double-digit
+   validation trades and PF > 1.0 should we consider the
+   tournament window.
+
 ## 2026-04-24 — Phase 2 kick-off on real XAUUSD + perf pass
 
 ### What changed

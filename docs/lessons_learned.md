@@ -23,6 +23,32 @@ progress entry for the full story.
 
 ## Phase 2
 
+- **"Zero trades in validation" is not a good score.** First recent-
+  regime sweep had trials declaring validation PF of +infinity on
+  one trade. One trade is statistical noise. Added a "minimum
+  validation trade count" rule of thumb: 20+ is the floor before
+  any validation metric is trustable. Next sweep harness revision
+  should flag trials below the threshold in the summary.
+- **Regime change is visible in ADX + up-day share before it shows
+  in P&L.** XAUUSD 2026-02 → 2026-03: up-day share 66 % → 37 %, ADX
+  22 → 15, monthly return +9.5 % → −12.6 %. `regime_profile.py` is
+  now the first thing we run before any sweep to avoid mis-reading
+  results.
+- **Silence on validation means the strategy, not the parameters,
+  is wrong.** The seed strategy doesn't take trades in the current
+  regime because its SL sizing collides with the ¥100k lot cap at
+  current volatility. No amount of `tp_rr` / `cooldown` tuning
+  fixes that; it needs a different entry rule entirely. This is
+  why the v3 plan says "discoveries are outputs, seed strategies
+  are disposable".
+- **Recent-regime sweeps need a wider research window.** With 19
+  months of research and 2 months of validation, `score_on=validation`
+  would happily reward a trial that took one lucky trade. The
+  `--score-on validation` flag needs a companion filter
+  "min validation trades" before it's trustworthy as the sort key.
+
+## Phase 2
+
 - **The walk-forward ratchet actually catches overfitting.** First
   real sweep on 2024 XAUUSD: research PF 1.50 → validation PF 0.33
   on the same parameters. Without the splitter + validation step

@@ -35,3 +35,17 @@ session. Lightweight; mirrors git log but with intent, not diff.
 - First real backtest on Dukascopy XAUUSD 2024: seed strategy
   overfits (research PF 1.50 → validation PF 0.33). Framework
   caught it as designed. Next: more data + regime router.
+- User: prioritise recent-regime performance; Mar 2026 onward is
+  a new regime where the seed edge may have vanished.
+- Pulled 2024-06 → 2026-04 (134k bars). regime_profile.py confirms
+  the regime shift: Feb 2026 up-day 66% → Mar 2026 37%, ADX 22 →
+  15, monthly ret +9.5% → -12.6%.
+- Sweep with tournament=last-30-days, validation=60-days-before:
+  seed strategy takes 0-1 trades in validation. Not a losing
+  strategy in the new regime — a silent one. Lot-cap + fib-zone
+  calibration collide with current volatility. Needs a different
+  strategy, not different parameters.
+- Tightened sweep ranking: trials with fewer than
+  --min-validation-trades (default 20) are demoted regardless of
+  headline metric. Plan v3 says I can tighten the ratchet
+  autonomously.
