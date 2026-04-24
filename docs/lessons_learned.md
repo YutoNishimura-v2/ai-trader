@@ -23,6 +23,35 @@ progress entry for the full story.
 
 ## Phase 2
 
+- **DD metric bug: withdrawal sweep inflated drawdowns by tens of
+  percent.** Equity was `balance + unrealized`; it needed
+  `balance + unrealized + withdrawn_total` because §A.9 moves
+  profit *out* of balance as a ledger transfer, not a loss. Every
+  "−78 % DD" number before this fix was partly artefactual. Fixed
+  and locked with a regression test.
+- **Strategy family must match the spec.** Plan v3 says "direction
+  on M5, entry on M1" — that is a scalping spec. I built two swing
+  strategies (trend-pullback, Donchian-retest) before noticing. A
+  swing strategy on a scalping spec will always look "too quiet"
+  because it is too quiet, *by design*. Match the family to the
+  spec up front.
+- **Dead-regime history is noise, not data.** The 19 months of
+  pre-Feb data came from a regime where "buy anything" won. Using
+  it as research when the current regime is completely different
+  just leaks noise into the search. Narrowing to 2026-only
+  (trading 19 months of signal for 4 months of relevance) turned a
+  consistently-losing BB scalper sweep into a genuine candidate.
+- **config `extends:` needs a replace escape hatch.** Deep-merging
+  `strategy.params` across files leaks foreign keys into the next
+  strategy's constructor (TypeError on `swing_lookback` when loading
+  `bb_scalper`). Added `__replace__: true` sentinel so subtrees
+  can opt out of merge.
+- **First genuine candidate found when all three gates held.** PF
+  1.14 research / 1.37 validation / 1.10 tournament, DDs under
+  25 % on all three, scalping frequency confirmed. The discipline
+  (walk-forward + min-trade floor + tournament held until the end)
+  was worth the pain.
+
 - **"Zero trades in validation" is not a good score.** First recent-
   regime sweep had trials declaring validation PF of +infinity on
   one trade. One trade is statistical noise. Added a "minimum

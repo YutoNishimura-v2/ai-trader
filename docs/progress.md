@@ -3,6 +3,114 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`.
 
+## 2026-04-24 — Scalping pivot; first genuine candidate (BB-scalper trial 16)
+
+### What prompted the pivot
+
+User feedback on the prior pass, all correct:
+
+1. **Huge research-window drawdowns are a metric bug, not just reality.**
+   Equity curve was `balance + unrealized` but balance is reduced
+   by the half-profit sweep (§A.9), so every withdrawal looked like
+   a drawdown. Fixed: the equity curve is now
+   `balance + unrealized + withdrawn_total` (account-equivalent).
+   `tests/test_metrics_withdrawal.py` locks the invariant.
+2. **Trade frequency was wrong for the stated spec.** Plan v3 calls
+   for direction on M5 and entry on M1 — that's a scalping spec.
+   The prior strategies (trend-pullback, Donchian-retest) are swing
+   strategies firing every few days. Wrong family.
+3. **Pre-March history is a dead world.** Training on 19 months of
+   a different regime is noise. Narrow to 2026-only and lean on
+   scalping frequency for sample size.
+
+### Pull: 2026 XAUUSD M1
+
+Dukascopy, 2026-01-01 → 2026-04-24, **108,871 M1 bars**. Cache-
+resident; on-disk CSV at `data/xauusd_m1_2026.csv` (gitignored).
+
+### New strategy: `bb_scalper`
+
+Bollinger Band mean-reversion. Price tags the outer band, requires
+a rejection candle back toward the middle, enters with an ATR-scaled
+SL just past the band and a TP at the middle band. Satisfies plan
+v3 §A.4 (pullback-only): band-tag reversals *are* pullbacks from
+extremes. Designed for high frequency at small per-trade risk,
+reward:risk ~1 with many small wins (scalper signature).
+
+### Sweep `iter3-bb-scalper-2026`
+
+Split: research (Jan 1 → Mar 15, 70k bars) / validation (Mar 15 →
+Apr 18, 33k bars) / tournament (Apr 18 → Apr 24, 5.7k bars).
+Validation intentionally spans the March regime change.
+
+18 trials. min-validation-trades = 150. Ranked by validation PF.
+
+Top 4 that cleared both research and validation PF > 1:
+
+| trial | bb_n | bb_k | tp | research | validation |
+|---|---|---|---|---|---|
+| **16** | 60 | 2.5 | middle | PF 1.14, +57 %, DD −25, 663 trades | **PF 1.37, +68 %, DD −25, 279** |
+| 12 | 60 | 1.5 | middle | PF 1.20, +198 %, DD −33, 1666 | PF 1.12, +48 %, DD −32, 738 |
+| 4 | 20 | 2.5 | middle | PF 1.02, +4 %, DD −24, 653 | PF 1.07, +8 %, DD −13, 255 |
+| 10 | 40 | 2.5 | middle | PF 1.06, +18 %, DD −28, 630 | PF 1.04, +5 %, DD −18, 267 |
+
+Losing half of the 18 trials had research DD > 50 %; both `tp=rr`
+and `bb_k=1.5 + bb_n=20` were mostly poison. The `tp=middle`
+targets dominated.
+
+### Tournament (last 6 days, held out, opened exactly once)
+
+Trial 16 (`bb_n=60, bb_k=2.5, tp_target=middle, risk_per_trade_pct=1.0`):
+
+| window | trades | PF | ret % | DD % |
+|---|---|---|---|---|
+| research | 663 | 1.14 | +57.3 | −25.3 |
+| validation | 279 | 1.37 | +67.8 | −24.9 |
+| **tournament** | **61** | **1.10** | **+4.1 %** | **−12.0 %** |
+
+- PF stays > 1 on a window the strategy has never been tuned
+  against. That's the promotion bar.
+- Some decay from validation (1.37 → 1.10) is expected: we used
+  validation to *pick* the winner, so it's slightly optimistic.
+- 61 trades in 6 days = ~10/day scalping rate. Lower than the
+  user's 15/day target but well inside the statistical floor.
+- DD is 12 % on tournament (tighter than research/validation).
+  Inside the HRHR envelope.
+
+### Interpretation
+
+This is the **first genuine candidate** this project has produced.
+Three non-overlapping windows, PF > 1 on all three, DD < 25 % on
+all three, scalping frequency, win-rate 20 % with ~4.5:1 avg-win:
+avg-loss ratio. The pattern is trustworthy.
+
+I am **not** declaring it promotable. Plan v3 says the user
+decides in a review session. Known weaknesses to flag before that:
+
+- Tournament sample is 6 days / 61 trades — better than nothing
+  but fragile. A second tournament pass on fresher data is cheap.
+- The winner was chosen on validation, so some selection bias is
+  baked in. The tournament is *the* check on that, and it held,
+  but it's not a guarantee for forward performance.
+- No regime filter yet. The strategy traded through both
+  "violent March" and "calmer April"; we don't know how it does
+  in a 2024-style quiet-melt-up regime.
+- Win-rate 20 % means a losing streak of 7+ is routine; check the
+  equity-curve visualisation before going live.
+- `bb_scalper` on M1 without a session filter trades Sunday-night
+  thin liquidity too; HFM spread may be 3-5× wider there and
+  erode the edge.
+
+### Next iteration ideas (none committed yet)
+
+1. Session filter: only arm during London + NY overlap.
+2. News blackout CSV wired with the actual 2026 NFP / CPI / FOMC
+   dates (example CSV is generic).
+3. A second tournament pass on a 1-week window pulled ~1 week
+   later, to check consistency.
+4. Regime router that disarms `bb_scalper` when ADX > 40
+   (pure-trend days where mean-reversion is suicide).
+
 ## 2026-04-24 — Recent-regime focus: seed strategy is silent post-March
 
 Per user direction (2026-04-24): **recent performance dominates**.

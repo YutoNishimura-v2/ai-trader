@@ -58,15 +58,22 @@ Phase 2; nothing in this phase tunes parameters.
 - [x] Recent-regime sweep (`seed-xau-recent-v1`): seed strategy
       takes ~0 trades in the post-March-2026 window. Confirmed
       with regime profile. Not a candidate as-is.
-- [ ] Sweep `risk_per_trade_pct` at {1.0, 1.5, 2.0}% so the ¥100k
-      lot-cap floor stops killing signals.
-- [ ] Regime-router stub (ADX + vol-bucket classifier); strategies
-      declare which regimes they arm in.
-- [ ] Second candidate family: volatility breakout (Donchian). High
-      expected utility in the current regime where pullbacks die.
-- [ ] Third candidate (session-opener pop-and-retrace).
-- [ ] Iterate until one candidate has 20+ validation-window trades
-      AND validation PF > 1.0. Only then consider the tournament.
+- [x] Sweep seed strategy with larger `risk_per_trade_pct`:
+      lot-cap is the silence cause, but DD catastrophic. Not
+      promotable.
+- [x] Donchian-retest volatility-breakout family. Net-negative on
+      research in both regimes. Not promotable.
+- [x] **BB-scalper on 2026-only M1.** First genuine candidate:
+      tournament PF 1.10 with DD 12 %, 10 trades/day. See
+      `progress.md` 2026-04-24 entry.
+- [ ] Before deciding promotion: session filter (London+NY),
+      real news-blackout CSV for 2026 events, regime router for
+      ADX > 40 days.
+- [ ] Second independent tournament pass on a fresh ~1-week window
+      to sanity-check the result (rolls 1 week at a time).
+- [ ] Visualise the tournament equity curve and trade log for the
+      review session.
+- [ ] Review session with the user → promote / reject / iterate.
 
 ## Phase 3 — 1-week HFM demo
 

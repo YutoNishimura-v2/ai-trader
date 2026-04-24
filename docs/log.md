@@ -49,3 +49,12 @@ session. Lightweight; mirrors git log but with intent, not diff.
   --min-validation-trades (default 20) are demoted regardless of
   headline metric. Plan v3 says I can tighten the ratchet
   autonomously.
+- User observation: big DD numbers suspect; trade frequency too
+  low for scalping; pre-Feb data is a dead world. All three were
+  correct; fixed each.
+- Fixed DD metric (equity now includes withdrawn_total);
+  pivoted to scalping family (bb_scalper on M1); narrowed data
+  to 2026-only (108k M1 bars). Sweep on `bb_n ∈ {20,40,60}`,
+  `bb_k ∈ {1.5,2.0,2.5}`, `tp_target ∈ {middle,rr}` produced the
+  first genuine candidate: trial 16 (bb_n=60, bb_k=2.5,
+  tp=middle). Tournament PF 1.10, DD 12 %, 61 trades in 6 days.
