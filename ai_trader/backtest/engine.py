@@ -166,7 +166,7 @@ class BacktestEngine:
                         )
                     )
                 equity_times.append(ts)
-                equity_values.append(self.risk.balance)
+                equity_values.append(self.risk.balance + self.risk.withdrawn_total)
                 continue
 
             # 4) ask the strategy (history up to and including this bar).
@@ -176,7 +176,15 @@ class BacktestEngine:
                 pending_signal = sig
 
             equity_times.append(ts)
-            equity_values.append(self.risk.balance + self._unrealized(float(bar["close"])))
+            # Total-account equity: trading balance + unrealized P&L +
+            # withdrawn_total. Without +withdrawn_total the half-profit
+            # sweep (§A.9) would look like a drawdown even though it's
+            # a ledger transfer the user asked for.
+            equity_values.append(
+                self.risk.balance
+                + self._unrealized(float(bar["close"]))
+                + self.risk.withdrawn_total
+            )
 
         # Flatten any positions still open at end-of-test at the last close.
         last_ts = df.index[-1].to_pydatetime()
