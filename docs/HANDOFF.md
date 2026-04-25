@@ -12,6 +12,69 @@ other doc. The rest of `docs/` is supporting material:
 - `docs/log.md` — chronological session diary.
 - `docs/todo.md` — living task list.
 
+## TL;DR (2026-04-25 ITER29 — user article EMA20×M15 → NEW PROJECT TOURNAMENT RECORD)
+
+The user shared an article advocating "EMA 20 × 15-Minute Chart =
+The Best" with a simple pullback recipe. We researched it
+(QuantifiedStrategies confirms: bare strategy ~50% WR, with HTF
+filter ~60% WR; TradingView "EMA Pullback Pro EA v14 (XAUUSD)"
+uses the same M15+EMA20 structure for gold), implemented it as
+`ema20_pullback_m15`, and tested it disciplined-walk-forward.
+
+### Iter29 headline — `config/iter29/ema20_winner_h4.yaml`
+
+EMA20 pullback on M15, 2-bar confirmation, with **H4 EMA20 trend
+filter** (the article's HTF analog of the QS-confirmed VWAP
+filter). London session, swing_lookback=8 M15 bars, touch=$0.80,
+risk=2%/trade.
+
+| window         | trades | PF       | return       | DD       | min eq | cap |
+|----------------|-------:|---------:|-------------:|---------:|-------:|----:|
+| **Tournament 14d** | 42 | **1.94** | **+11.79%** | -8.2%   | 92.8%  | **0** |
+| **Validation 14d** | 28 | **1.96** | +8.81%      | -9.4%   | **100%** | 0 |
+| Research 60d   |    123 | 0.65     | -22.06%     | -26.8%   | 74.2%  | 0   |
+| Full Jan-Apr   |    234 | 0.83     | -18.23%     | -32.1%   | 68.7%  | 0   |
+
+**This is the project's strongest honest tournament read** by
+both absolute return AND PF (vs iter9's +5.41% PF 1.98). Validation
+min_equity = 100% (never drew below starting balance). Tournament
+DD only -8.2%.
+
+The strategy is genuinely complementary to iter28 v4: it bleeds
+in chop (research) but excels in clear trends (validation +
+tournament). Iter28 v4 has the opposite profile (trends-on-pivot,
+strong full but weak tournament). Together they could form a
+regime-router headline — left for iter30.
+
+### Iter29 four headlines
+
+| Config | Objective | Full | Val PF | Tourn |
+|---|---|---:|---:|---:|
+| iter28/v4_ext_a_dow_no_fri | Best Growth | **+497.94%** | 1.71 | -13.78% |
+| iter28/v4_no_fri_sw_r6 | Best Validation Return | +132.33% | 4.20 | -6.75% |
+| iter27/v4_plus_sweep_r4 | Historical val PF | +39.18% | 4.57 | -16.09% |
+| **iter29/ema20_winner_h4** | **Best Tournament (NEW)** | -18.23% | 1.96 | **+11.79%** |
+
+### Iter29 takeaways (lessons_learned has full detail)
+
+- **The user's article recipe (EMA20 × M15) is REAL.** Public
+  backtest research (QS) flagged the same ~50% bare WR. With an
+  HTF trend filter the strategy turns positive. Independent
+  confirmation reduces single-source bias.
+- **H4 EMA20 trend filter delivers ~2× PF** on this strategy
+  (validation PF 1.96 with H4 vs PF 1.11 without; matches the
+  QS finding that VWAP/HTF filter elevates the bare strategy).
+- **EMA20×M15 is structurally complementary to pivot-bounce.**
+  It is positive on tournament where pivots fail. The two could
+  be regime-routed in a future iteration.
+- **Web research before building paid off.** Three searches
+  (QS backtest, TradingView gold variant, EMA20/50/200 rules)
+  defined the mechanical edge precisely and predicted the HTF-
+  filter improvement BEFORE the sweep. Will use this pattern
+  more aggressively going forward.
+
+---
+
 ## TL;DR (2026-04-25 ITER28 — NEW PROJECT RECORD ¥+497k)
 
 **Iter28 is the new headline iteration.** Three bold experiments

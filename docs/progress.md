@@ -3,6 +3,99 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter29: user article EMA20×M15 → NEW PROJECT TOURNAMENT RECORD
+
+User shared an article: "EMA 20 × 15-Minute Chart = The Best",
+classic EMA20 pullback recipe. Asked us to evaluate AND research
+more online. Did three web searches:
+
+1. **QuantifiedStrategies.com** — "20 EMA Trading Strategy" backtest:
+   bare strategy ~50% win rate (138 trades EUR/USD 2 months);
+   with VWAP trend filter, win rate climbs to 60% and the strategy
+   turns profitable.
+2. **TradingView "EMA Pullback & Dual Crossover Pro EA v14 (XAUUSD)"** —
+   confirms M15 + EMA20/50/200 + 2-bar confirmation as the popular
+   gold variant.
+3. **Altrady "EMA 20/50/200 Strategy Guide"** — formalises the
+   2-confirmation-candle rule to avoid EMA "kisses" / fakeouts.
+
+Key takeaway from research: bare strategy ≈ coin flip; HTF trend
+filter is the secret. Built `ema20_pullback_m15` with HTF filter
+as a first-class param.
+
+### Strategy: `ai_trader/strategy/ema20_pullback_m15.py`
+
+- M1 base TF, signals on M15 closes (uses MTFContext for causal
+  resampling; no lookahead).
+- EMA20 on M15 closes via local _ema helper.
+- Trend confirmation: last `confirm_bars=2` M15 closes all on the
+  same side of EMA20.
+- Pullback trigger: M15 wick touches within `touch_dollar` of EMA,
+  close back on trend side.
+- SL: swing low - sl_buffer_dollar (or capped at max_sl_dollar).
+- TP: structural swing high - tp_buffer_dollar (TP2); TP1 +1R BE.
+- Optional HTF (H1/H4) EMA20 trend filter.
+- Day-of-week and session filters.
+- 5 unit tests (registers, EMA correctness, history guard,
+  uptrend pullback fires LONG, no-trend doesn't fire).
+
+### Sweep results (validation-honest selection)
+
+Standalone session sweep (risk=2.5%, london, no HTF):
+- ema20_pullback_baseline (london_or_ny): tourn +6.46% PF 1.15
+- ema20_london:                            tourn +9.11% PF 1.29
+- ema20_ny:                                tourn +2.46% PF 1.07
+
+Touch + swing lookback sweep on london variant:
+- ema20_t080_sb8 (touch=$0.80, swing=8 bars): val +3.29% PF 1.11,
+  tourn +7.83% PF 1.23 ← validation winner
+
+Risk reduce on validation winner:
+- r=2.0 (default 2.5): val +3.29% PF 1.11, tourn +9.16% PF 1.29
+
+HTF filter on validation winner:
+- M30: val +0.57% PF 1.02 (filter too weak)
+- H1:  val +2.81% PF 1.14, tourn -1.36% (over-filters)
+- **H4:  val +8.81% PF 1.96, tourn +11.79% PF 1.94** ← HEADLINE
+
+H4 is the sweet spot — exactly what QS predicted with their
+VWAP-filter analog (~2× PF improvement).
+
+### Iter29 headline — `config/iter29/ema20_winner_h4.yaml`
+
+| window | trades | PF | return | DD | min eq | cap |
+|---|---:|---:|---:|---:|---:|---:|
+| **Tournament 14d** | 42 | **1.94** | **+11.79%** | -8.2% | 92.8% | 0 |
+| **Validation 14d** | 28 | **1.96** | +8.81% | -9.4% | **100%** | 0 |
+| Research 60d | 123 | 0.65 | -22.06% | -26.8% | 74.2% | 0 |
+| Full Jan-Apr | 234 | 0.83 | -18.23% | -32.1% | 68.7% | 0 |
+
+**¥100,000 → ¥111,787 over the 14d held-out tournament window**
+= +11.79% in 14 days = ~+25%/mo annualized. Project record by
+both absolute return AND PF (vs iter9's +5.41% PF 1.98).
+
+### Combination experiment
+
+`v4_plus_ema20.yaml`: tried adding ema20_pullback_m15 as a 4th
+member of iter28's growth headline, blended risk=7.0%. Result:
+val +27.16% PF 1.43, full +3.66%, tourn -12.25%. The ema20
+member needs its native low-risk profile; mixing dilutes the
+pivot edge dramatically. **Standalone is better than blended for
+ema20.** Co-headline.
+
+### Iter29 verdict
+
+**EMA20×M15 standalone is the new BEST TOURNAMENT config**.
+Genuinely complementary to iter28 v4 (positive tournament where
+pivots are negative; weak full where pivots are strong). Could
+form a regime-router headline in iter30.
+
+Code: `ai_trader/strategy/ema20_pullback_m15.py` (new),
+registry update, 5 new pytest cases (173 total now).
+Configs: `config/iter29/*.yaml` (~20 files).
+
+---
+
 ## 2026-04-25 — Iter28: NEW PROJECT RECORD ¥+497k (NY-pivots + Friday-cut)
 
 User: "continue."

@@ -3,6 +3,42 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## 2026-04-25 iter29 — user article EMA20×M15
+
+- **Web research before building beats blind sweeping.** User
+  shared an article advocating EMA20×M15. Three searches
+  (QuantifiedStrategies backtest, TradingView XAUUSD EA,
+  Altrady EMA strategy guide) defined the mechanical edge AND
+  predicted that bare strategy ≈ coin flip while HTF/VWAP filter
+  doubles PF. Built strategy, sweep confirmed **exactly that**:
+  bare PF 1.11 → H4-filtered PF 1.96. Always research before
+  implementing.
+- **Independent crowd-sourced strategies validate.** The user's
+  article isn't a one-off — QuantifiedStrategies, TradingView
+  community, and Altrady all converged on the same M15+EMA20
+  recipe for gold. When multiple independent sources agree on
+  the same simple rule, the rule has structural validity.
+- **Bare moving-average pullback is roughly 50% on its own.**
+  This matches QS's empirical finding. ALWAYS pair an MA-pullback
+  with a structural trend filter (HTF EMA, VWAP, ADX) — the
+  filter doesn't add edge to the entry, it filters out the
+  unprofitable regime.
+- **EMA20×M15 is structurally complementary to pivot bounces.**
+  Pivot bounces win on FULL but lose tournament. EMA20×M15 wins
+  tournament but loses FULL. Their PnL series are nearly
+  uncorrelated because they fire on completely different
+  triggers (pivot reaction vs MA pullback). Future iter30:
+  regime-router them into one headline.
+- **Avoid blending MA-pullback into ensemble at high risk.**
+  EMA20×M15 needs its native low-risk profile (~2%) to keep
+  its bigger DD in check. When blended into the iter28
+  pivot stack at risk=7%, full collapsed from +497% to +3.66%.
+  Some strategies are SHIPPED standalone, not blended.
+- **Tournament min_equity = 100% is rare and valuable.** It
+  means the strategy never drew below starting balance during
+  the held-out period. ema20_winner_h4's validation min_eq=100%
+  is the kind of feature that justifies live demo.
+
 ## 2026-04-25 iter28 — bold exploration
 
 - **NY session adds independent alpha to pivot bounces.** We

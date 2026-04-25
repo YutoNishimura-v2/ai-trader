@@ -1,0 +1,46 @@
+extends: ../default.yaml
+
+# iter29: EMA20 × M15 pullback (the user-suggested article recipe).
+# Article: "EMA 20 × 15-minute = the best", trend confirmation
+# (close on side) → pullback to EMA → enter, SL at swing low + 5pip,
+# TP at swing high.
+#
+# Public corroboration (QuantifiedStrategies):
+#   bare strategy ~50% win rate. With trend filter (e.g. VWAP/HTF EMA),
+#   win rate climbs to ~60%. Hence we will sweep with/without HTF.
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+risk:
+  # Project default sizing tier.
+  risk_per_trade_pct: 2.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000020
+
+strategy:
+  __replace__: true
+  name: ema20_pullback_m15
+  params:
+    ema_period: 20
+    confirm_bars: 2
+    touch_dollar: 0.80
+    sl_buffer_dollar: 1.0
+    tp_buffer_dollar: 1.0
+    swing_lookback_bars: 8
+    max_sl_dollar: 6.0
+    tp1_rr: 1.0
+    leg1_weight: 0.5
+    cooldown_m15_bars: 4
+    session: london
+    max_trades_per_day: 6
+    htf: M30
+    htf_ema_period: 20

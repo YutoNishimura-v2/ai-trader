@@ -129,6 +129,20 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 - [ ] ~~Push monthly mean unconditional to +200%/mo via news/leverage.~~
       SUPERSEDED by user 2026-04-25: news strategies retired,
       tournament discipline restored. iter5-7 results contaminated.
+- [x] **Iter29: NEW PROJECT TOURNAMENT RECORD via user article
+      (EMA20×M15 + H4 trend filter).**
+      `config/iter29/ema20_winner_h4.yaml` — tournament 14d
+      +11.79% PF 1.94 (vs iter9's +5.41% PF 1.98), validation
+      +8.81% PF 1.96 with min_equity 100%, full -18% (chop
+      drag). 0 cap viol on every window.
+      Strategy code: `ai_trader/strategy/ema20_pullback_m15.py`
+      (~250 lines + 5 unit tests). Web research (QS, TradingView,
+      Altrady) predicted that HTF filter would ~2× PF — confirmed.
+- [ ] **Iter30 candidate**: regime-router iter28 v4 (best growth)
+      and iter29 ema20×M15 (best tournament). They are structurally
+      complementary — pivot wins full when ema20 loses, and vice
+      versa. Hypothesis: combined config could hit BOTH +400% full
+      AND positive tournament for the first time.
 - [x] **Iter28: NEW PROJECT GROWTH RECORD ¥+497k (4.98×).**
       `config/iter28/v4_ext_a_dow_no_fri.yaml` — 3-member pivot
       ensemble on session=london_or_ny (daily+weekly), monthly
