@@ -20,9 +20,38 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
+from ..data.mtf import MTFContext
 from ..indicators import atr
 from .base import BaseStrategy, Signal, SignalLeg, SignalSide
 from .registry import register_strategy
+
+
+def _adx_series(df: pd.DataFrame, period: int) -> np.ndarray:
+    """Causal ADX on a HTF OHLC frame."""
+    high = df["high"]
+    low = df["low"]
+    close = df["close"]
+    up = high.diff()
+    dn = -low.diff()
+    plus_dm = np.where((up > dn) & (up > 0), up, 0.0)
+    minus_dm = np.where((dn > up) & (dn > 0), dn, 0.0)
+    tr = pd.concat(
+        [(high - low), (high - close.shift()).abs(), (low - close.shift()).abs()],
+        axis=1,
+    ).max(axis=1)
+    a = tr.ewm(alpha=1 / period, adjust=False, min_periods=period).mean()
+    plus_di = (
+        100
+        * pd.Series(plus_dm, index=df.index).ewm(alpha=1 / period, adjust=False, min_periods=period).mean()
+        / a
+    )
+    minus_di = (
+        100
+        * pd.Series(minus_dm, index=df.index).ewm(alpha=1 / period, adjust=False, min_periods=period).mean()
+        / a
+    )
+    dx = 100 * (plus_di - minus_di).abs() / (plus_di + minus_di).replace(0, np.nan)
+    return dx.ewm(alpha=1 / period, adjust=False, min_periods=period).mean().to_numpy(dtype=float)
 
 
 @register_strategy
@@ -45,6 +74,18 @@ class SessionSweepReclaim(BaseStrategy):
         tp2_rr: float = 2.0,
         leg1_weight: float = 0.5,
         max_trades_per_day: int = 1,
+        # Optional HTF gating. Two independent filters:
+        # 1) ``htf`` + ``htf_mode``: EMA-bias direction filter.
+        # 2) ``adx_max`` + ``adx_period``: only fire when HTF ADX
+        #    is below this ceiling (i.e. range / chop regime, where
+        #    Asian-sweep reclaims have the strongest empirical
+        #    edge). ``adx_max=None`` disables the ADX gate.
+        htf: str | None = None,
+        htf_ema_fast: int = 20,
+        htf_ema_slow: int = 50,
+        htf_mode: str = "off",  # "off" | "with" | "neutral_or_with" | "skip_counter_trend"
+        adx_max: float | None = None,
+        adx_period: int = 14,
         min_history: int | None = None,
     ) -> None:
         super().__init__(
@@ -62,6 +103,12 @@ class SessionSweepReclaim(BaseStrategy):
             tp2_rr=tp2_rr,
             leg1_weight=leg1_weight,
             max_trades_per_day=max_trades_per_day,
+            htf=htf,
+            htf_ema_fast=htf_ema_fast,
+            htf_ema_slow=htf_ema_slow,
+            htf_mode=htf_mode,
+            adx_max=adx_max,
+            adx_period=adx_period,
         )
         self.min_history = min_history or max(atr_period * 3, 60)
         self._atr: pd.Series | None = None
@@ -71,6 +118,9 @@ class SessionSweepReclaim(BaseStrategy):
         self._day_trades: int = 0
         self._long_swept: bool = False
         self._short_swept: bool = False
+        self._mtf: MTFContext | None = None
+        self._htf_bias: np.ndarray | None = None
+        self._htf_adx: np.ndarray | None = None
 
     def prepare(self, df: pd.DataFrame) -> None:
         p = self.params
@@ -103,6 +153,33 @@ class SessionSweepReclaim(BaseStrategy):
             rng_lo[pos[after]] = lo
         self._range_hi = rng_hi
         self._range_lo = rng_lo
+
+        need_htf = (
+            (p["htf"] and p["htf_mode"] != "off")
+            or (p["htf"] and p["adx_max"] is not None)
+        )
+        if need_htf:
+            self._mtf = MTFContext(base=df, timeframes=[p["htf"]])
+            htf_df = self._mtf.frame(p["htf"])
+            if p["htf_mode"] != "off":
+                f = int(p["htf_ema_fast"])
+                s = int(p["htf_ema_slow"])
+                ef = htf_df["close"].ewm(span=f, adjust=False, min_periods=f).mean().to_numpy()
+                es = htf_df["close"].ewm(span=s, adjust=False, min_periods=s).mean().to_numpy()
+                diff = ef - es
+                bias = np.where(diff > 0, 1, np.where(diff < 0, -1, 0)).astype(np.int8)
+                bias[~np.isfinite(es)] = 0
+                self._htf_bias = bias
+            else:
+                self._htf_bias = None
+            if p["adx_max"] is not None:
+                self._htf_adx = _adx_series(htf_df, int(p["adx_period"]))
+            else:
+                self._htf_adx = None
+        else:
+            self._mtf = None
+            self._htf_bias = None
+            self._htf_adx = None
 
     def _build_signal(
         self, side: SignalSide, entry: float, sl: float, risk: float, tp2: float, reason: str
@@ -160,8 +237,54 @@ class SessionSweepReclaim(BaseStrategy):
         if h > hi + sweep:
             self._short_swept = True
 
+        # HTF gates: bias direction + ADX ceiling.
+        bias = 0
+        if self._mtf is not None:
+            pos = self._mtf.last_closed_idx(p["htf"], ts_utc)
+            if pos is None:
+                return None
+            if self._htf_bias is not None:
+                if pos >= len(self._htf_bias):
+                    return None
+                bias = int(self._htf_bias[pos])
+            if self._htf_adx is not None and p["adx_max"] is not None:
+                if pos >= len(self._htf_adx):
+                    return None
+                adx_val = float(self._htf_adx[pos])
+                if not np.isfinite(adx_val):
+                    return None
+                if adx_val > float(p["adx_max"]):
+                    return None
+
+        def _allowed(side: SignalSide) -> bool:
+            mode = p["htf_mode"]
+            if mode == "off" or self._mtf is None:
+                return True
+            # "with": reclaims that agree with HTF trend (long-only in
+            # up-bias, short-only in down-bias). Empirically this kills
+            # the strategy because session_sweep_reclaim is fundamentally
+            # a counter-trend mean-reversion. Kept for completeness.
+            if mode == "with":
+                return (side == SignalSide.BUY and bias > 0) or (side == SignalSide.SELL and bias < 0)
+            # "neutral_or_with": same as with but also allow neutral.
+            if mode == "neutral_or_with":
+                return (side == SignalSide.BUY and bias >= 0) or (side == SignalSide.SELL and bias <= 0)
+            # "skip_counter_trend": this is the empirically-useful mode.
+            # The Jan/Feb drag came from short reclaims fading strong
+            # M15 uptrends. Skip a reclaim that would fade an HTF
+            # trend (i.e., short when bias > 0, or long when bias < 0).
+            # Allow reclaims that agree with bias OR fire in neutral
+            # regimes (where reclaims are highest-probability).
+            if mode == "skip_counter_trend":
+                if side == SignalSide.BUY and bias < 0:
+                    return False
+                if side == SignalSide.SELL and bias > 0:
+                    return False
+                return True
+            return True
+
         # Sweep below Asian low, reclaim back inside → long.
-        if self._long_swept and c > lo and c > o:
+        if self._long_swept and c > lo and c > o and _allowed(SignalSide.BUY):
             entry = c
             structural_sl = l - p["sl_atr_buffer"] * atr_val
             capped_sl = entry - p["max_sl_atr"] * atr_val
@@ -179,7 +302,7 @@ class SessionSweepReclaim(BaseStrategy):
             )
 
         # Sweep above Asian high, reclaim back inside → short.
-        if self._short_swept and c < hi and c < o:
+        if self._short_swept and c < hi and c < o and _allowed(SignalSide.SELL):
             entry = c
             structural_sl = h + p["sl_atr_buffer"] * atr_val
             capped_sl = entry + p["max_sl_atr"] * atr_val

@@ -1,0 +1,13 @@
+extends: session_sweep_reclaim_london.yaml
+
+# Chop-gated variant: only fire when M15 ADX is below 25 (ranging).
+# Asian-sweep reclaim is fundamentally a counter-trend mean-reversion;
+# it works best when the higher timeframe is NOT trending hard. The
+# Jan/Feb drag came from sweeps inside strong M15 uptrends.
+
+strategy:
+  params:
+    htf: M15
+    htf_mode: "off"
+    adx_max: 25.0
+    adx_period: 14

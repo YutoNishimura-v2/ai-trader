@@ -1,0 +1,11 @@
+extends: session_sweep_reclaim_london.yaml
+
+# HTF-gated variant: filter Asian-range reclaims by M15 EMA bias to
+# remove the Jan/Feb drag without killing the April edge.
+
+strategy:
+  params:
+    htf: M15
+    htf_ema_fast: 20
+    htf_ema_slow: 50
+    htf_mode: skip_counter_trend
