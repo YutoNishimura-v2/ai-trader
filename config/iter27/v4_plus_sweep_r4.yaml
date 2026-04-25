@@ -1,0 +1,85 @@
+extends: ../default.yaml
+
+# iter27: v4 triple pivot + session_sweep_reclaim London at risk=4.
+# Validation hits +66.76% PF 4.57 (project-record val PF for any ensemble),
+# but full only +30% — sweep_reclaim drags Jan. Kept on disk as a
+# validation-record curiosity.
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+risk:
+  risk_per_trade_pct: 4.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 3.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 2
+  lot_cap_per_unit_balance: 0.000020
+strategy:
+  __replace__: true
+  name: ensemble
+  params:
+    __replace__: true
+    members:
+      - name: pivot_bounce
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 4
+      - name: pivot_bounce
+        params:
+          pivot_period: weekly
+          atr_period: 14
+          touch_atr_buf: 0.10
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 2
+      - name: pivot_bounce
+        params:
+          pivot_period: monthly
+          atr_period: 14
+          touch_atr_buf: 0.15
+          sl_atr_buf: 0.30
+          max_sl_atr: 3.0
+          tp1_rr: 1.2
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 120
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 1
+      - name: session_sweep_reclaim
+        params:
+          range_start_hour: 0
+          range_end_hour: 6
+          trade_start_hour: 7
+          trade_end_hour: 12
+          min_range_atr: 0.8
+          min_sweep_atr: 0.2
+          sl_atr_buffer: 0.3
+          max_sl_atr: 2.0
+          atr_period: 14
+          tp_mode: opposite_edge
+          tp1_rr: 1.0
+          tp2_rr: 2.0
+          leg1_weight: 0.5
+          max_trades_per_day: 2
