@@ -3,6 +3,83 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`.
 
+## 2026-04-25 — MTF + ZigZag (cleaner signals, sample-size constrained)
+
+User feedback (correct):
+- M1 alone too noisy; need MTF (M5+) for trend bias.
+- ZigZag is a structurally cleaner pivot detector than fractals.
+
+### Built
+
+- `ai_trader/indicators/zigzag.py`: ATR-threshold ZigZag with
+  causal confirmation (pivot iloc vs confirm_iloc separated;
+  `tail()` cuts on confirm_iloc so no lookahead).
+- `ai_trader/data/mtf.py`: `MTFContext.last_closed(tf, t)` returns
+  only fully-closed HTF bars at M1 time t (a still-forming HTF
+  bar is invisible). 4 tests lock the no-lookahead invariant.
+- `ai_trader/strategy/mtf_zigzag_bos.py`: M5/M15 ZigZag classifies
+  trend bias from last alternating pivots; M1 BOS-retest entry
+  with structural SL.
+
+### Also parked (not swept this turn)
+
+- `volume_reversion`: BB-tag-rejection + tick-volume filter.
+- `news_fade`: trade the post-event overshoot, TP back to anchor.
+
+### Sweeps on real 2026 M1
+
+| sweep | best validation PF | best validation monthly | tournament |
+|---|---|---|---|
+| iter20 interleaved | 1.37 (5 trades, noise) | +0.17 % | not eval (low trades) |
+| iter21 recent_only 60/14/7 | **1.47** (17 trades) | +2.49 % | **−3.88 % / PF 0.58 (18 trades)** |
+
+Best candidate: `htf=M5, zigzag_threshold_atr=0.5, retest_tolerance_atr=1.0`.
+Research PF 1.23 / +2.21 %; validation PF 1.47 / +2.49 %; both DDs
+under 5 %. **Cleanest win-rate yet (sensible 39 % at 1:3 RR), tiny
+DDs.** But tournament collapses with 18-trade sample.
+
+### Pattern across 5 families
+
+| strategy | best validation | tournament |
+|---|---|---|
+| BB scalper | PF 1.37 | flat-to-negative |
+| BOS retest | PF 1.25 | flat |
+| trend-pullback (EMA) | PF 1.12 | regime-killed |
+| liquidity_sweep | PF 1.07 | falsified |
+| **mtf_zigzag_bos** | **PF 1.47** | **−3.9 % / PF 0.58** |
+
+Five families. Each one's "validation winner" looks marginal-to-
+promising. Each tournament fails. The MTF+ZZ strategy has the
+**smallest sample sizes** (rare, high-confluence signals) and the
+**tightest DDs** (deepest about 5 %), which suggests the signals
+are actually high-quality — there just aren't enough of them in
+4 months of M1 to clear a 7-day tournament's noise.
+
+### What this means
+
+Honest read: **with current data length, no walk-forward
+discipline I've tried can distinguish "real edge that's small +
+rare" from "no edge". The tournament window is too short relative
+to the candidate's signal frequency.**
+
+Three concrete options:
+
+1. **Live demo.** Run mtf_zigzag_bos on HFM demo for 2-4 weeks
+   and let real forward data settle the question. ~2 trades/day
+   means ~30 trades over 2 weeks, enough to see if the +2.49 %/
+   2-week validation rate persists.
+2. **Pull more historical data.** 4 months isn't enough for a
+   30-trade-per-2-week strategy to clear walk-forward. With 12
+   months of M1 we'd have ~3x the validation+tournament sample.
+3. **Reduce the bar to "clears walk-forward, demo decides".**
+   Keep the discipline, accept that the framework will miss
+   some real edges, ship the best mtf_zigzag_bos config to demo.
+
+I'd recommend (3) because (2) is gated on extra data fetching
+that may not improve much (4 months already covers 2 distinct
+regimes), and (1) is the only way to get truly fresh forward
+data anyway. (3) just commits to (1) sooner.
+
 ## 2026-04-24 — Splitter modes + liquidity sweep (falsified); pattern emerges
 
 ### New splitter modes (user point 4)

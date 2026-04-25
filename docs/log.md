@@ -124,3 +124,18 @@ session. Lightweight; mirrors git log but with intent, not diff.
   ensemble to settle whether validation edge is real,
   (b) add information beyond OHLC (tick volume, DXY,
   news), (c) calendar/event-driven strategies.
+- User: 'M1 alone too noisy; combine with MTF; use ZigZag
+  for trend bias.' Built ZigZagSeries + MTFContext +
+  mtf_zigzag_bos strategy. Cleanest signals yet (sensible
+  win rate, tiny DDs, validation PF 1.47 vs prior ~1.3).
+  But high-confluence = rare signals = tournament
+  defeated by sample size.
+- Pattern across 5 families: strategies that look
+  clean on validation are too rare to clear tournament
+  noise; strategies that fire often have weak edge that
+  doesn't survive cap discipline. Recommendation:
+  ship best mtf_zigzag_bos to live demo; let real
+  forward data settle the question.
+- Conflict with main resolved (PR #2 squashed); going
+  forward I pull main before each push to avoid this
+  recurring.

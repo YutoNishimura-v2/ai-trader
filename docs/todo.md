@@ -83,20 +83,19 @@ Phase 2; nothing in this phase tunes parameters.
 - [x] **Liquidity sweep** strategy (one new family). Falsified
       under both interleaved and recent_only sweeps. Kept in
       registry for future tuning.
-- [ ] **Add information beyond OHLC.** Tick volume from
-      Dukascopy is already in our data but unused; could be a
-      meaningful filter. DXY / real-yield correlations would
-      need extra data feeds.
-- [ ] **Calendar / event-driven edges.** Tuesday-bias, NFP
-      day skip-mode (reverse of news blackout: ONLY trade after
-      news shock with X-bar TTL), end-of-quarter rebalance
-      flow. Needs hand-curated event lists per family.
-- [ ] **Live demo a candidate** to settle whether the
-      validation-positive results are real or a fitting effect.
-      Best bet right now: ensemble (BB+BOS) at risk=1%,
-      maxconc=2, configured for recent_only. Validation looked
-      strong; only forward live data tells us if it holds.
-- [ ] Fresh-week tournament pass after a week of new data.
+- [x] **MTF + ZigZag** strategy (user direction). Best
+      validation PF (1.47) and tightest DD (~5 %) yet, but
+      tournament sample too small.
+- [x] **Volume-confirmed BB** + **news-fade** registered
+      (parked, not yet swept).
+- [ ] **Live demo `mtf_zigzag_bos`** at the iter21 winner
+      config. The recommended path forward: signals are clean,
+      sample sizes too small for offline validation, only
+      forward live data settles it.
+- [ ] Fetch 12-month M1 to give MTF/ZigZag enough sample for
+      tournament. ~3x the data; the rare-but-clean signal
+      should clear better discipline.
+- [ ] Sweep volume_reversion + news_fade.
 - [ ] Visualise equity curve + monthly breakdown for review.
 - [ ] Session filter (London + NY overlap).
 - [ ] Populated 2026 news-blackout CSV.
