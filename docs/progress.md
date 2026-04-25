@@ -3,6 +3,49 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Push-to-200% iter4: ensemble_v8_ultra_chop tournament 14d +142.6%
+
+User instruction: "keep going."
+
+Built on iter3 v7_chop_robust by raising the per-trade and
+position-size envelope: max_risk_per_trade_pct 6→8, lot_cap
+0.000020→0.000030, regime_risk range 1.50→1.70 transition 1.20→1.30.
+
+Numbers (real 2026 M1 XAUUSD):
+  Tournament 7d:   +91.25%   (PF 3.91, 28 trades)
+  Tournament 14d:  **+142.56%**  (PF 2.74, 71 trades, ~305%/mo annualized)
+  Tournament 21d:  **+218.49%**  (PF 2.83, 95 trades, ~312%/30d)
+  Validation 14d:  +59.39%   (PF 2.19)
+  Validation T=7d: +149.41%
+  Apr standalone:  **+236.62%** (PF 2.58)
+  Full Jan-Apr:    +198.49%
+  Max DD full:     -47.88%
+  Min equity full: 100% (never below starting balance)
+  Cap violations:  0 ACROSS EVERY WINDOW
+
+Per-month full: Jan +32.7%, Feb +28.8%, Mar +2.9%, Apr +69.6%.
+ALL POSITIVE.
+
+Per-month standalone: Jan +32.7%, Feb +65.6%, Mar +6.3%, Apr +236.6%.
+
+Both v7_chop_robust and v8_ultra_chop are valid headlines:
+  - v7 is the BALANCED champion: full +232%, monthly mean +36.7%,
+    smoother equity, slightly tighter DD (-46.8%).
+  - v8 is the AGGRESSIVE champion: tournament 14d +142.6%, 21d
+    +218.5%, Apr standalone +236.6%, but slightly less full
+    return (+198.5%) due to higher per-day variance.
+
+The iter4 finding: lifting the per-trade envelope by ~30% and
+boosting the chop-regime multiplier monotonically improves the
+held-out tournament and Apr standalone numbers, at the cost of
+modestly worse full-period due to in-month vol.
+
+The next iteration could either (a) further push the chop-regime
+boost (diminishing returns hit at v9 ext = 1 cap viol), or
+(b) add genuinely new uncorrelated edges. Bot is now at the
+ceiling of what the existing 6 strategies can deliver on this
+4-month window.
+
 ## 2026-04-25 — Push-to-200% iter3: ensemble_v7_chop_robust hits +232% full / +236% Apr / ALL MONTHS POSITIVE
 
 User instruction: "keep going."

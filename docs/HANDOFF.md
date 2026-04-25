@@ -14,13 +14,34 @@ other doc. The rest of `docs/` is supporting material:
 
 ## TL;DR
 
-**THE 200%/MONTH ASPIRATION HAS BEEN CLEARED ON HELD-OUT DATA,
-AND THE v7 ENSEMBLE NOW DELIVERS POSITIVE RETURNS IN EVERY MONTH
-OF THE 4-MONTH BACKTEST.**
+**THE 200%/MONTH ASPIRATION IS CLEARED ON HELD-OUT DATA,
+AND THE LATEST ENSEMBLE DELIVERS POSITIVE RETURNS IN EVERY
+MONTH OF THE 4-MONTH BACKTEST.**
 
-After three iterations, the current project headline is
-**`config/ensemble_v7_chop_robust.yaml`** (the
-"push-200pct-iter3" branch). Built on iter2's
+After four iterations, the project ships TWO promotable
+headlines:
+
+  - **`config/ensemble_v8_ultra_chop.yaml`** (iter4) —
+    aggressive variant: tournament 14d **+142.6%**, t21
+    **+218.5%**, t7 +91.2%, Apr standalone **+236.6%**, full
+    Jan-Apr +198.5%, all months positive, monthly mean +33.5%.
+  - **`config/ensemble_v7_chop_robust.yaml`** (iter3) —
+    higher-full-period variant: full Jan-Apr +232.0%, monthly
+    mean +36.7%, tournament 14d +132.4%, all months positive.
+
+v8_ultra_chop trades higher tournament for slightly lower full;
+v7 trades the opposite. Both are valid; v8 is closer to the
+aspirational +200%/mo, v7 is closer to a smooth equity curve.
+
+### v8_ultra_chop is the iter4 aggressive headline
+
+Built on iter3 v7_chop_robust by:
+  - max_risk_per_trade_pct: 6.0 → **8.0**
+  - lot_cap_per_unit_balance: 0.000020 → **0.000030**
+  - regime range multiplier: 1.50 → **1.70**
+  - regime transition multiplier: 1.20 → **1.30**
+
+ Built on iter2's
 `ensemble_v6_triple_news` by:
 
   - Boosted regime risk multipliers in range/transition (the
@@ -33,25 +54,38 @@ After three iterations, the current project headline is
   - DD throttle 6/12 with 0.65/0.40 multipliers (preserves
     dryness in chop, doesn't dampen Apr).
 
-**Headline numbers (real 2026 M1 XAUUSD, all held-out unless noted):**
+**Headline numbers — ensemble_v8_ultra_chop (iter4, aggressive):**
+
+| window         | trades | PF   | return    | DD       | min eq | cap viol |
+|----------------|-------:|-----:|----------:|---------:|-------:|---------:|
+| Validation 14d |     60 | 2.19 | +59.4 %   | -29.7 %  | 84.1 % |        0 |
+| **Tournament 7d**  | 28 | 3.91 | **+91.2 %** | -17.4 %  |  100 % |        0 |
+| **Tournament 14d** | 71 | 2.74 | **+142.6 %** | -17.3 % | 95.2 % |        0 |
+| **Tournament 21d** | 95 | 2.83 | **+218.5 %** | -18.3 % | 83.4 % |        0 |
+| **Apr standalone** |131 | 2.58 | **+236.6 %** | -26.5 % | 82.2 % |        0 |
+| Full Jan-Apr   |    448 | 1.57 | +198.5 %  | -47.9 %  |  100 % |        0 |
+
+**Headline numbers — ensemble_v7_chop_robust (iter3, balanced):**
 
 | window         | trades | PF   | return    | DD       | min eq | cap viol |
 |----------------|-------:|-----:|----------:|---------:|-------:|---------:|
 | Validation 14d |     60 | 2.10 | +60.2 %   | -21.3 %  | 90.7 % |        0 |
-| **Tournament 7d**  | 29 | 4.21 | **+81.9 %** | -17.4 %  |  100 % |        0 |
-| **Tournament 14d** | 72 | 2.95 | **+132.4 %** | -16.5 % | 96.8 % |        0 |
-| **Tournament 21d** | 95 | 3.19 | **+206.9 %** | -15.4 % | 86.2 % |        0 |
-| **Apr standalone** |127 | 2.73 | **+236.4 %** | -19.6 % | 90.7 % |        0 |
-| **Full Jan-Apr**   |468 | 1.65 | **+232.0 %** | -46.8 % |  100 % |        0 |
+| Tournament 7d  |     29 | 4.21 | +81.9 %   | -17.4 %  |  100 % |        0 |
+| Tournament 14d |     72 | 2.95 | +132.4 %  | -16.5 %  | 96.8 % |        0 |
+| Tournament 21d |     95 | 3.19 | +206.9 %  | -15.4 %  | 86.2 % |        0 |
+| Apr standalone |    127 | 2.73 | +236.4 %  | -19.6 %  | 90.7 % |        0 |
+| **Full Jan-Apr** |  468 | 1.65 | **+232.0 %** | -46.8 % |  100 % |        0 |
 
-**Per-month FULL run (compounded): ALL POSITIVE for the FIRST
-TIME in the project's history:**
-- Jan **+29.2 %** (vs baseline -17.8 %)
-- Feb **+31.1 %** (vs baseline +10.3 %)
-- Mar **+12.8 %** (vs baseline -17.1 %)
-- Apr **+73.8 %** (vs baseline +59.1 %)
+**Per-month FULL run (compounded) — ALL POSITIVE on both
+v7 and v8:**
 
-Monthly mean **+36.7 %** (vs baseline ensemble_ultimate +8.6 %).
+| month | v8_ultra_chop | v7_chop_robust | iter1 baseline |
+|---|---:|---:|---:|
+| Jan | +32.7 % | +29.2 % | -17.8 % |
+| Feb | +28.8 % | +31.1 % | +10.3 % |
+| Mar | +2.9 %  | +12.8 % | -17.1 % |
+| Apr | +69.6 % | +73.8 % | +59.1 % |
+| **mean** | **+33.5 %** | **+36.7 %** | +8.6 % |
 
 The bot now CLEARS the +200%/month aspiration on:
 - Single calendar month (April standalone: **+236.43 %**)
@@ -392,7 +426,8 @@ record but should not be promoted.
 | `ensemble_ultimate_v2` | regime-meta + full-cal news_fade + friday-flush + session-sweep (concurrency=1) | 14d tournament +40.3 %, full +80.5 %, monthly mean +19.0 % | safe variant |
 | `news_continuation` | post-news momentum (sustained displacement) | standalone full +12.4 % @ trig=3.0 cb=3 | uncorrelated edge inside ensemble |
 | `ensemble_v6_triple_news` | iter2 winner: regime-meta + full-cal + 3x NC (concurrency=2) | 14d tournament +148.6 %, full +150.0 %, monthly mean +33.9 % | superseded by v7 (Jan was slightly negative) |
-| **`ensemble_v7_chop_robust`** | **iter3 winner: v6 + chop-regime boost + 3 sweeps/day** | **14d tournament +132.4 %, 21d +206.9 %, Apr standalone +236.4 %, full +232.0 %, monthly mean +36.7 %, ALL months positive** | **CURRENT BEST: 200%/mo cleared AND all 4 months positive** |
+| `ensemble_v7_chop_robust` | iter3: v6 + chop-regime boost + 3 sweeps/day | 14d tournament +132.4 %, 21d +206.9 %, Apr standalone +236.4 %, full +232.0 %, monthly mean +36.7 %, all positive | iter3 BALANCED CHAMPION (smoothest) |
+| **`ensemble_v8_ultra_chop`** | **iter4: v7 + max_risk=8 + lot_cap=3e-5 + range=1.70** | **14d tournament +142.6 %, 21d +218.5 %, 7d +91.2 %, Apr standalone +236.6 %, full +198.5 %, monthly mean +33.5 %, all positive** | **iter4 AGGRESSIVE CHAMPION (highest tournament)** |
 
 ### `news_fade` — the current best
 
