@@ -1,0 +1,38 @@
+extends: ../default.yaml
+
+# iter9 NEW: fib_pullback_scalper — closest mechanical translation
+# of the user's discretionary recipe.
+#
+# - Trend on M15 SwingSeries (HH/HL); trade on M1.
+# - Pullback to fib 38.2-61.8 of the M15 impulse leg.
+# - Wider SL: max(zone-low - 0.5*ATR, $3 fixed). Capped by 4*ATR.
+# - 2-leg: TP1=0.5R+BE, TP2=4R. Aggressive BE makes the wide SL safe.
+# - Default user-iter9 risk: 2.5% per trade, 0.1 lot ceiling, no withdraw.
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+strategy:
+  __replace__: true
+  name: fib_pullback_scalper
+  params:
+    __replace__: true
+    htf: M15
+    htf_swing_lookback: 5
+    htf_min_trend_legs: 2
+    fib_entry_min: 0.382
+    fib_entry_max: 0.618
+    atr_period: 14
+    sl_atr_buf: 0.5
+    sl_min_usd: 3.0
+    max_sl_atr: 4.0
+    tp1_rr: 0.5
+    tp2_rr: 4.0
+    leg1_weight: 0.6
+    cooldown_bars: 3
+    session: london_or_ny

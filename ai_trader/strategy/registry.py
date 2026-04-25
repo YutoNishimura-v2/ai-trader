@@ -41,6 +41,7 @@ def get_strategy(name: str, **params) -> BaseStrategy:
     from . import news_anticipation  # noqa: F401
     from . import asian_breakout  # noqa: F401
     from . import news_continuation  # noqa: F401
+    from . import fib_pullback_scalper  # noqa: F401
     if name not in _REGISTRY:
         raise KeyError(f"Unknown strategy: {name}. Known: {sorted(_REGISTRY)}")
     return _REGISTRY[name](**params)
@@ -68,4 +69,5 @@ def list_strategies() -> list[str]:
     from . import news_anticipation  # noqa: F401
     from . import asian_breakout  # noqa: F401
     from . import news_continuation  # noqa: F401
+    from . import fib_pullback_scalper  # noqa: F401
     return sorted(_REGISTRY)
