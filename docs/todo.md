@@ -119,15 +119,19 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
         (~317%/mo annualized)**, **Apr standalone +175.07%**,
         all months positive in full-run, 0 cap violations.
       - 200%/mo aspiration CLEARED on multiple held-out windows.
-- [ ] **Make 200%/mo regime-robust.** v6_triple wins April-style
-      months but mediocre in chop. Next iteration: build a
-      regime-aware GATE that recognizes Jan/Feb-style chop and
-      switches to a different stack (or sits out). Or: build a
-      VOL-targeting layer that trades the same edges with smaller
-      lots in low-vol regimes. Or: add MORE uncorrelated calendar
-      edges (options expiry, settlement Tuesday, DXY divergence)
-      so the friendly-regime EV is even higher and absorbs the
-      chop-month losses on a rolling basis.
+- [x] **Make 200%/mo regime-robust** (DONE in iter3
+      `ensemble_v7_chop_robust.yaml`): boosted chop-regime
+      multipliers and sweep_reclaim max_trades_per_day. Result:
+      ALL 4 months positive (Jan +29%, Feb +31%, Mar +13%,
+      Apr +74%), full Jan-Apr +232%, monthly mean +36.7%.
+      Apr standalone +236%, Tournament 21d +207%. Min equity
+      100% on full run.
+- [ ] **Push monthly mean unconditional to +200%/mo.** Currently
+      +36.7%/mo. The 200%/mo claim still only holds in April-style
+      windows. Next moves: (a) richer DXY/EUR cross-edge layer,
+      (b) add session-specific triggers (NY-open VWAP, London
+      breakout-with-confirmation), (c) more aggressive sizing in
+      provably-positive months (use month-of-year prior?).
 - [x] **GOLD-only high-risk expansion v1**: user redirected the
       project away from multi-instrument expansion and toward
       aggressive XAUUSD-only search with "avoid zero cut" as the

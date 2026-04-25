@@ -3,6 +3,27 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## 2026-04-25 push-to-200% iter3 (ALL MONTHS POSITIVE)
+
+- **The "chop edges" (sweep_reclaim, friday_flush) are
+  underutilized in iter2 v6.** Boosting their multiplier in
+  range/transition regimes (range 1.30→1.50, transition 1.00→1.20)
+  AND letting sweep_reclaim fire 3 trades/day (was 2) lifted Jan
+  from -1.4% to +29.2% and full Jan-Apr from +150% to +232%.
+  The Jan/Mar drag wasn't a strategy failure — it was a
+  member-multiplier failure for the strategies that work in chop.
+- **`min_equity_pct=100` over a full 4-month run is NOT
+  unreachable.** v7_chop_robust never dipped below starting
+  balance on the full Jan-Apr backtest. The early-session
+  winners (sweep_reclaim) get the day to a profit before the
+  tail-of-day losers (sometimes news_continuation) can drag.
+- **Symmetric-knob exploration: tighten kill-switch BEFORE
+  bumping risk multipliers.** Each iter2-iter3 step that
+  improved performance involved tightening daily_max_loss FIRST
+  (10→7→5→4) then bumping the active-day multipliers. The
+  tighter kill is what enables the higher per-trade risk to
+  remain safe.
+
 ## 2026-04-25 push-to-200% iter2 (200%/mo CLEARED)
 
 - **Stack opposite-sign edges on the same trigger.** news_fade
