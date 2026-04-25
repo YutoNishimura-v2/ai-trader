@@ -104,3 +104,62 @@ session. Lightweight; mirrors git log but with intent, not diff.
   walk-forward-honest pace is 20-40 %/month. Closing the gap
   needs genuinely new signal families; ICT/SMC order-block
   variants and London kill-zone break queued.
+- BE was secretly off on BB scalper (use_two_legs=False
+  default; yaml never set it). Every prior BB tournament
+  number was single-leg. Fixed in yaml.
+- Kill-switch fix from previous session, when re-applied to
+  the prior 'winners', revealed they'd been benefiting from
+  the leak: BB tournament went +12% -> -2.7%, ensemble
+  +7.1% -> -8.1%. Honest numbers materially worse than
+  reported.
+- Splitter modes added (user point 4): split_interleaved
+  (block round-robin, regime-mixing) and split_recent_only
+  (last 35 days).
+- Liquidity-sweep strategy built and falsified. Validation
+  PF caps at 1.07 interleaved, every trial loses on
+  recent_only. 4 strategy families tried; same outcome.
+- Honest pattern: simple price-action scalping on M1
+  XAUUSD doesn't have edge under tight risk discipline.
+  Recommended next steps: (a) live-demo the BB+BOS
+  ensemble to settle whether validation edge is real,
+  (b) add information beyond OHLC (tick volume, DXY,
+  news), (c) calendar/event-driven strategies.
+- User: 'M1 alone too noisy; combine with MTF; use ZigZag
+  for trend bias.' Built ZigZagSeries + MTFContext +
+  mtf_zigzag_bos strategy. Cleanest signals yet (sensible
+  win rate, tiny DDs, validation PF 1.47 vs prior ~1.3).
+  But high-confluence = rare signals = tournament
+  defeated by sample size.
+- Pattern across 5 families: strategies that look
+  clean on validation are too rare to clear tournament
+  noise; strategies that fire often have weak edge that
+  doesn't survive cap discipline. Recommendation:
+  ship best mtf_zigzag_bos to live demo; let real
+  forward data settle the question.
+- Conflict with main resolved (PR #2 squashed); going
+  forward I pull main before each push to avoid this
+  recurring.
+- User: just keep iterating, recent data, push returns up.
+  Web search returned three concrete techniques (London ORB,
+  VWAP, Keltner squeeze). Built ORB + VWAP, swept those plus
+  the previously parked volume_reversion + news_fade.
+- london_orb: had two bugs (day-rollover state + structural-SL
+  too wide for risk-% sizer). Fixed both. Strategy is fundamentally
+  low-frequency on M1 (one trade per few days). Flat result.
+- vwap_reversion: validation PF 1.48 / +7.5%/14d looked great
+  but tournament collapsed (PF 0.08 on 7d, 0.93 on 14d).
+  Variance-driven validation result.
+- volume_reversion: mediocre. Negative research, slight pos
+  validation, neg tournament.
+- **news_fade was the breakthrough.** Trades only the post-NFP/
+  CPI/FOMC overshoot window. Research PF 3.24, validation PF
+  10.6, tournament PF 3.87 — first strategy to clear all 3.
+  Full 4-month: +0.6 %/month, DD 2 %, daily Sharpe +1.65.
+  Low frequency (12 trading days in 4 months) but clean edge.
+- Ensemble of news_fade + vwap_reversion: tournament -0.8% /
+  PF 0.93 / 49 trades / DD -9.7%. Better floor than VWAP
+  alone but VWAP drags it negative on full 4-month.
+- Bottom line: news_fade is the first real, durable building
+  block in this project. Won't hit 200%/month alone but worth
+  shipping; multi-instrument news_fade + a regime-routed
+  add-on is the next direction.

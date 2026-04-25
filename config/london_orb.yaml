@@ -1,0 +1,42 @@
+extends: default.yaml
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+execution:
+  spread_points: 12
+  slippage_points: 2
+  commission_per_lot: 0.0
+
+risk:
+  risk_per_trade_pct: 1.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: true
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000001
+
+strategy:
+  __replace__: true
+  name: london_orb
+  params:
+    __replace__: true
+    range_start_hour: 0
+    range_start_min: 0
+    range_end_hour: 5
+    range_end_min: 0
+    window_min: 240         # window after London-open for retest
+    min_range_atr: 1.5
+    min_break_atr: 0.2
+    retest_tolerance_atr: 0.7
+    sl_atr_buffer: 0.3
+    tp1_rr: 1.0
+    tp2_rr: 2.5
+    leg1_weight: 0.5
+    atr_period: 14
+    max_trades_per_day: 1

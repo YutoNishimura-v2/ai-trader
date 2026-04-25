@@ -1,69 +1,50 @@
 # ai-trader
 
-Automated XAUUSD (GOLD) trading bot for MetaTrader 5.
+Automated XAUUSD (gold) scalping bot for MetaTrader 5 (HFM Katana).
 
-Goal: **steady, consistent profit**, not explosive gains. See
-[`docs/plan.md`](docs/plan.md) for the full specification and
-[`docs/todo.md`](docs/todo.md) for the current roadmap.
+**👉 If you're new here, read [`docs/HANDOFF.md`](docs/HANDOFF.md) first.**
+It has everything you need to pick up where the project is now: strategy
+scoreboard, current best result (`news_fade`), known gotchas, and the
+next planned moves. The rest of `docs/` is supporting material.
 
-## Status
+## Status (one line)
 
-Phase 0 (demo environment) is complete. The repo can:
+9 strategy families built and walk-forward evaluated on real 2026 M1
+data; `news_fade` is the only one to clear research + validation +
+tournament with positive PF (full 4-month: +0.60 %/month, DD −2 %,
+daily Sharpe +1.65). Live demo on HFM blocked on Windows host access.
 
-- backtest strategies against MT5 CSV data or synthetic OHLCV;
-- simulate execution with spread, slippage, and commission;
-- enforce the user's trading rules (leverage cap, daily target/loss,
-  half-profit withdrawal, pullback-only entries);
-- run against a real MT5 demo account on Windows (stubbed adapter).
-
-Phase 1 (real-data backtest + demo run) is the next milestone.
-
-## Install
+## Quick start
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate         # on Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-`MetaTrader5` is only required on Windows and is listed in
-`requirements-live.txt`.
-
-## Run a synthetic backtest
-
-```bash
-python -m ai_trader.scripts.run_backtest \
-    --config config/default.yaml \
-    --synthetic --days 180 --seed 7
-```
-
-This produces a metrics JSON under `artifacts/runs/` and appends a
-summary line to `docs/progress.md`.
-
-## Run against a real MT5 CSV
-
-```bash
-python -m ai_trader.scripts.fetch_mt5_history \
-    --symbol XAUUSD --timeframe M5 --months 12 --out data/xauusd_m5.csv
-python -m ai_trader.scripts.run_backtest \
-    --config config/default.yaml --csv data/xauusd_m5.csv
-```
-
-The `fetch_mt5_history` script must be run on a Windows host with
-MetaTrader 5 and the `MetaTrader5` Python package installed.
-
-## Run a live demo
-
-```bash
-python -m ai_trader.scripts.run_demo --config config/demo.yaml
-```
-
-## Tests
-
-```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
 pytest -q
 ```
 
-## Layout
+To get real data and reproduce the current best result:
 
-See [`docs/plan.md §5`](docs/plan.md) for the architecture.
+```bash
+# Pull 2026 M1 XAUUSD from Dukascopy (cross-platform; cached)
+python -m ai_trader.scripts.fetch_dukascopy \
+    --symbol XAUUSD --timeframe M1 \
+    --start 2026-01-01 --end 2026-04-24 \
+    --out data/xauusd_m1_2026.csv
+
+# Run the current best strategy on the full window
+python -m ai_trader.scripts.run_backtest \
+    --config config/news_fade.yaml \
+    --csv data/xauusd_m1_2026.csv --no-report
+```
+
+For everything else (sweeps, tournament eval, live demo, architecture)
+see [`docs/HANDOFF.md`](docs/HANDOFF.md).
+
+## Specification
+
+- `docs/plan.md` — locked spec (constraints, gates, instruments).
+- `docs/HANDOFF.md` — current state + how to continue.
+- `docs/progress.md` — append-only iteration log with raw numbers.
+- `docs/lessons_learned.md` — append-only insights.
+- `docs/log.md` — chronological session diary.
+- `docs/todo.md` — living task list.

@@ -215,3 +215,110 @@ def _pick_best(trials: list[Trial], objective: str, higher_is_better: bool) -> T
             return float("-inf") if higher_is_better else float("inf")
         return v
     return max(trials, key=keyfn) if higher_is_better else min(trials, key=keyfn)
+
+
+def _run_on_blocks(
+    strat_name: str,
+    strat_params: dict,
+    risk_kwargs: dict,
+    exec_kwargs: dict,
+    instrument: InstrumentSpec,
+    fx: FXConverter | None,
+    account_currency: str,
+    starting_balance: float,
+    max_leverage: float,
+    blocks: list,
+    compute_metrics_fn,
+) -> dict[str, float]:
+    """Run the backtest engine independently on each block and
+    aggregate metrics. Balance is RESET to starting_balance for
+    each block, because cross-block continuity doesn't exist (the
+    block boundaries are fake time jumps).
+
+    Aggregation:
+    - net_profit_pct_mean: average per-block return_pct
+    - monthly_pct_mean:    average per-block monthly_pct_mean
+      (already normalized to 'per month' inside each block)
+    - trades:              sum
+    - profit_factor:       (sum gross_profit) / (sum gross_loss)
+    - max_drawdown_pct:    min (worst) across blocks
+    - worst_day_pct:       min across blocks
+    """
+    import pandas as pd
+
+    total_gp = 0.0
+    total_gl = 0.0
+    total_trades = 0
+    total_wins = 0
+    ret_pcts: list[float] = []
+    dd_pcts: list[float] = []
+    worst_days: list[float] = []
+    best_days: list[float] = []
+    monthly_means: list[float] = []
+    monthly_maxes: list[float] = []
+    monthly_mins: list[float] = []
+    cap_violations = 0
+    daily_target_hits = 0
+    daily_max_loss_hits = 0
+
+    for block in blocks:
+        if len(block) < 100:
+            continue
+        strat = get_strategy(strat_name, **strat_params)
+        risk = RiskManager(
+            starting_balance=starting_balance,
+            max_leverage=max_leverage,
+            instrument=instrument,
+            account_currency=account_currency,
+            fx=fx,
+            **risk_kwargs,
+        )
+        broker = PaperBroker(instrument=instrument, **exec_kwargs)
+        engine = BacktestEngine(strategy=strat, risk=risk, broker=broker)
+        r = engine.run(block)
+        m = compute_metrics_fn(r, starting_balance=starting_balance)
+        total_gp += m["gross_profit"]
+        total_gl += m["gross_loss"]
+        total_trades += m["trades"]
+        total_wins += m["wins"]
+        ret_pcts.append(m["return_pct"])
+        dd_pcts.append(m["max_drawdown_pct"])
+        worst_days.append(m["worst_day_pct"])
+        best_days.append(m["best_day_pct"])
+        monthly_means.append(m.get("monthly_pct_mean", 0.0))
+        monthly_maxes.append(m.get("monthly_pct_max", 0.0))
+        monthly_mins.append(m.get("monthly_pct_min", 0.0))
+        cap_violations += m.get("cap_violations", 0)
+        daily_target_hits += m.get("daily_target_hits", 0)
+        daily_max_loss_hits += m.get("daily_max_loss_hits", 0)
+
+    if total_trades == 0:
+        return {
+            "trades": 0, "profit_factor": 0.0, "return_pct": 0.0,
+            "max_drawdown_pct": 0.0, "worst_day_pct": 0.0,
+            "best_day_pct": 0.0, "monthly_pct_mean": 0.0,
+            "monthly_pct_max": 0.0, "monthly_pct_min": 0.0,
+            "win_rate": 0.0, "cap_violations": 0,
+            "daily_target_hits": 0, "daily_max_loss_hits": 0,
+            "blocks": len(blocks),
+        }
+    pf = (total_gp / total_gl) if total_gl > 0 else float("inf")
+    return {
+        "trades": total_trades,
+        "wins": total_wins,
+        "win_rate": total_wins / total_trades if total_trades else 0.0,
+        "gross_profit": total_gp,
+        "gross_loss": total_gl,
+        "profit_factor": pf,
+        "return_pct": float(sum(ret_pcts) / len(ret_pcts)) if ret_pcts else 0.0,
+        "max_drawdown_pct": float(min(dd_pcts)) if dd_pcts else 0.0,
+        "worst_day_pct": float(min(worst_days)) if worst_days else 0.0,
+        "best_day_pct": float(max(best_days)) if best_days else 0.0,
+        "monthly_pct_mean": float(sum(monthly_means) / len(monthly_means)) if monthly_means else 0.0,
+        "monthly_pct_max": float(max(monthly_maxes)) if monthly_maxes else 0.0,
+        "monthly_pct_min": float(min(monthly_mins)) if monthly_mins else 0.0,
+        "cap_violations": cap_violations,
+        "daily_target_hits": daily_target_hits,
+        "daily_max_loss_hits": daily_max_loss_hits,
+        "blocks": len(blocks),
+    }

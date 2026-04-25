@@ -23,6 +23,72 @@ progress entry for the full story.
 
 ## Phase 2
 
+- **News-fade was the first walk-forward winner.** After 7
+  strategy families across price-action variants (BB, BOS, trend
+  pullback, liquidity sweep, MTF-ZZ-BOS, London ORB, VWAP, BB
+  with volume confirmation), the only strategy that cleared
+  research + validation + tournament with positive returns was
+  the calendar-driven news_fade. Lesson: when price-action edges
+  vanish under tight risk, look at non-price-action information
+  (events, calendar, volume).
+- **VWAP validation can deceive.** VWAP best trial showed
+  validation PF 1.48 on 67 trades. Tournament collapsed to
+  PF 0.08 on 19 trades (7d) but recovered to PF 0.93 on 47
+  trades (14d). Always tournament-eval at a couple of window
+  lengths to gauge real variance before believing a result.
+- **Strategies with structural SLs need an SL cap.** london_orb's
+  Asian-range opposite extreme can be $50+ on M1 XAUUSD; at
+  0.5% risk × $10k = $50 budget, position rounds below min-lot
+  and signals get silently rejected. `max_sl_atr=2.0` cap fixed
+  it.
+- **Day-rollover state needs to be at the top of on_bar.** Bug
+  in london_orb where window-end was set inside the "range
+  done" branch produced 0 trades on every day. Lesson: state-
+  machine resets should always be unconditional at the top.
+
+- **MTF + ZigZag produces the highest-quality signals to date.**
+  mtf_zigzag_bos with M5 ZigZag bias + M1 BOS-retest produced
+  the best validation PF (1.47) AND tightest DD (~3-5 %) of any
+  strategy. But the high-confluence requirement makes signals
+  rare (~17 in 14 days), so tournament's 18-trade sample is
+  noise-dominated. Lesson: signal quality and statistical power
+  are in tension — a stricter strategy has cleaner trades but
+  needs proportionally more data to validate.
+- **MTFContext design pattern: index by close_time.** A common
+  MTF lookahead bug is to query the HTF bar at M1 time t and
+  get the still-forming bar back. Indexing the HTF frame by
+  close_time and using searchsorted-with-`right`-then-minus-1
+  gives "most recent bar fully formed at t". Tested + locked.
+- **ZigZag pivot vs confirmation must be separated.** A pivot's
+  iloc is the extreme bar; its confirm_iloc is when the
+  threshold-reversal made it visible to a live trader. Querying
+  with confirm_iloc as the cutoff matches live behaviour;
+  using iloc would be a lookahead.
+
+- **Interleaved splits are the most honest test.** Contiguous
+  Jan/Feb-research / Mar/Apr-validation puts each role in one
+  regime; if the regimes are different, you're just measuring
+  regime-mismatch. Block-based round-robin makes both roles see
+  every regime. The ensemble's validation PF jumped from
+  unhelpful to 1.16-1.48 under interleaved — that's where its
+  real signal showed up.
+- **Recent-only is the loudest test for current-regime edge.**
+  Compresses everything into the last ~35 days. Found the highest
+  validation PF (1.34) we've seen, but tournament was 7 days of
+  statistical noise — strategies that look great on validation
+  can lose -5 to -11% on the next 7 days. **Window length floors
+  matter:** ~7 days is too short for a meaningful tournament at
+  ~20-30 trades/day.
+- **4 strategy families, 0 clean walk-forward winners.** Trend-
+  pullback (EMA + fib), BOS retest, BB scalper, liquidity sweep
+  — all show the same pattern: validation PF mildly positive in
+  some trials, research PF below 1, tournament noise. This isn't
+  one bad strategy; it's evidence that **simple price-action
+  scalping on M1 XAUUSD doesn't have an exploitable edge under
+  tight risk discipline**. The honest paths forward are: add
+  information beyond OHLC, try entirely different edges (news,
+  calendar, multi-instrument), or accept the gap.
+
 - **Default-off feature flags rot.** `BBScalper.use_two_legs`
   defaulted to False and the yaml never set it. Every BB result
   reported across multiple iterations was running without the

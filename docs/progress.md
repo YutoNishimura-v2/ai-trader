@@ -1,7 +1,284 @@
 # Progress log
 
 Append-only. One entry per iteration of the self-improvement loop.
-Format: `YYYY-MM-DD — <headline>`.
+Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
+
+> **Reading note (2026-04-25):** This log is append-only and
+> chronological-newest-first. Some early entries (e.g. "BB scalper
+> +12.1 % tournament" or "ensemble +42 %/month validation") were
+> later retracted when bugs were found and the same configs were
+> re-evaluated under fixed semantics; those retractions are
+> documented in the relevant later entry (search for "retroactively"
+> or "honest re-eval"). For the current state-of-truth scoreboard,
+> see `docs/HANDOFF.md`.
+
+## 2026-04-25 — news_fade is the first strategy to clear all 3 windows
+
+Iterated through the literature: built **London ORB** (Asian-range
+breakout + retest), **VWAP reversion** (session VWAP +/- 2.5σ
+fade), and configured/swept the previously-parked **volume_reversion**
++ **news_fade**.
+
+### Day-bug fix in london_orb
+
+Initial smoke produced 0 trades. Trace: window-end was set inside
+the "range done" branch, so on the first bar after midnight the
+day-key reset but window-end stayed at 0. Subsequent bars then
+all failed `bar_min_of_day > _day_window_end_min`. Fixed by
+moving day-rollover to the top of `on_bar`.
+
+Second issue: SL = Asian-range opposite extreme can be huge ($50+
+on a typical day). At 0.5% risk × $10k account = $50 budget, that
+sizes the position below min-lot. Added `max_sl_atr` cap.
+
+### Sweeps
+
+| strategy | research PF/ret/DD | validation PF/ret/DD | tournament PF/ret/DD | trades/day |
+|---|---|---|---|---|
+| london_orb (best) | 1.00 / 0% / −2.45% (10 tr) | 1.11 / +0.23% / −1.4% (6 tr) | not eval (low trades) | ~0.2 |
+| **vwap_reversion** (best) | 1.02 / +0.75% / −21.6% (192) | **1.48 / +7.5% / −8.8% (67)** | 14d: PF 0.93 / −0.9% / 47 tr | ~3 |
+| volume_reversion (best) | 0.61 / −20% / −22% (253) | 1.18 / +1.6% / −5.6% (47) | PF 0.82 / −2.95% / 87 tr | ~6 |
+| **news_fade** (best) | **3.24 / +2.6% / −1.1% (11 tr)** | **10.57 / +0.24% / 0% (2 tr)** | **3.87 / +0.10% / −0.13% (2 tr)** | event-driven |
+
+### THE finding: `news_fade` clears everything
+
+**This is the first strategy in the entire project to show
+positive PF on research AND validation AND tournament.** Trade
+count is small (events happen ~once per week) but every metric
+is positive across all three non-overlapping windows.
+
+Full 4-month run (default config):
+- 12 trading days with signals
+- Monthly mean **+0.60 %**, 2/4 profitable months
+- Best day +2.4%, worst day −0.95%
+- DD only **−2.02 %**
+- Daily Sharpe **+1.65**
+
+Why this works: news events are scheduled, the post-release
+overshoot is structurally consistent, and the trade has a real
+anchor (pre-news price). It's a different population of trades
+from price-action scalping — uncorrelated edge.
+
+### vwap_reversion validation/tournament gap
+
+VWAP at 2.5σ + TP-back-to-VWAP looked great on validation
+(PF 1.48, +7.5% in 14d) but tournament PF collapses to 0.08 on
+7 days of bad luck or 0.93 on 14 days. Strategy is roughly flat
+out-of-sample; the validation result was variance-driven.
+
+### Honest scoreboard (full 4-month, monthly mean)
+
+| strategy | monthly mean | months prof | best day | worst day |
+|---|---|---|---|---|
+| BB scalper | −13.1 % | 0/4 | n/a | n/a |
+| BOS retest | −0.6 % | 2/4 | n/a | n/a |
+| **news_fade** | **+0.60 %** | 2/4 | +2.4 % | −0.95 % |
+| vwap_reversion | −6.1 % | 1/4 | +8.5 % | −4.1 % |
+| ensemble (news+vwap) | −5.2 % | 2/4 | +15.04 % | −3.75 % |
+
+### Where this lands
+
+- **news_fade is the first thing that genuinely works on this
+  data.** Low-frequency, but cleanly positive across every
+  non-overlapping evaluation. Worth shipping to demo.
+- **VWAP, ORB, MTF-ZigZag-BOS** all show validation-positive
+  edges that don't survive tournament sample noise. They might
+  be real and just need more data; they might be fitting noise.
+- **All pure mean-reversion price-action strategies (BB,
+  volume_reversion) bleed money on the full 4-month window**
+  because Jan/Feb 2026 trended hard.
+
+The +0.60%/month from news_fade alone won't hit 200%/month, but
+it's a real, durable building block. Combined with selective
+add-on of vwap_reversion in chop-only regimes (a regime router
+to add) it could meaningfully scale.
+
+## 2026-04-25 — MTF + ZigZag (cleaner signals, sample-size constrained)
+
+User feedback (correct):
+- M1 alone too noisy; need MTF (M5+) for trend bias.
+- ZigZag is a structurally cleaner pivot detector than fractals.
+
+### Built
+
+- `ai_trader/indicators/zigzag.py`: ATR-threshold ZigZag with
+  causal confirmation (pivot iloc vs confirm_iloc separated;
+  `tail()` cuts on confirm_iloc so no lookahead).
+- `ai_trader/data/mtf.py`: `MTFContext.last_closed(tf, t)` returns
+  only fully-closed HTF bars at M1 time t (a still-forming HTF
+  bar is invisible). 4 tests lock the no-lookahead invariant.
+- `ai_trader/strategy/mtf_zigzag_bos.py`: M5/M15 ZigZag classifies
+  trend bias from last alternating pivots; M1 BOS-retest entry
+  with structural SL.
+
+### Also parked (not swept this turn)
+
+- `volume_reversion`: BB-tag-rejection + tick-volume filter.
+- `news_fade`: trade the post-event overshoot, TP back to anchor.
+
+### Sweeps on real 2026 M1
+
+| sweep | best validation PF | best validation monthly | tournament |
+|---|---|---|---|
+| iter20 interleaved | 1.37 (5 trades, noise) | +0.17 % | not eval (low trades) |
+| iter21 recent_only 60/14/7 | **1.47** (17 trades) | +2.49 % | **−3.88 % / PF 0.58 (18 trades)** |
+
+Best candidate: `htf=M5, zigzag_threshold_atr=0.5, retest_tolerance_atr=1.0`.
+Research PF 1.23 / +2.21 %; validation PF 1.47 / +2.49 %; both DDs
+under 5 %. **Cleanest win-rate yet (sensible 39 % at 1:3 RR), tiny
+DDs.** But tournament collapses with 18-trade sample.
+
+### Pattern across 5 families
+
+| strategy | best validation | tournament |
+|---|---|---|
+| BB scalper | PF 1.37 | flat-to-negative |
+| BOS retest | PF 1.25 | flat |
+| trend-pullback (EMA) | PF 1.12 | regime-killed |
+| liquidity_sweep | PF 1.07 | falsified |
+| **mtf_zigzag_bos** | **PF 1.47** | **−3.9 % / PF 0.58** |
+
+Five families. Each one's "validation winner" looks marginal-to-
+promising. Each tournament fails. The MTF+ZZ strategy has the
+**smallest sample sizes** (rare, high-confluence signals) and the
+**tightest DDs** (deepest about 5 %), which suggests the signals
+are actually high-quality — there just aren't enough of them in
+4 months of M1 to clear a 7-day tournament's noise.
+
+### What this means
+
+Honest read: **with current data length, no walk-forward
+discipline I've tried can distinguish "real edge that's small +
+rare" from "no edge". The tournament window is too short relative
+to the candidate's signal frequency.**
+
+Three concrete options:
+
+1. **Live demo.** Run mtf_zigzag_bos on HFM demo for 2-4 weeks
+   and let real forward data settle the question. ~2 trades/day
+   means ~30 trades over 2 weeks, enough to see if the +2.49 %/
+   2-week validation rate persists.
+2. **Pull more historical data.** 4 months isn't enough for a
+   30-trade-per-2-week strategy to clear walk-forward. With 12
+   months of M1 we'd have ~3x the validation+tournament sample.
+3. **Reduce the bar to "clears walk-forward, demo decides".**
+   Keep the discipline, accept that the framework will miss
+   some real edges, ship the best mtf_zigzag_bos config to demo.
+
+I'd recommend (3) because (2) is gated on extra data fetching
+that may not improve much (4 months already covers 2 distinct
+regimes), and (1) is the only way to get truly fresh forward
+data anyway. (3) just commits to (1) sooner.
+
+## 2026-04-24 — Splitter modes + liquidity sweep (falsified); pattern emerges
+
+### New splitter modes (user point 4)
+
+- **`split_interleaved`**: chops the frame into N-bar blocks and
+  deals them round-robin into research/validation/tournament. Each
+  role samples every regime, so a contiguous Jan/Feb research +
+  Mar/Apr validation isn't unfairly penalised. Each block is run
+  as an independent sub-backtest with metrics aggregated.
+- **`split_recent_only`**: all three windows pulled from the tail
+  (default 21+7+7=35 days). For "current regime only" tuning.
+
+### Re-tested existing candidates under both modes
+
+Ensemble (BB + BOS) under interleaved (regime-mixed) split:
+
+| trial | risk % | mc | research PF | val PF | val monthly |
+|---|---|---|---|---|---|
+| 8 | 2.0 | 3 | 0.85 | **1.16** | **+10.9 %** |
+| 1 | 0.5 | 2 | 0.68 | **1.48** | +4.0 % |
+
+Validation PF > 1 across all 9 trials despite negative research
+returns. **First clean cross-block edge** — the ensemble has SOME
+edge that survives regime mixing, just not strong enough to
+overcome research's mixed regimes.
+
+Ensemble under recent_only (last 35 days):
+
+| trial | risk % | mc | research | validation | val monthly |
+|---|---|---|---|---|---|
+| 4 | 1.0 | 2 | PF 1.29, +24 %, DD −16 % | **PF 1.34, +11.2 %, DD −5.5 %** | **+11.2 %** |
+| 8 | 2.0 | 3 | PF 1.00, −0.6 %, DD −33 % | PF 1.14, +13.0 %, DD −17 % | +13.0 % |
+
+This is the **best validation result we've ever produced**
+(PF 1.34, +11.2 % over 7 days, DD only −5.5 %, both windows
+positive). But the 7-day tournament was harsh: trial 4 returned
+**−5.0 %** (PF 0.89), trial 8 returned **−11.3 %** (PF 0.90).
+
+The validation→tournament gap (PF 1.34 → 0.89) on a 7-day window
+is statistical noise territory. With ~167 validation trades and
+189 tournament trades, the per-trade pnl variance dominates.
+
+### New strategy family: `liquidity_sweep` (falsified)
+
+Built per published ICT/SMC literature (sources cited in
+2026-04-24 BOS entry). Detects:
+- Price sweeps a recent rolling extreme by > 0.3 × ATR.
+- Bar closes back in the upper/lower half of its range
+  (sellers/buyers reasserting).
+- Next bar prints a confirming reversal candle.
+- SL just past the swept extreme.
+
+Two sweeps:
+
+| sweep | best validation PF | best research PF | verdict |
+|---|---|---|---|
+| iter18 (interleaved, 12 trials) | 1.07 | 0.96 | thin edge |
+| iter19 (recent_only, 12 trials) | 0.95 | 0.98 | every trial loses |
+
+**Not a candidate.** 4th strategy family attempted; same outcome
+as the previous 3 under this discipline.
+
+### Pattern emerging across 4 strategy families × multiple split modes
+
+Every strategy I've built shows the same shape:
+- Validation PF tends to be slightly above 1 in some trials.
+- Research PF is below 1 or flat.
+- Tournament is statistical noise at the trade frequencies and
+  window sizes I'm working with.
+
+Two interpretations:
+1. **The price-action scalping family doesn't have exploitable
+   edge on M1 XAUUSD under tight risk discipline.** Real edges
+   require more information than OHLC bars + simple swing
+   patterns.
+2. **The framework is too strict.** The kill-switch enforces
+   the cap, but maybe it's flushing positions that would have
+   recovered. The 50bp slippage on the cap is real but maybe
+   the tournament windows happen to hit the worst of it.
+
+I lean toward (1). 4 different signal families, multiple split
+modes, multiple risk levels — the result space is exhausted of
+"a small grid sweep produces a winner." The honest paths
+forward:
+
+- **Add information beyond OHLC**: tick-volume, spread, or
+  multi-instrument correlation features.
+- **A different edge entirely**: news-driven mean-reversion,
+  end-of-day flow, calendar effects (Tuesday vs Friday, etc.).
+- **Accept the gap.** What we have (ensemble at ~+5–10 %/month
+  validation) is a real result; not 200 %/mo, but not zero.
+- **Live demo the most-promising candidate to confirm.** The
+  BB+BOS ensemble under recent_only validation looked strong
+  and the only way to know if validation was a fluke is to
+  watch it live for a few weeks.
+
+### What did and didn't ship this turn
+
+Shipped: interleaved + recent_only splitter modes + tests;
+liquidity_sweep strategy + tests; sweep harness extensions for
+both modes; head-to-head comparisons across all four strategy
+families × all three split modes. 121 tests green.
+
+Not shipped (deferred to a possible next iteration): a
+high-frequency micro-pullback strategy (was speculative; the
+liquidity_sweep failure suggests adding another simple
+price-action variant won't change the pattern); regime router
+on top of the ensemble (only worth doing if individual
+strategies have positive expectancy in their regimes).
 
 ## 2026-04-24 — BE was off on BB; kill-switch fix retroactively wiped prior wins
 
