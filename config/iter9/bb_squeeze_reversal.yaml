@@ -1,0 +1,30 @@
+extends: ../default.yaml
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+strategy:
+  __replace__: true
+  name: bb_squeeze_reversal
+  params:
+    __replace__: true
+    bb_period: 20
+    bb_mult: 2.0
+    contract_lookback: 5
+    atr_period: 14
+    sl_atr_buf: 0.30
+    max_sl_atr: 2.0
+    tp1_rr: 0.6
+    tp2_rr: 1.8
+    leg1_weight: 0.5
+    cooldown_bars: 8
+    max_trades_per_day: 5
+    htf: M15
+    htf_ema: 50
+    htf_slope_max_atr: 0.50
+    session: london_or_ny

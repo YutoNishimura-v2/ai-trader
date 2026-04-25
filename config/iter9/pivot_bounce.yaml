@@ -1,0 +1,26 @@
+extends: ../default.yaml
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+strategy:
+  __replace__: true
+  name: pivot_bounce
+  params:
+    __replace__: true
+    atr_period: 14
+    touch_atr_buf: 0.10
+    sl_atr_buf: 0.30
+    max_sl_atr: 2.0
+    tp1_rr: 0.8
+    tp2_rr: 2.0
+    leg1_weight: 0.5
+    cooldown_bars: 30
+    session: london_or_ny
+    use_s2r2: true
+    max_trades_per_day: 4
