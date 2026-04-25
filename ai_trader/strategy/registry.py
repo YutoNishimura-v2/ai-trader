@@ -28,6 +28,7 @@ def get_strategy(name: str, **params) -> BaseStrategy:
     from . import liquidity_sweep  # noqa: F401
     from . import volume_reversion  # noqa: F401
     from . import news_fade  # noqa: F401
+    from . import mtf_zigzag_bos  # noqa: F401
     from . import ensemble  # noqa: F401
     if name not in _REGISTRY:
         raise KeyError(f"Unknown strategy: {name}. Known: {sorted(_REGISTRY)}")
@@ -43,5 +44,6 @@ def list_strategies() -> list[str]:
     from . import liquidity_sweep  # noqa: F401
     from . import volume_reversion  # noqa: F401
     from . import news_fade  # noqa: F401
+    from . import mtf_zigzag_bos  # noqa: F401
     from . import ensemble  # noqa: F401
     return sorted(_REGISTRY)
