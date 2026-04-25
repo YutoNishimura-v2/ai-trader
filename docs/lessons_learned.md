@@ -261,6 +261,13 @@ progress entry for the full story.
   Lesson: for current-regime optimization, do not accept a router
   just because it improves full-history smoothness; it must preserve
   the latest held-out edge.
+- **Squeeze breakouts are not enough on M1 GOLD.** A Bollinger/
+  Keltner compression-release strategy was added and swept. Most
+  research and validation cells were negative; the best validation
+  candidate (+3.3%) failed the 14-day tournament at -16% / PF 0.54.
+  Compression alone creates too many false continuation entries
+  under M1 costs; it needs stronger MTF/session context or should
+  stay shelved.
 
 - **The walk-forward ratchet actually catches overfitting.** First
   real sweep on 2024 XAUUSD: research PF 1.50 → validation PF 0.33

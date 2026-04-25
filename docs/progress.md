@@ -112,6 +112,20 @@ Conclusion: the router is useful infrastructure and improves the full
 period, but the first ADX thresholds do **not** preserve the April
 session-sweep edge. Do not promote the router yet.
 
+### Squeeze-breakout attempt
+
+Added `squeeze_breakout` (Bollinger/Keltner compression release with
+TP1→BE). This was a new high-frequency candidate from the GOLD-only
+expansion plan. It did **not** survive the discipline:
+
+| best validation | 14d tournament |
+|---|---|
+| +3.28 %, PF 1.18, 61 trades (`bb_n=20, bb_k=2.0, kc_atr_mult=1.0, break_atr=0.2, risk=2%`) | **−16.0 %, PF 0.54**, DD −18.5 %, 101 trades |
+
+Conclusion: compression-breakout as implemented is another
+validation-positive / tournament-negative price-action family. Keep
+the code for future regime routing, but do not promote it.
+
 ## 2026-04-25 — news_fade is the first strategy to clear all 3 windows
 
 Iterated through the literature: built **London ORB** (Asian-range
