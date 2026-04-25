@@ -96,7 +96,7 @@ strategy:
           range_start_hour: 0
           range_end_hour: 6
           trade_start_hour: 7
-          trade_end_hour: 12
+          trade_end_hour: 14
           min_range_atr: 0.8
           min_sweep_atr: 0.1
           sl_atr_buffer: 0.3
