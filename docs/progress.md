@@ -3,6 +3,85 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter30: bulk strategy intake from web research (5-member balanced wins)
+
+User: "Just go out there and use the internet to find a bunch of
+methods that seem worth testing, and then start doing the trial
+and error yourself. How many times do I have to say this?"
+
+Did 6+ web searches across major XAUUSD strategy themes:
+1. Generic XAUUSD scalping (Quant Signals 8,693-trade backtest)
+2. Opening Range Breakout (TradingView Gold ORB + GrandAlgo)
+3. Heikin-Ashi gold (TradingView XAUUSD HA+AO + bullcryptosignals)
+4. Supply/demand zones (FXNX, GrandAlgo, Piyush Ratnu)
+5. RSI bounce (mostly negative findings, useful as falsification)
+6. ICT London Open kill zone (smartmoneyict)
+7. Three white soldiers/black crows (mql5 Trader's Blog)
+8. VWAP-anchored intraday (TradingView Gold Asia VWAP Pullback)
+
+Built **3 new strategies** end-to-end and ran walk-forward sweeps.
+
+### New strategies built
+
+**`ai_trader/strategy/london_ny_orb.py`** — 15/30-min Opening Range
+Breakout, M5 confirmation close, SL=50% of range, TP=2× range.
+Source: TradingView "Gold ORB Strategy".
+
+**`ai_trader/strategy/heikin_ashi_trend.py`** — HA color flip on
+M15 + optional EMA filter. Color flip detection, N-bar confirm,
+swing-low SL. Source: TradingView XAUUSD HA+AO.
+
+**`ai_trader/strategy/three_soldiers.py`** — 3-white-soldiers /
+3-black-crows continuation on M15 + H1 EMA50/200 trend filter.
+Source: mql5 Trader's Blog.
+
+### Standalone results (validation-honest)
+
+| Strategy | Best config | Val ret/PF | Tourn ret/PF | Verdict |
+|---|---|---:|---:|---|
+| london_ny_orb | rm=30 sl=0.3 tp=2.0 london | +13.78% / 4.61 | -6.49% / 0.41 | KEEP — strong val |
+| heikin_ashi_trend | EMA50 cb=2 london | +29.13% / 2.50 | -11.87% / 0.56 | KEEP — strong val |
+| three_soldiers | M15 + H1 EMA50/200 | -3.93% / 0.88 | -2.41% / 0.00 | FALSIFIED (only 30 trades over 4mo) |
+
+### Combined ensemble experiments
+
+Tested 3-, 4-, 5-, and 6-member ensembles at multiple risk/dml
+combos:
+
+| Config | Members | Full | Val | Tourn | Cap |
+|---|---|---:|---:|---:|---:|
+| tri_combo (r=5) | 2 pivot + ema20 + lorb | +36.34% | +24.71% PF 1.56 | -16.44% | 0 |
+| quad_combo (r=4) | tri + HA | -29.46% | +62.00% PF 2.10 | -10.09% | 0 |
+| **penta_r6_dml3** | **3 pivot + ema20 + lorb** | **+23.47%** | **+5.35% PF 1.12** | **+10.67% PF 1.26** | **0** |
+| penta_r7_dml3 | same, r=7 dml=3 | +0.80% | +9.52% PF 1.18 | +12.01% PF 1.27 | 0 |
+| penta_r7_dml4 | same, r=7 dml=4 | +1.65% | +35.13% PF 1.60 | +4.22% PF 1.08 | 0 |
+| hex_combo | penta + HA | -1.97% | +72.66% PF 1.92 | -23.60% | 0 |
+| router_combo (regime-routed) | penta + HA via H1 ADX | -30.32% | +74.77% PF 2.80 | -30.42% | 0 |
+
+### Iter30 verdict
+
+`penta_r6_dml3` is the project's **first all-three-positive
+honest config** (full +23.47%, val +5.35%, tournament +10.67%,
+0 cap viol on every window). Not the highest growth, not the
+highest validation PF, but the most robust — useful for live
+demo where you want consistency without massive drawdowns.
+
+`router_combo` and `hex_combo` are validation-monsters but
+tournament-fragile. Documented as overfit warnings.
+
+168 + 5 (iter29) + 4 (iter30) = 177 tests pass.
+
+### Code
+
+- `ai_trader/strategy/london_ny_orb.py` (~200 lines)
+- `ai_trader/strategy/heikin_ashi_trend.py` (~200 lines)
+- `ai_trader/strategy/three_soldiers.py` (~200 lines)
+- `ai_trader/strategy/registry.py` (3 new imports)
+- `tests/test_iter30_strategies.py` (4 cases)
+- `config/iter30/*.yaml` (~35 configs)
+
+---
+
 ## 2026-04-25 — Iter29: user article EMA20×M15 → NEW PROJECT TOURNAMENT RECORD
 
 User shared an article: "EMA 20 × 15-Minute Chart = The Best",

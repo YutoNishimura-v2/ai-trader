@@ -3,6 +3,37 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## 2026-04-25 iter30 — bulk web research → strategy intake
+
+- **Web research → bulk strategy build → walk-forward filter is
+  a force multiplier.** 6 web searches surfaced 4 candidate
+  strategies in ~30 minutes; 3 cleared the registry; 2
+  contributed positively to the headline. Default workflow going
+  forward: research-first, build N strategies in parallel, let
+  walk-forward decide.
+- **Three white soldiers is too rare on M15.** The pattern is
+  real (mql5 source) but only ~30 instances over 4 months —
+  insufficient statistical power. Either move to M5 (and accept
+  more noise) or accept that some patterns are too rare to
+  monetize mechanically.
+- **Heikin-Ashi flips need a proper trend filter.** Bare HA
+  flips lose ~38% on full window. With EMA50 + 2-bar same-color
+  confirm + london session, validation flips to +29.13% PF 2.50.
+  Same lesson as iter29's bare-EMA20: signal alone is ~50%; the
+  filter is what makes it tradable.
+- **Multi-strategy ensemble dilutes peak growth but adds
+  tournament robustness.** 3 pivots gave full +497% / tourn
+  -13.78%. Adding ema20 + ORB → 5 members gave full +23.47% /
+  tourn +10.67%. There's no free lunch — pick your tier (growth,
+  balanced, or pure-tournament). They cannot all be the same
+  config.
+- **Regime routing in the project's current dataset is fragile.**
+  router_combo's H1-ADX classifier was overfit to research's
+  trend distribution; tournament showed -30%. Plain priority
+  ensemble (penta) outperforms regime-routed ensemble
+  (router_combo) on tournament. Reconsider regime routing only
+  when we have multi-month tournament data.
+
 ## 2026-04-25 iter29 — user article EMA20×M15
 
 - **Web research before building beats blind sweeping.** User

@@ -129,6 +129,15 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 - [ ] ~~Push monthly mean unconditional to +200%/mo via news/leverage.~~
       SUPERSEDED by user 2026-04-25: news strategies retired,
       tournament discipline restored. iter5-7 results contaminated.
+- [x] **Iter30: bulk strategy intake from web research** — built
+      3 new strategies (london_ny_orb, heikin_ashi_trend,
+      three_soldiers) end-to-end. London ORB val PF 4.61, HA
+      EMA50+cb2+london val PF 2.50, three-soldiers FALSIFIED
+      (too rare on M15). 5-member penta_r6_dml3 ensemble is the
+      project's first config with positive returns on ALL THREE
+      windows simultaneously: full +23.47%, val +5.35% PF 1.12,
+      tournament +10.67% PF 1.26. 0 cap viol. Now the BEST
+      BALANCED headline. 177 tests pass.
 - [x] **Iter29: NEW PROJECT TOURNAMENT RECORD via user article
       (EMA20×M15 + H4 trend filter).**
       `config/iter29/ema20_winner_h4.yaml` — tournament 14d

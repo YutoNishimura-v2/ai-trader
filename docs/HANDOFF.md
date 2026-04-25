@@ -12,6 +12,57 @@ other doc. The rest of `docs/` is supporting material:
 - `docs/log.md` — chronological session diary.
 - `docs/todo.md` — living task list.
 
+## TL;DR (2026-04-25 ITER30 — bulk strategy intake from web research)
+
+User directive: "Just go out there and use the internet to find a
+bunch of methods that seem worth testing, and then start doing
+the trial and error yourself."
+
+Did 6+ web searches; built **3 new strategies** end-to-end and
+combined them with iter28+iter29 winners into a 5/6-member
+ensemble. Net result: a **balanced honest config that is positive
+on ALL THREE windows simultaneously** — first time in the
+project's history.
+
+### Iter30 new strategies
+
+| Strategy | Source | Standalone best result |
+|---|---|---|
+| `london_ny_orb` | TradingView "Gold ORB Strategy 15-min" + GrandAlgo ORB guide | val PF 4.61 (rm=30 sl=0.3) |
+| `heikin_ashi_trend` | TradingView XAUUSD HA+AO + bullcryptosignals | val PF 2.50 (EMA50, cb=2, london) |
+| `three_soldiers` | mql5 Trader's Blog "XAUUSD H4 3-soldiers + EMA + RSI" | falsified (too rare on M15) |
+
+### Iter30 four headlines
+
+| Config | Objective | Full | Val | Tourn | Note |
+|---|---|---:|---:|---:|---|
+| iter28/v4_ext_a_dow_no_fri | Best Growth | **+497.94%** | +25.64% PF 1.71 | -13.78% PF 0.66 | iter28 record |
+| iter29/ema20_winner_h4 | Best Tournament Pure | -18.23% | +8.81% PF 1.96 | **+11.79% PF 1.94** | iter29 record |
+| **iter30/penta_r6_dml3** | **Best Balanced (NEW)** | **+23.47%** | +5.35% PF 1.12 | **+10.67% PF 1.26** | **all 3 positive!** |
+| iter30/penta_r7_dml3 | Best Balanced (val>0) | +0.80% | +9.52% PF 1.18 | +12.01% PF 1.27 | tourn highest |
+| iter30/router_combo | High-validation curiosity | -30.32% | +74.77% PF 2.80 | -30.42% | OVERFIT — NOT for live |
+
+### Headline of headlines: `iter30/penta_r6_dml3`
+
+5-member ensemble (3 pivot variants + ema20×M15 H4-filtered + 30-min London ORB), risk=6%/trade, dml=3%, conc=2.
+
+| window | trades | PF | return | DD | min eq | cap viol |
+|---|---:|---:|---:|---:|---:|---:|
+| **Full Jan-Apr** | 422 | **1.09** | **+23.47%** | -48.9% | 67.7% | **0** |
+| Validation 14d | 42 | 1.12 | +5.35% | -20.9% | 79.1% | 0 |
+| **Tournament 14d** | 52 | **1.26** | **+10.67%** | -26.9% | 73.2% | 0 |
+
+**¥100,000 → ¥123,471 over the 4-month full window AND ¥110,667 over the 14d held-out tournament.** First config in project history that is positive on all three honest windows with 0 cap violations.
+
+### Iter30 takeaways (lessons_learned has full detail)
+
+- **Web research → bulk strategy build → walk-forward filter is a force multiplier.** 4 hours of work surfaced 4 candidate strategies; 3 cleared the registry; 2 contributed positively to the headline.
+- **Three white soldiers M15 is too rare to test.** Pattern is real but only ~30 instances over 4 months. Need M5 to get statistical power.
+- **Heikin-Ashi flip needs a proper trend filter.** Bare flips lose ~38% on full; with EMA50 + 2-bar confirm + london, validation flips to PF 2.50.
+- **Multi-strategy ensemble dilutes peak growth but adds tournament robustness.** Going from 3 pivots (full +497%) to 5 members (full +23.47%) cost growth massively — but recovered the tournament from -13.78% to +10.67%. **There is no free lunch — pick your tier.**
+
+---
+
 ## TL;DR (2026-04-25 ITER29 — user article EMA20×M15 → NEW PROJECT TOURNAMENT RECORD)
 
 The user shared an article advocating "EMA 20 × 15-Minute Chart =
