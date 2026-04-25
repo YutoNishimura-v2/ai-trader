@@ -1,0 +1,67 @@
+extends: ../default.yaml
+
+# iter16 London ensemble v2: pivot_bounce_london (iter15 v7 params)
+# + session_sweep_reclaim London-only (val PF 3.00 standalone).
+# Concurrency=1 forces priority — pivot first (proven full-period winner).
+# Risk envelope: 3.0% per trade, kill=5%, dynamic risk throttle (v7 settings).
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+risk:
+  risk_per_trade_pct: 3.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 5.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000005
+  dynamic_risk_enabled: true
+  min_risk_per_trade_pct: 0.7
+  max_risk_per_trade_pct: 5.0
+  confidence_risk_floor: 1.0
+  confidence_risk_ceiling: 1.0
+  drawdown_soft_limit_pct: 12.0
+  drawdown_hard_limit_pct: 22.0
+  drawdown_soft_multiplier: 0.7
+  drawdown_hard_multiplier: 0.4
+
+strategy:
+  __replace__: true
+  name: ensemble
+  params:
+    __replace__: true
+    members:
+      - name: pivot_bounce
+        params:
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.20
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          cooldown_bars: 30
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 4
+      - name: session_sweep_reclaim
+        params:
+          range_start_hour: 0
+          range_end_hour: 6
+          trade_start_hour: 7
+          trade_end_hour: 12
+          min_range_atr: 0.8
+          min_sweep_atr: 0.2
+          sl_atr_buffer: 0.3
+          max_sl_atr: 2.0
+          atr_period: 14
+          tp_mode: opposite_edge
+          tp1_rr: 1.0
+          tp2_rr: 2.0
+          leg1_weight: 0.5
+          max_trades_per_day: 2

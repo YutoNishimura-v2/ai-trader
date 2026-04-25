@@ -3,6 +3,44 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter16: London ensemble v2 (val PF 3.05 record); sweep_london risk×TP grid
+
+User: "dont stop. keep going"
+
+### Angle 1: sweep_reclaim London-only risk × TP 36-pt grid
+
+| risk | tp1 | full | val | val PF |
+|---:|---:|---:|---:|---:|
+| 2.0 | 1.0 | -8.01% | +6.61% | 3.14 |
+| 4.0 | 1.0 | -18.78% | +15.12% | 3.44 |
+| **5.0** | **1.0** | -22.00% | **+19.21%** | 3.00 |
+| 5.0 | 0.8 | -12.62% | +16.86% | 2.76 |
+
+sweep_reclaim London at risk=5/tp1=1.0 has VAL +19.21% PF 3.00
+but full -22% — bleeds Jan-Feb. Strong validation but doesn't
+survive full period like pivot_bounce does.
+
+### Angle 2: London ensemble v2 (pivot_v7 + sweep_london)
+
+| window | val | t14 | t7 | full |
+|---|---:|---:|---:|---:|
+| ensemble_london_v2 | **+17.33% (PF 3.05)** | -11.99% | -8.37% | +14.45% |
+| pivot_v7 standalone | +9.49% (PF 2.79) | -16.27% | -15.68% | +57.95% |
+
+Ensemble has STRONGER val PF (3.05 — record) and softer
+tournament loss, but FULL is much weaker (+14.45% vs +57.95%).
+sweep_reclaim's Jan-Feb losses dilute pivot's strong months.
+
+### Iter16 verdict
+
+- pivot_bounce_london_v7 REMAINS the project headline standalone
+  (full +57.95%, val PF 2.79).
+- ensemble_london_v2 ships as a SECONDARY headline for objectives
+  prioritizing validation PF (3.05) over full-period.
+- iter9 v4_router still wins TOURNAMENT.
+
+168 tests still passing.
+
 ## 2026-04-25 — Iter15: pivot_bounce_london_v7 — ¥100,000 → ¥157,946 (+57.95% full)
 
 User: "dont stop. keep going"
