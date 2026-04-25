@@ -176,10 +176,20 @@ class PivotBounce(BaseStrategy):
         tp1 = entry + p["tp1_rr"] * risk if side == SignalSide.BUY else entry - p["tp1_rr"] * risk
         tp2 = entry + p["tp2_rr"] * risk if side == SignalSide.BUY else entry - p["tp2_rr"] * risk
         w1 = float(p["leg1_weight"])
-        legs = (
-            SignalLeg(weight=w1, take_profit=float(tp1), move_sl_to_on_fill=float(entry), tag="tp1"),
-            SignalLeg(weight=1.0 - w1, take_profit=float(tp2), tag="tp2"),
-        )
+        # iter28: single-TP case (leg1_weight ≈ 1.0). Only emit one leg.
+        if w1 >= 0.999:
+            legs = (
+                SignalLeg(weight=1.0, take_profit=float(tp1), tag="tp1"),
+            )
+        elif w1 <= 0.001:
+            legs = (
+                SignalLeg(weight=1.0, take_profit=float(tp2), tag="tp2"),
+            )
+        else:
+            legs = (
+                SignalLeg(weight=w1, take_profit=float(tp1), move_sl_to_on_fill=float(entry), tag="tp1"),
+                SignalLeg(weight=1.0 - w1, take_profit=float(tp2), tag="tp2"),
+            )
         return Signal(side=side, entry=None, stop_loss=sl, legs=legs, reason=reason)
 
     def on_bar(self, history: pd.DataFrame) -> Signal | None:

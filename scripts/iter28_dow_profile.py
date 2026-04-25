@@ -59,7 +59,10 @@ def main():
     df = load_ohlcv_csv(args.csv)
     if args.window != "full":
         from ai_trader.backtest.splitter import load_recent_only_held_out
-        split = load_recent_only_held_out(df, validation_days=14, tournament_days=14)
+        split = load_recent_only_held_out(
+            df, validation_days=14, tournament_days=14,
+            i_know_this_is_tournament_evaluation=True,
+        )
         df = getattr(split, args.window)
     strat, risk, broker = build(cfg)
     res = BacktestEngine(strategy=strat, risk=risk, broker=broker).run(df)
