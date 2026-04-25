@@ -1,0 +1,28 @@
+extends: ../default.yaml
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+strategy:
+  __replace__: true
+  name: order_block_retest
+  params:
+    __replace__: true
+    swing_lookback: 8
+    atr_period: 14
+    retest_tolerance_atr: 0.20
+    sl_atr_buf: 0.30
+    max_sl_atr: 2.5
+    tp1_rr: 1.0
+    tp2_rr: 3.0
+    leg1_weight: 0.5
+    cooldown_bars: 6
+    setup_ttl_bars: 60
+    max_trades_per_day: 5
+    min_displacement_atr: 1.0
+    session: london_or_ny

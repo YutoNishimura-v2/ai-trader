@@ -1,0 +1,29 @@
+extends: ../default.yaml
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+strategy:
+  __replace__: true
+  name: keltner_mean_reversion
+  params:
+    __replace__: true
+    ema_period: 20
+    atr_period: 14
+    kelt_mult: 2.0
+    slope_lookback: 10
+    slope_max_atr_long: 0.20
+    slope_max_atr_short: 0.20
+    sl_atr_buf: 0.30
+    max_sl_atr: 2.5
+    tp1_rr: 0.6
+    tp2_rr: 2.0
+    leg1_weight: 0.5
+    cooldown_bars: 8
+    max_trades_per_day: 5
+    session: london_or_ny

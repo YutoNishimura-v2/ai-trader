@@ -3,6 +3,85 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter12: comprehensive web-driven search (KELTNER, ORDER BLOCK both FALSIFIED)
+
+User 2026-04-25: "conduct a truly comprehensive search across the
+internet... Keep experimenting. Do not give up."
+
+Three web searches surfaced candidate strategies:
+  1. ICT Smart Money Concepts (Order Blocks + Break of Structure)
+  2. Keltner channel mean reversion (ATR-based bands, EMA exit)
+  3. Asia-range false breakout (already covered by session_sweep_reclaim)
+
+### Phase 1: NEW STRATEGY keltner_mean_reversion
+
+EMA(20) ± mult*ATR Keltner bands. LONG on lower-band touch +
+close-back + bullish rejection + EMA slope not strongly down.
+Mirror for SHORT. TP1 at EMA mid, TP2 at opposite band.
+
+Default standalone (ema=20, mult=2.0) at iter9 user sizing:
+  Full: -0.31% (essentially break-even)
+  Validation: -0.25% PF 0.96
+  0 cap viol
+
+12-point parameter sweep (ema × mult):
+  ema=14,m=1.5: full +6.69%, val -3.95%, PF 0.80
+  ema=20,m=1.5: full +42.52%, val -3.22%, PF 0.85  ← in-sample winner
+  ema=20,m=2.0: full -0.31%, val -0.25%, PF 0.96  (baseline)
+  ema=30,m=1.5: full +24.63%, val -2.08%, PF 0.92
+  ema=40,m=1.5: full +15.42%, val -4.38%, PF 0.85
+
+EVERY config has NEGATIVE validation. The full-period gains are
+in-sample artifacts (Jan-Feb research). Validation discipline
+catches the overfit pattern that the user explicitly called out.
+
+Also tried lower risk (0.5, 1.0, 1.5%): val PF stays ~0.97-1.01.
+Keltner has no real edge on M1 XAUUSD at any risk level.
+
+VERDICT: keltner_mean_reversion FALSIFIED.
+
+### Phase 2: NEW STRATEGY order_block_retest (ICT/SMC)
+
+Detect Break of Structure (BOS), identify the Order Block (last
+opposite candle before BOS impulse), enter on retest of the OB
+zone with rejection candle.
+
+Default standalone at iter9 user sizing:
+  Full: -24.27%, val -2.04% PF 0.94, 0 cap viol
+
+12-point parameter sweep (swl × disp):
+  swl=5/disp=0.5: full +21.40%, val +2.18% PF 1.07, 1 cap viol ❌
+  swl=5/disp=2.0: full -37.62%, val +10.67% PF 1.26, 1 cap viol ❌
+  swl=8/disp=0.5: full -21.64%, val +4.74% PF 1.15, 1 cap viol ❌
+  All clean (cap=0) configs have negative validation.
+
+VERDICT: order_block_retest FALSIFIED at iter9 sizing. Best
+configs all trip cap_violations from over-sized losses on M1
+gold's wicky stop-hunts (which is exactly what the strategy is
+trying to capture, but the SL placement isn't tight enough at
+this sizing).
+
+### Iter12 verdict
+
+Two more strategies built, two more honest negatives. The
+mechanical edge ceiling on M1 XAUUSD with iter9 user sizing
+remains:
+  - pivot_bounce_v2 (iter11): full +27.21%, val PF 2.18 — the strongest
+    standalone non-news strategy in project history
+  - ensemble_priceaction_v4_router (iter9): tournament 14d +5.41%,
+    7d +8.91% — the strongest tournament number
+
+Tried since iter9:
+  - momentum_continuation: FALSIFIED (full -45.8%, 1 cap viol)
+  - 6 ensemble combinations of pivot+sweep+bos+flush+bb: all degrade
+    v4_router tournament
+  - Keltner mean reversion: FALSIFIED (val PF ~1.0 across params)
+  - ICT order block retest: FALSIFIED (val negative or cap viol)
+
+Comprehensive web-driven search produced 0 new validation-clean
+positive-edge strategies at user sizing. The honest mechanical
+ceiling on this dataset is real.
+
 ## 2026-04-25 — Iter11: news strategies PERMANENTLY PROHIBITED + pivot_bounce_v2 wins
 
 User 2026-04-25 directive (controller turn): "stop using the news.

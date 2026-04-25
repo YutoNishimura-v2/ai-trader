@@ -46,6 +46,8 @@ def get_strategy(name: str, **params) -> BaseStrategy:
     from . import vwap_sigma_reclaim  # noqa: F401
     from . import bb_squeeze_reversal  # noqa: F401
     from . import momentum_continuation  # noqa: F401
+    from . import keltner_mean_reversion  # noqa: F401
+    from . import order_block_retest  # noqa: F401
     if name not in _REGISTRY:
         raise KeyError(f"Unknown strategy: {name}. Known: {sorted(_REGISTRY)}")
     return _REGISTRY[name](**params)
@@ -78,4 +80,6 @@ def list_strategies() -> list[str]:
     from . import vwap_sigma_reclaim  # noqa: F401
     from . import bb_squeeze_reversal  # noqa: F401
     from . import momentum_continuation  # noqa: F401
+    from . import keltner_mean_reversion  # noqa: F401
+    from . import order_block_retest  # noqa: F401
     return sorted(_REGISTRY)
