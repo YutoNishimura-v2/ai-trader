@@ -75,6 +75,25 @@ Interpretation:
 
 Tests: full suite **141 passed**.
 
+### Risk/BE frontier follow-up
+
+Swept `session_sweep_reclaim_london` over risk 1-5 % and TP1
+break-even trigger 0.4/0.6/1.0R. The best validation profile used
+**risk=5 %, TP1=1.0R**:
+
+| window | trades | PF | return | DD | min equity | notes |
+|---|---:|---:|---:|---:|---:|---|
+| validation | 14 | 2.93 | +18.7 % | −9.5 % | n/a | selected |
+| 14d tournament | 18 | **3.01** | **+29.1 %** | −17.3 % | **95.0 %** | 1 daily +30% hit, 0 loss hits |
+| 7d tournament | 8 | **6.87** | **+36.2 %** | −20.6 % | **98.8 %** | 1 daily +30% hit |
+| full Jan-Apr | 94 | 1.25 | +6.14 % | −18.0 % | 90.6 % | April **+14.9 %**, March −0.7 % |
+
+This is the first configuration in the project to hit the user's
+daily +30 % target on held-out recent data while keeping the min
+equity safely above the zero-cut danger zone. The result still does
+not reach 50-100 % monthly, but the recent 7d/14d pace is now in the
+right order of magnitude for an HRHR profile.
+
 ## 2026-04-25 — news_fade is the first strategy to clear all 3 windows
 
 Iterated through the literature: built **London ORB** (Asian-range

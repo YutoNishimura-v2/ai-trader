@@ -23,17 +23,18 @@ the strongest current held-out result is now
 the Asian range.
 
 The current best recent held-out signal is materially larger but
-still far below the 200 %/month aspiration: `session_sweep_reclaim`
-returned **+7.9 % over the latest 14-day tournament** and **+9.25 %
-over the latest 7-day tournament** at 2 % risk, with no cap
-violations and min equity > 98 %. Full Jan-April remains negative,
-so the latest regime is the only reason this is a candidate.
+still below the 200 %/month aspiration: `session_sweep_reclaim`
+with an aggressive 5 % risk / TP1=1R profile returned **+29.1 % over
+the latest 14-day tournament** and **+36.2 % over the latest 7-day
+tournament**, with no cap violations and min equity > 95 %. Its full
+Jan-April run is now positive (+6.1 %, April +14.9 %, March -0.7 %)
+but Jan/Feb are still weak, so latest-regime focus remains essential.
 
 The next concrete moves (in `docs/todo.md`): refine
-`session_sweep_reclaim` with M5/M15 confirmation and risk/BE
-management; build a GOLD-only regime router; keep `news_fade` as a
-low-frequency defensive component; and continue staged research
-batches without tuning against the held-out windows.
+`session_sweep_reclaim` with M5/M15 confirmation and regime gating;
+keep `news_fade` as a low-frequency defensive component; and
+continue staged GOLD-only research batches without tuning against the
+held-out windows.
 
 ## Project facts
 

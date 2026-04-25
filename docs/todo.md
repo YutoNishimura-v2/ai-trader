@@ -76,10 +76,16 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
       First result: `session_sweep_reclaim` cleared 7d/14d
       tournament (+9.25%/+7.90%) while prior validation winners
       failed tournament.
-- [ ] **Risk/BE frontier for `session_sweep_reclaim`**: sweep
+- [x] **Risk/BE frontier for `session_sweep_reclaim`**: sweep
       risk 1-5%, TP1/TP2, range/session windows, and SL caps to see
       whether April-positive edge can scale toward 50-100%/month
-      without near-zero-cut drawdowns.
+      without near-zero-cut drawdowns. Best current profile is
+      `config/session_sweep_reclaim_london.yaml` with risk=5%,
+      TP1=1R: 14d tournament +29.1%, 7d tournament +36.2%, full
+      Jan-Apr +6.1%, April +14.9%, min equity 90.6%.
+- [ ] **Add M5/M15 confirmation to `session_sweep_reclaim`**:
+      filter London sweep/reclaim by HTF bias or VWAP/ADX so Jan/Feb
+      drag is reduced without killing the April edge.
 - [ ] **Regime router**: arm `vwap_reversion` only in chop, BB-
       family only in low-vol, leave `news_fade` always on.
       Hypothesis: route by regime to recover the validation edges
