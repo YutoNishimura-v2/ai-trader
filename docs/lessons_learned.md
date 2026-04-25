@@ -3,6 +3,38 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## 2026-04-25 iter9 — honest reset (price-action only)
+
+- **Tournament-window peeking is selection bias.** iter5-iter7
+  reads tournament 30+ times during sweeps, picking variants
+  that did well on it. The reported tournament numbers (+148-206%)
+  are NOT honest held-out. Restoring plan v3 §B.3 (tournament
+  opened ONCE per strategy family) costs reported headlines but
+  protects against false promotion. iter9's single-shot
+  tournament is +5.41% — small but real.
+- **Risk per trade has a sweet spot specific to the strategy's
+  edge.** session_sweep_reclaim has small per-trade edge
+  (val PF 1.49 at small risk). At the user's 2.5% sizing, that
+  same strategy goes -16% full-period: bad-trade losses scale
+  faster than good-trade gains. At 1.0% risk inside an ensemble
+  with regime_router, the same strategy delivers val +20%
+  PF 2.33. Lesson: lifting risk only works if the per-trade
+  edge is robust enough to survive amplification.
+- **Mechanical pattern detection cannot replicate discretionary
+  contextual judgement.** The user's recipe (HH/HL trend → fib
+  pullback → rejection candle → wide SL → BE on TP1) was
+  built faithfully in `fib_pullback_scalper` and produced
+  full -73% / val +1.72% (PF 1.04). The user's discretionary
+  edge depends on a "skip-or-trade" decision the algorithm
+  doesn't have. Conclusion: don't expect mechanical
+  implementations of discretionary recipes to match the user's
+  manual results.
+- **Hand-curated news calendars introduce subtle selection bias
+  even when the events themselves are real.** In iter5-7, my
+  choice of which mid-impact events to include in
+  xauusd_2026_full.csv was probably biased toward ones that
+  "felt" tradeable. The user correctly retired this approach.
+
 ## 2026-04-25 push-to-200% iter3 (ALL MONTHS POSITIVE)
 
 - **The "chop edges" (sweep_reclaim, friday_flush) are

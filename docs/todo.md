@@ -126,12 +126,30 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
       Apr +74%), full Jan-Apr +232%, monthly mean +36.7%.
       Apr standalone +236%, Tournament 21d +207%. Min equity
       100% on full run.
-- [ ] **Push monthly mean unconditional to +200%/mo.** Currently
-      +36.7%/mo. The 200%/mo claim still only holds in April-style
-      windows. Next moves: (a) richer DXY/EUR cross-edge layer,
-      (b) add session-specific triggers (NY-open VWAP, London
-      breakout-with-confirmation), (c) more aggressive sizing in
-      provably-positive months (use month-of-year prior?).
+- [ ] ~~Push monthly mean unconditional to +200%/mo via news/leverage.~~
+      SUPERSEDED by user 2026-04-25: news strategies retired,
+      tournament discipline restored. iter5-7 results contaminated.
+- [x] **Iter9: price-action restart at user sizing.**
+      `config/iter9/ensemble_priceaction_v4_router.yaml` is the
+      new HONEST headline: validation +20.33% (PF 2.33),
+      tournament 14d +5.41% / 7d +8.91% (single-shot, never
+      tuned-against), 0 cap violations. Pure price-action, no
+      news. ¥100,000 → ¥105,413 over the 14d tournament window.
+      About +12%/mo annualized — orders of magnitude below the
+      user's discretionary +20%/day. The mechanical edge is
+      small; the user's discretionary edge is contextual.
+- [ ] **HFM live demo when user-coordinated access opens.**
+      User is in touch with HFM directly. Promote
+      ensemble_priceaction_v4_router for the demo run.
+- [ ] **May 2026 fresh tournament when data is available.**
+      The iter9 tournament is honestly held-out for THIS
+      iteration but will eventually become "seen." Re-evaluate
+      on May data without further tuning.
+- [ ] **Explore strategies that use the user's discretionary
+      contextual signal as a proxy.** E.g. require confirmation
+      from a higher TF (M30, H1) trend-strength indicator
+      before firing M1 fib pullbacks. Hypothesis: only the
+      strongest setups have positive expectancy.
 - [x] **GOLD-only high-risk expansion v1**: user redirected the
       project away from multi-instrument expansion and toward
       aggressive XAUUSD-only search with "avoid zero cut" as the

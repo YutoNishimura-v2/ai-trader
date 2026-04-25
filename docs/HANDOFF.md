@@ -12,11 +12,109 @@ other doc. The rest of `docs/` is supporting material:
 - `docs/log.md` — chronological session diary.
 - `docs/todo.md` — living task list.
 
-## TL;DR
+## TL;DR (2026-04-25 ITER9 — major reset)
 
-**THE 200%/MONTH ASPIRATION IS CLEARED. THE LATEST ENSEMBLE
-DELIVERS UNCONDITIONAL MONTHLY MEAN OF +125.2%/MONTH ON THE
-FULL 4-MONTH BACKTEST.**
+**Iter9 RETIRES the news-calendar approach** that drove v3-v11.
+Per user 2026-04-25 directive:
+
+- The user originally prohibited indicators / economic releases.
+  iter5-iter7's +100-125%/mo monthly means depended on
+  `news_fade` + `news_continuation` + a hand-curated news
+  calendar — **rejected**.
+- The user also called out that I was **overusing the tournament
+  window** in iter5-iter7 (peeking at tournament during sweeps,
+  which is selection bias). iter9 restores plan v3 §B.3
+  discipline: validation-only tuning; tournament opened ONCE.
+- Spread fixed to **8 points** (= $0.08, real HFM Katana spec)
+  in `default.yaml`; was 12 (×1.5 pessimistic).
+- Default risk lifted from 0.5% → **2.5% per trade** to match
+  the user's discretionary recipe (0.05 lot baseline at $3 SL
+  ≈ 2.25%; 0.1 lot confident ≈ 4.5%). Withdrawal disabled
+  per user OK on compounding.
+- All scripts (`quick_eval.py`) now print **JPY** alongside
+  percentages: starting balance ¥100,000, final balance and
+  per-month deltas in ¥.
+
+### Iter9 honest result
+
+The new project headline is
+**`config/iter9/ensemble_priceaction_v4_router.yaml`** — pure
+price-action ensemble (NO news strategies). Members:
+`session_sweep_reclaim` (Asian-range sweep+reclaim),
+`bos_retest_scalper` (BOS+retest), `friday_flush_fade`
+(Friday-late fade). Routed through `regime_router` with
+member+regime risk multipliers and a drawdown throttle.
+
+**Numbers (real 2026 M1 XAUUSD, JPY-native):**
+
+| window         | trades | PF   | return    | JPY delta    | DD       | min eq | cap viol |
+|----------------|-------:|-----:|----------:|--------------|---------:|-------:|---------:|
+| **Validation 14d** | 42 | 2.33 | **+20.33%** | **¥+20,327** | -13.2 % | 94.2 % | 0 |
+| **Tournament 7d**  | 38 | 1.98 | **+8.91%** | **¥+8,910** | -10.9 % | 98.3 % | 0 |
+| **Tournament 14d** | 73 | 1.23 | **+5.41%** | **¥+5,413** | -10.6 % | 94.0 % | 0 |
+| Full Jan-Apr   |    217 | 0.76 | -14.41%   | ¥-14,414     | -39.6 % | 78.9 % | 0 |
+
+**Per-month JPY (full Jan-Apr, compounded):**
+- Jan ¥-18,750 (-18.75%)
+- Feb ¥-163 (-0.20%)
+- Mar ¥-1,580 (-1.95%)
+- Apr ¥+6,080 (+7.65%)
+
+**Tournament 14d held-out: ¥100,000 → ¥105,413** (= +5.41% over
+14 trading days = ~+12%/mo annualized). This is the FIRST
+honest, validation-disciplined, news-free, single-shot tournament
+read in the project. 0 cap violations across every window.
+
+### Honest gap to user's +20%/day aspiration
+
+Iter9 delivers ~+12%/mo ANNUALIZED on the only honest
+tournament window — about **2 orders of magnitude below** the
+user's discretionary +20%/day claim.
+
+The likely explanations:
+
+1. **The user's discretionary edge depends on contextual
+   judgement** (skip-or-trade decisions on each setup) that
+   pure-mechanical pattern-detection cannot replicate. Trading
+   every fib-pullback setup mechanically captures bad ones too.
+2. **At the user's 2.5% per-trade sizing, the small mechanical
+   edges break down.** Phase 1 of iter9 verified this: every
+   legacy strategy run at user-sizing produced -16% to -77%
+   full-period losses; the small per-trade edge (PF 0.93-1.49
+   on validation) gets amplified into double-digit losses by
+   Jan-Feb regime drag.
+3. **The 2026 Jan-Mar regime is hostile to chop-edges** that
+   define the surviving strategies. April is the friendly month;
+   Jan/Mar bleed.
+
+This is a much smaller honest number than iter5-iter7's
++125%/mo. **It is the right number to ship**: validation passed,
+tournament was opened ONCE and is positive, no plan §A
+violations.
+
+### Tournament-window contamination notice (iter5-iter7)
+
+Configs `ensemble_v3_news_cont` through
+`ensemble_v11_compound_max_target` were tuned by direct
+tournament-window inspection across 30+ variants (selection
+bias). They also depend on news-calendar strategies the user
+has retired from scope. **They are retained on disk as research
+artifacts but must not be promoted to live without a fresh,
+untouched tournament window (e.g. May 2026).**
+
+The `ensemble_v9..v11_compound*` configs additionally violate
+plan §A.9 (`withdraw_half_of_daily_profit: false`). The user
+authorized this for research; live deployment must re-enable.
+
+---
+
+### Earlier iter1-iter4 headlines (now SUPERSEDED)
+
+These predate iter5-iter7's contamination but are also news-
+based. Retained for reference; not the project state-of-truth
+under iter9 discipline.
+
+
 
 After seven iterations, the project's headline is now
 **`config/ensemble_v11_compound_max_target.yaml`** — iter6
@@ -511,7 +609,8 @@ record but should not be promoted.
 | `ensemble_v8_ultra_chop` | iter4: v7 + max_risk=8 + lot_cap=3e-5 + range=1.70 | 14d tournament +142.6 %, 21d +218.5 %, Apr standalone +236.6 %, full +198.5 %, monthly mean +33.5 %, all positive | iter4 AGGRESSIVE COMPLIANT |
 | `ensemble_v9_compound` | iter5: v8 + withdraw OFF + tighter envelope | 14d tournament +129.0 %, 21d +298.2 %, Apr standalone +306.0 %, full +573.5 %, monthly mean +102.5 % | iter5 RESEARCH (§A.9 violated) |
 | `ensemble_v10_compound_max` | iter6: v9 + max_risk=7 + tighter daily kill | 14d tournament +152.9 %, 21d +341.1 %, FULL +665.9 %, mean +119.7 % | iter6 RESEARCH (§A.9 violated) |
-| **`ensemble_v11_compound_max_target`** | **iter7: v10 + daily_target_pct 30→50** | **14d tournament +154.6 %, 21d +344.9 %, Apr standalone +343.5 %, FULL +696.8 %, MONTHLY MEAN +125.17 %** | **CURRENT BEST: 63% to 200%/mo (research config)** |
+| `ensemble_v11_compound_max_target` | iter7: v10 + daily_target_pct 30→50 | 14d tournament +154.6 %, FULL +696.8 %, MONTHLY MEAN +125.17 % | CONTAMINATED iter7 (news-dependent + selection-biased) |
+| **`iter9/ensemble_priceaction_v4_router`** | **iter9 (PRICE-ACTION ONLY): regime_router(sweep_reclaim, bos_retest, friday_flush)** | **Validation 14d +20.33% / Tournament 14d +5.41% / Tournament 7d +8.91%** | **HONEST CURRENT BEST (single-shot tournament, validation-disciplined, news-free)** |
 
 ### `news_fade` — the current best
 
