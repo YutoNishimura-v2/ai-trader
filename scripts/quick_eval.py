@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from ai_trader.backtest.engine import BacktestEngine
 from ai_trader.backtest.metrics import compute_metrics
 from ai_trader.backtest.splitter import load_recent_only_held_out
+from ai_trader.backtest.sweep import risk_kwargs_from_config
 from ai_trader.broker.paper import PaperBroker
 from ai_trader.config import load_config
 from ai_trader.data.csv_loader import load_ohlcv_csv
@@ -40,18 +41,17 @@ def _build(cfg: dict[str, Any]):
     )
     fx = FixedFX.from_config(cfg.get("fx") or {}) if cfg.get("fx") else None
     risk_cfg = cfg["risk"]
+    # NOTE: pre-2026-04-25 quick_eval did NOT pass dynamic-risk
+    # kwargs to RiskManager, silently ignoring the meta-risk layer.
+    # Use risk_kwargs_from_config() to wire ALL knobs (dynamic_risk,
+    # confidence floor/ceiling, drawdown throttle, etc.).
     risk = RiskManager(
         starting_balance=float(cfg["account"]["starting_balance"]),
         max_leverage=float(cfg["account"]["max_leverage"]),
         instrument=instrument,
-        risk_per_trade_pct=float(risk_cfg["risk_per_trade_pct"]),
-        daily_profit_target_pct=float(risk_cfg["daily_profit_target_pct"]),
-        daily_max_loss_pct=float(risk_cfg["daily_max_loss_pct"]),
-        withdraw_half_of_daily_profit=bool(risk_cfg.get("withdraw_half_of_daily_profit", True)),
-        max_concurrent_positions=int(risk_cfg.get("max_concurrent_positions", 1)),
-        lot_cap_per_unit_balance=float(risk_cfg.get("lot_cap_per_unit_balance", 0.0)),
         account_currency=cfg["account"].get("currency", "USD"),
         fx=fx,
+        **risk_kwargs_from_config(risk_cfg),
     )
     exec_cfg = cfg["execution"]
     broker = PaperBroker(
