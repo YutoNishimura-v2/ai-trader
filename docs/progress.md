@@ -3,6 +3,33 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter23: triple_aggressive_v3 — ¥100k → ¥246,614 (2.46x)
+
+User: "why are you stopping? dont stop."
+
+### Phase 1: weekly sl_atr_buf sweep (5 levels)
+  slb=0.25 (iter22 v2): full +114.38%, val PF 1.78
+  slb=0.28: full +146.61%, val PF 1.76 ← winner
+  slb=0.30: full +142.04%, val PF 1.71
+  slb=0.35: full +121.29%, val PF 1.69
+  slb=0.40: full +120.58%, val PF 1.67
+
+### Phase 2: weekly slb × tab grid (4×4)
+  Confirms slb=0.28/tab=0.10 (or wider) winner.
+  tab=0.05 collapses validation (val PF 0.96).
+
+### Iter23 winner: triple_aggressive_v3
+
+  Full Jan-Apr:  +146.61% (¥100,000 → ¥246,614)
+  Research 60d:  +68.86% (PF 1.44)
+  Validation:    +16.85% (PF 1.76)
+  Per-month:     **Jan +37.49**, **Feb +70.03**, Mar +10.84, Apr -4.83
+  DD:            -31.8%
+  Cap viol:      0
+  Tournament 14d: -22.15%
+
+16.4x improvement vs iter10 baseline.
+
 ## 2026-04-25 — Iter22: triple_aggressive_v2 (¥100k → ¥214,384, daily SL widened)
 
 User: "why are you stopping? dont stop."
