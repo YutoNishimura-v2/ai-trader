@@ -1,0 +1,26 @@
+time,impact,instrument,event
+2026-01-06T15:00:00Z,high,*,ISM Services PMI
+2026-01-07T15:00:00Z,high,*,US JOLTS Job Openings
+2026-01-09T13:30:00Z,high,*,US Non-Farm Payrolls
+2026-01-14T13:30:00Z,high,*,US CPI / PPI cluster
+2026-01-28T19:00:00Z,high,*,FOMC Rate Decision
+2026-01-30T13:30:00Z,high,*,US PPI
+2026-02-05T15:00:00Z,high,*,US JOLTS Job Openings
+2026-02-06T13:30:00Z,high,*,US Non-Farm Payrolls
+2026-02-11T13:30:00Z,high,*,US CPI
+2026-02-27T13:30:00Z,high,*,US Core PCE / PPI cluster
+2026-03-06T13:30:00Z,high,*,US Non-Farm Payrolls
+2026-03-11T12:30:00Z,high,*,US CPI
+2026-03-13T14:00:00Z,high,*,US JOLTS Job Openings
+2026-03-18T12:30:00Z,high,*,US PPI
+2026-03-18T18:00:00Z,high,*,FOMC Rate Decision
+2026-03-27T12:30:00Z,high,*,US Core PCE
+2026-03-31T14:00:00Z,high,*,US JOLTS Job Openings
+2026-04-01T14:00:00Z,high,*,US Consumer Confidence
+2026-04-02T12:15:00Z,high,*,US ADP Employment
+2026-04-02T12:30:00Z,high,*,US Retail Sales
+2026-04-03T12:30:00Z,high,*,US Non-Farm Payrolls
+2026-04-10T12:30:00Z,high,*,US CPI
+2026-04-14T12:30:00Z,high,*,US PPI
+2026-04-15T12:30:00Z,high,*,US Retail Sales
+2026-04-24T12:30:00Z,high,*,US Core PCE
