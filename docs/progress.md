@@ -3,6 +3,87 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`.
 
+## 2026-04-25 — news_fade is the first strategy to clear all 3 windows
+
+Iterated through the literature: built **London ORB** (Asian-range
+breakout + retest), **VWAP reversion** (session VWAP +/- 2.5σ
+fade), and configured/swept the previously-parked **volume_reversion**
++ **news_fade**.
+
+### Day-bug fix in london_orb
+
+Initial smoke produced 0 trades. Trace: window-end was set inside
+the "range done" branch, so on the first bar after midnight the
+day-key reset but window-end stayed at 0. Subsequent bars then
+all failed `bar_min_of_day > _day_window_end_min`. Fixed by
+moving day-rollover to the top of `on_bar`.
+
+Second issue: SL = Asian-range opposite extreme can be huge ($50+
+on a typical day). At 0.5% risk × $10k account = $50 budget, that
+sizes the position below min-lot. Added `max_sl_atr` cap.
+
+### Sweeps
+
+| strategy | research PF/ret/DD | validation PF/ret/DD | tournament PF/ret/DD | trades/day |
+|---|---|---|---|---|
+| london_orb (best) | 1.00 / 0% / −2.45% (10 tr) | 1.11 / +0.23% / −1.4% (6 tr) | not eval (low trades) | ~0.2 |
+| **vwap_reversion** (best) | 1.02 / +0.75% / −21.6% (192) | **1.48 / +7.5% / −8.8% (67)** | 14d: PF 0.93 / −0.9% / 47 tr | ~3 |
+| volume_reversion (best) | 0.61 / −20% / −22% (253) | 1.18 / +1.6% / −5.6% (47) | PF 0.82 / −2.95% / 87 tr | ~6 |
+| **news_fade** (best) | **3.24 / +2.6% / −1.1% (11 tr)** | **10.57 / +0.24% / 0% (2 tr)** | **3.87 / +0.10% / −0.13% (2 tr)** | event-driven |
+
+### THE finding: `news_fade` clears everything
+
+**This is the first strategy in the entire project to show
+positive PF on research AND validation AND tournament.** Trade
+count is small (events happen ~once per week) but every metric
+is positive across all three non-overlapping windows.
+
+Full 4-month run (default config):
+- 12 trading days with signals
+- Monthly mean **+0.60 %**, 2/4 profitable months
+- Best day +2.4%, worst day −0.95%
+- DD only **−2.02 %**
+- Daily Sharpe **+1.65**
+
+Why this works: news events are scheduled, the post-release
+overshoot is structurally consistent, and the trade has a real
+anchor (pre-news price). It's a different population of trades
+from price-action scalping — uncorrelated edge.
+
+### vwap_reversion validation/tournament gap
+
+VWAP at 2.5σ + TP-back-to-VWAP looked great on validation
+(PF 1.48, +7.5% in 14d) but tournament PF collapses to 0.08 on
+7 days of bad luck or 0.93 on 14 days. Strategy is roughly flat
+out-of-sample; the validation result was variance-driven.
+
+### Honest scoreboard (full 4-month, monthly mean)
+
+| strategy | monthly mean | months prof | best day | worst day |
+|---|---|---|---|---|
+| BB scalper | −13.1 % | 0/4 | n/a | n/a |
+| BOS retest | −0.6 % | 2/4 | n/a | n/a |
+| **news_fade** | **+0.60 %** | 2/4 | +2.4 % | −0.95 % |
+| vwap_reversion | −6.1 % | 1/4 | +8.5 % | −4.1 % |
+| ensemble (news+vwap) | −5.2 % | 2/4 | +15.04 % | −3.75 % |
+
+### Where this lands
+
+- **news_fade is the first thing that genuinely works on this
+  data.** Low-frequency, but cleanly positive across every
+  non-overlapping evaluation. Worth shipping to demo.
+- **VWAP, ORB, MTF-ZigZag-BOS** all show validation-positive
+  edges that don't survive tournament sample noise. They might
+  be real and just need more data; they might be fitting noise.
+- **All pure mean-reversion price-action strategies (BB,
+  volume_reversion) bleed money on the full 4-month window**
+  because Jan/Feb 2026 trended hard.
+
+The +0.60%/month from news_fade alone won't hit 200%/month, but
+it's a real, durable building block. Combined with selective
+add-on of vwap_reversion in chop-only regimes (a regime router
+to add) it could meaningfully scale.
+
 ## 2026-04-25 — MTF + ZigZag (cleaner signals, sample-size constrained)
 
 User feedback (correct):

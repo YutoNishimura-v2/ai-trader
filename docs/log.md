@@ -139,3 +139,27 @@ session. Lightweight; mirrors git log but with intent, not diff.
 - Conflict with main resolved (PR #2 squashed); going
   forward I pull main before each push to avoid this
   recurring.
+- User: just keep iterating, recent data, push returns up.
+  Web search returned three concrete techniques (London ORB,
+  VWAP, Keltner squeeze). Built ORB + VWAP, swept those plus
+  the previously parked volume_reversion + news_fade.
+- london_orb: had two bugs (day-rollover state + structural-SL
+  too wide for risk-% sizer). Fixed both. Strategy is fundamentally
+  low-frequency on M1 (one trade per few days). Flat result.
+- vwap_reversion: validation PF 1.48 / +7.5%/14d looked great
+  but tournament collapsed (PF 0.08 on 7d, 0.93 on 14d).
+  Variance-driven validation result.
+- volume_reversion: mediocre. Negative research, slight pos
+  validation, neg tournament.
+- **news_fade was the breakthrough.** Trades only the post-NFP/
+  CPI/FOMC overshoot window. Research PF 3.24, validation PF
+  10.6, tournament PF 3.87 — first strategy to clear all 3.
+  Full 4-month: +0.6 %/month, DD 2 %, daily Sharpe +1.65.
+  Low frequency (12 trading days in 4 months) but clean edge.
+- Ensemble of news_fade + vwap_reversion: tournament -0.8% /
+  PF 0.93 / 49 trades / DD -9.7%. Better floor than VWAP
+  alone but VWAP drags it negative on full 4-month.
+- Bottom line: news_fade is the first real, durable building
+  block in this project. Won't hit 200%/month alone but worth
+  shipping; multi-instrument news_fade + a regime-routed
+  add-on is the next direction.

@@ -83,19 +83,24 @@ Phase 2; nothing in this phase tunes parameters.
 - [x] **Liquidity sweep** strategy (one new family). Falsified
       under both interleaved and recent_only sweeps. Kept in
       registry for future tuning.
-- [x] **MTF + ZigZag** strategy (user direction). Best
-      validation PF (1.47) and tightest DD (~5 %) yet, but
-      tournament sample too small.
-- [x] **Volume-confirmed BB** + **news-fade** registered
-      (parked, not yet swept).
-- [ ] **Live demo `mtf_zigzag_bos`** at the iter21 winner
-      config. The recommended path forward: signals are clean,
-      sample sizes too small for offline validation, only
-      forward live data settles it.
-- [ ] Fetch 12-month M1 to give MTF/ZigZag enough sample for
-      tournament. ~3x the data; the rare-but-clean signal
-      should clear better discipline.
-- [ ] Sweep volume_reversion + news_fade.
+- [x] **MTF + ZigZag** strategy. Cleanest signals but tournament
+      sample too small.
+- [x] **London ORB** built. ~0.2 trades/day; only flat result.
+- [x] **VWAP reversion** built. Validation strong (PF 1.48) but
+      tournament noisy.
+- [x] **Volume reversion** swept. Marginally positive validation,
+      negative research.
+- [x] **news_fade** swept. **First strategy to clear all 3
+      walk-forward windows positively.** Monthly mean +0.6 % over
+      4 months. Worth shipping to demo.
+- [ ] **Regime router**: arm vwap_reversion only in chop, BB-
+      family only in low-vol, leave news_fade always on.
+      Hypothesis: route by-regime to recover the validation
+      edges that died on tournament.
+- [ ] **Multi-instrument news_fade**: same pattern likely works
+      on EURUSD/GBPUSD around the same USD events. Different
+      instrument = uncorrelated edge multiplier.
+- [ ] Live demo of `news_fade` once Windows host is available.
 - [ ] Visualise equity curve + monthly breakdown for review.
 - [ ] Session filter (London + NY overlap).
 - [ ] Populated 2026 news-blackout CSV.

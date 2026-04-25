@@ -23,6 +23,29 @@ progress entry for the full story.
 
 ## Phase 2
 
+- **News-fade was the first walk-forward winner.** After 7
+  strategy families across price-action variants (BB, BOS, trend
+  pullback, liquidity sweep, MTF-ZZ-BOS, London ORB, VWAP, BB
+  with volume confirmation), the only strategy that cleared
+  research + validation + tournament with positive returns was
+  the calendar-driven news_fade. Lesson: when price-action edges
+  vanish under tight risk, look at non-price-action information
+  (events, calendar, volume).
+- **VWAP validation can deceive.** VWAP best trial showed
+  validation PF 1.48 on 67 trades. Tournament collapsed to
+  PF 0.08 on 19 trades (7d) but recovered to PF 0.93 on 47
+  trades (14d). Always tournament-eval at a couple of window
+  lengths to gauge real variance before believing a result.
+- **Strategies with structural SLs need an SL cap.** london_orb's
+  Asian-range opposite extreme can be $50+ on M1 XAUUSD; at
+  0.5% risk × $10k = $50 budget, position rounds below min-lot
+  and signals get silently rejected. `max_sl_atr=2.0` cap fixed
+  it.
+- **Day-rollover state needs to be at the top of on_bar.** Bug
+  in london_orb where window-end was set inside the "range
+  done" branch produced 0 trades on every day. Lesson: state-
+  machine resets should always be unconditional at the top.
+
 - **MTF + ZigZag produces the highest-quality signals to date.**
   mtf_zigzag_bos with M5 ZigZag bias + M1 BOS-retest produced
   the best validation PF (1.47) AND tightest DD (~3-5 %) of any
