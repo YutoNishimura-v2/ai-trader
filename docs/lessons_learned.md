@@ -254,6 +254,13 @@ progress entry for the full story.
   the first batch produced zero validation trades. The continuation
   thesis may need a looser "break/hold" trigger or M5 confirmation,
   not the current strict range-retest trigger.
+- **Naive ADX regime routing can remove the edge.** A first
+  M15-ADX `regime_router` improved full Jan-April return (+19.1%,
+  3/4 profitable months) by filtering older bad periods, but the
+  same router failed the latest 14-day tournament (-6% to -10%).
+  Lesson: for current-regime optimization, do not accept a router
+  just because it improves full-history smoothness; it must preserve
+  the latest held-out edge.
 
 - **The walk-forward ratchet actually catches overfitting.** First
   real sweep on 2024 XAUUSD: research PF 1.50 → validation PF 0.33

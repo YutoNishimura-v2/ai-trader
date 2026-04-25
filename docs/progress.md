@@ -94,6 +94,24 @@ equity safely above the zero-cut danger zone. The result still does
 not reach 50-100 % monthly, but the recent 7d/14d pace is now in the
 right order of magnitude for an HRHR profile.
 
+### Regime-router attempt
+
+Added `regime_router`, a no-lookahead MTF ADX wrapper that routes
+members by M15 regime. Initial config paired session-sweep-reclaim
+with news_fade. Full Jan-Apr improved to **+19.1 %** with min equity
+98.2 % (Jan +9.5 %, Feb +7.9 %, Mar −0.9 %, Apr +1.7 %), which is
+the best full-window stability so far. But recent held-out tournament
+failed:
+
+| router variant | validation | 14d tournament |
+|---|---|---|
+| range_adx=15 / trend_adx=30 / risk=5% | +17.7 %, PF 2.82 | **−6.0 %, PF 0.63** |
+| range_adx=15 / trend_adx=25 / risk=5% | +15.4 %, PF 2.56 | **−9.6 %, PF 0.40** |
+
+Conclusion: the router is useful infrastructure and improves the full
+period, but the first ADX thresholds do **not** preserve the April
+session-sweep edge. Do not promote the router yet.
+
 ## 2026-04-25 — news_fade is the first strategy to clear all 3 windows
 
 Iterated through the literature: built **London ORB** (Asian-range
