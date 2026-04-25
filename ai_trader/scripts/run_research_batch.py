@@ -117,6 +117,16 @@ def _preset_gold_hrhr_v1() -> list[dict[str, Any]]:
             },
             "min_validation_trades": 10,
         },
+        {
+            "name": "squeeze_breakout_candidate",
+            "config": "config/squeeze_breakout_aggressive.yaml",
+            "grid": {
+                "bb_n": [20, 40],
+                "breakout_atr": [0.1, 0.2],
+                "risk.risk_per_trade_pct": [2.0, 3.0],
+            },
+            "min_validation_trades": 10,
+        },
     ]
 
 

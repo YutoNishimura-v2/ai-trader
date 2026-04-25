@@ -31,6 +31,7 @@ def get_strategy(name: str, **params) -> BaseStrategy:
     from . import news_breakout  # noqa: F401
     from . import session_sweep_reclaim  # noqa: F401
     from . import regime_router  # noqa: F401
+    from . import squeeze_breakout  # noqa: F401
     from . import mtf_zigzag_bos  # noqa: F401
     from . import london_orb  # noqa: F401
     from . import vwap_reversion  # noqa: F401
@@ -52,6 +53,7 @@ def list_strategies() -> list[str]:
     from . import news_breakout  # noqa: F401
     from . import session_sweep_reclaim  # noqa: F401
     from . import regime_router  # noqa: F401
+    from . import squeeze_breakout  # noqa: F401
     from . import mtf_zigzag_bos  # noqa: F401
     from . import london_orb  # noqa: F401
     from . import vwap_reversion  # noqa: F401
