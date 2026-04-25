@@ -1,15 +1,15 @@
 # TODO
 
 Living task list. Anything crossed out moves to `progress.md`.
+Current spec: **plan v3** (see `docs/plan.md`).
+**For the full picture of where we are, see `docs/HANDOFF.md`.**
 
-Current plan: **v3** (see `docs/plan.md`).
-
-## Phase 0 — demo environment ✅ (on PR #1, to be reworked for v3)
+## Phase 0 — demo environment ✅
 
 - [x] Spec written (`docs/plan.md`)
 - [x] Repo scaffold
-- [x] Indicators (swings, trend, fib, ATR)
-- [x] BaseStrategy + `TrendPullbackFib` (seed only)
+- [x] Indicators (swings, trend, fib, ATR; ZigZag added later)
+- [x] BaseStrategy + first seed strategy
 - [x] RiskManager with leverage + daily envelope + half-profit sweep
 - [x] Paper broker + MT5 live adapter stub
 - [x] Event-driven backtest engine + metrics
@@ -19,114 +19,94 @@ Current plan: **v3** (see `docs/plan.md`).
 
 ## Phase 1 — iteration framework ✅
 
-Framework deliverables for plan v3. Strategy tuning happens in
-Phase 2; nothing in this phase tunes parameters.
-
 - [x] Multi-leg `Signal` with up to 2 sub-legs sharing an initial SL
       and having distinct TPs (plan §A.5).
 - [x] `Broker.modify_sl` on the interface + PaperBroker +
       MT5LiveBroker adapter.
 - [x] Engine-side break-even orchestration: on TP1 fill, move the
-      runner's SL to `move_sl_to_on_fill` (typically entry price).
+      runner's SL to `move_sl_to_on_fill`.
 - [x] JPY-native accounting: `InstrumentSpec.quote_currency`,
       `RiskManager.account_currency` + `FXConverter`, plan v3 §A.2
-      balance-scaled lot cap (`lot_cap_per_unit_balance`).
+      balance-scaled lot cap.
 - [x] Walk-forward splitter with research / validation / tournament
       windows. Held-out loader gated by an explicit opt-in flag.
 - [x] Bounded grid sweep harness with `max_trials` cap, per-trial
       JSONL log, hashed param+window fingerprint.
-- [x] Review-packet generator (`review.md` + `review.json`).
-- [x] Review-trigger engine: EOD (mandatory), weekly wrap,
-      2-consecutive-SL, kill-switch. Once-per-day rate limiting.
+- [x] Review-packet generator + trigger engine (EOD, weekly,
+      consecutive-SL, kill-switch). Once-per-day rate limiting.
 - [x] State persistence: day ledger, kill-switch, `consecutive_sl`,
       `withdrawn_total` survive restarts via atomic JSON store.
-- [x] News blackout CSV loader + engine filter (both XAUUSD and
-      BTCUSD).
-- [x] BTCUSD instrument config (24/7 flag).
-- [ ] **Needs Windows host:** run `scripts/fetch_mt5_history.py` on
-      HFM demo and commit the CSV (or attach as release asset).
-      Blocked on you or a remote Windows runner.
+- [x] News blackout CSV loader + engine filter.
+- [x] Cross-platform Dukascopy data loader.
+- [x] Dukascopy data loader (replaces the Windows-only
+      `fetch_mt5_history.py` for research). MT5 fetch script kept
+      for live HFM data once a Windows host is available.
 
-## Phase 2 — strategy discovery loop
+## Phase 2 — strategy discovery ✅ (loop continues)
 
-- [x] Run seed `trend_pullback_fib` on 1 yr real XAUUSD (Dukascopy).
-      Result: research PF 1.50 → validation PF 0.33. Overfit caught
-      by the walk-forward ratchet. See `progress.md` 2026-04-24.
-- [x] First bounded parameter sweep on seed strategy (18 trials,
-      sweep id `seed-xau-2024-v1`).
-- [x] Pull 22 months of real XAUUSD (2024-06 → 2026-04).
-- [x] Recent-regime sweep (`seed-xau-recent-v1`): seed strategy
-      takes ~0 trades in the post-March-2026 window. Confirmed
-      with regime profile. Not a candidate as-is.
-- [x] Sweep seed strategy with larger `risk_per_trade_pct`:
-      lot-cap is the silence cause, but DD catastrophic. Not
-      promotable.
-- [x] Donchian-retest volatility-breakout family. Net-negative on
-      research in both regimes. Not promotable.
-- [x] **BB-scalper on 2026 M1.** Tournament PF 1.10 (6d) then
-      confirmed PF 1.14 (12d). Candidate.
-- [x] **Trend-pullback scalper (user's original strategy 1).**
-      Research/validation cleared; tournament failed in a choppy
-      regime. Regime-dependent; hold for router.
-- [x] **BOS-retest scalper** (user's structural trend): two
-      tournament-clearing configs, PF 1.05–1.06 on held-out
-      window, tight DD, regime-agnostic. See `progress.md`.
-- [x] **Ensemble runner.** BB + BOS in parallel, priority-ordered
-      polling. Best config (risk=1 %, maxconc=3): validation
-      +42 %/month, tournament +7.1 %/12d (~18 %/month pace).
-- [x] **Daily + monthly metrics.** `cap_violations`, `best_day_pct`,
-      `monthly_pct_mean`. Monthly is now the primary scoreboard
-      per user direction.
-- [x] **Kill-switch fix.** Flatten open positions on same bar
-      when cap fires.
-- [x] Interleaved + recent_only splitter modes (user point 4).
-- [x] **Liquidity sweep** strategy (one new family). Falsified
-      under both interleaved and recent_only sweeps. Kept in
-      registry for future tuning.
-- [x] **MTF + ZigZag** strategy. Cleanest signals but tournament
-      sample too small.
-- [x] **London ORB** built. ~0.2 trades/day; only flat result.
-- [x] **VWAP reversion** built. Validation strong (PF 1.48) but
-      tournament noisy.
-- [x] **Volume reversion** swept. Marginally positive validation,
-      negative research.
-- [x] **news_fade** swept. **First strategy to clear all 3
-      walk-forward windows positively.** Monthly mean +0.6 % over
-      4 months. Worth shipping to demo.
-- [ ] **Regime router**: arm vwap_reversion only in chop, BB-
-      family only in low-vol, leave news_fade always on.
-      Hypothesis: route by-regime to recover the validation
-      edges that died on tournament.
-- [ ] **Multi-instrument news_fade**: same pattern likely works
+Status: 9 strategy families tried; `news_fade` is the only
+walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
+
+### Already done
+
+- [x] Falsified: `trend_pullback_fib`, `donchian_retest`,
+      `bb_scalper`, `liquidity_sweep`, `volume_reversion`,
+      `london_orb`, `trend_pullback_scalper`.
+- [x] Sample-too-small: `mtf_zigzag_bos`, `vwap_reversion`.
+- [x] Tournament-clearing-but-low-edge: `bos_retest_scalper`.
+- [x] **First walk-forward winner: `news_fade`** (PF 3.87 on
+      tournament, +0.60 %/month over 4 months, DD −2 %).
+- [x] Risk-stack sweeps confirm risk-% > 2 % is counterproductive
+      on price-action strategies (returns peak at 2 %).
+- [x] Kill-switch fix (intra-bar flatten); equity-curve fix
+      (include withdrawn_total); BB break-even fix (yaml).
+- [x] Daily + monthly metrics; cap-violation check.
+- [x] Three split modes: `recent`, `recent_only`, `interleaved`.
+- [x] News blackout CSV populated for 2026 high-impact USD events.
+- [x] Session filter implemented in BB / BOS / Liquidity-sweep /
+      VWAP / news_fade strategies.
+
+### Active / next
+
+- [ ] **Multi-instrument `news_fade`**: same pattern likely works
       on EURUSD/GBPUSD around the same USD events. Different
       instrument = uncorrelated edge multiplier.
-- [ ] Live demo of `news_fade` once Windows host is available.
-- [ ] Visualise equity curve + monthly breakdown for review.
-- [ ] Session filter (London + NY overlap).
-- [ ] Populated 2026 news-blackout CSV.
-- [ ] Fresh-week tournament pass after time passes.
-- [ ] Equity-curve + trade-log visualisation for the review
-      session.
-- [ ] Review session → promote / reject / iterate.
+- [ ] **Regime router**: arm `vwap_reversion` only in chop, BB-
+      family only in low-vol, leave `news_fade` always on.
+      Hypothesis: route by regime to recover the validation edges
+      that died on tournament.
+- [ ] **Richer event calendar**: current CSV has 14 high-impact
+      events. Add ISM, retail sales, PPI, ADP, jobless claims for
+      2-3× the trade count.
+- [ ] **Live demo of `news_fade`** once Windows host with HFM MT5
+      access is available.
+- [ ] Equity-curve + trade-log visualisation for review.
 
-## Phase 3 — 1-week HFM demo
+## Phase 3 — live HFM demo (blocked on Windows host)
 
-- [ ] Windows host / VM w/ MT5 + HFM Katana demo account.
+- [ ] Windows host / VPS w/ MT5 + HFM Katana demo account.
 - [ ] `run_demo.py` wired with trigger engine.
-- [ ] 7 daily review packets collected, weekly wrap at the end.
-- [ ] Final review session → accept / reject.
+- [ ] 2-week demo run of `news_fade` (~6 events). Plan v3's
+      "1 week" sanity check is too short for an event-driven
+      strategy.
+- [ ] Daily review packets collected.
+- [ ] Final review session → accept / reject / iterate.
 
-## Phase 4 — BTCUSD
+## Phase 4 — multi-instrument expansion
 
-- [ ] BTCUSD Phase 1 hardening (instrument-specific costs, 24/7
-      trigger cadence).
-- [ ] BTCUSD Phase 2 discovery loop.
-- [ ] BTCUSD Phase 3 demo.
+- [ ] Pull EURUSD M1 from Dukascopy.
+- [ ] Re-run `news_fade` on EURUSD with the same USD-event CSV.
+- [ ] Pull GBPUSD M1; same.
+- [ ] Combined ensemble across XAUUSD + EURUSD + GBPUSD.
+- [ ] *(BTCUSD remains deprioritised — HFM real spread ~$10
+      makes M1 scalping uneconomic.)*
 
-## Parking lot (revisit in review sessions)
+## Parking lot
 
-- [ ] Replace news CSV with a live economic-calendar API.
+- [ ] Replace hand-curated news CSV with a live economic-calendar
+      API (currently a quarterly maintenance burden).
 - [ ] Reconsider the +30 / −10 envelope if iteration shows it's
-      unreachable.
-- [ ] Decide if daily mandatory reviews should become weekly
-      post-Phase 3.
+      truly unreachable (current best is +0.6 %/month, well below
+      the +30 % daily target).
+- [ ] Decide if mandatory daily reviews should become weekly
+      post-Phase 3 (scaling problem only matters once we're live).

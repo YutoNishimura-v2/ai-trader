@@ -1,7 +1,16 @@
 # Progress log
 
 Append-only. One entry per iteration of the self-improvement loop.
-Format: `YYYY-MM-DD — <headline>`.
+Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
+
+> **Reading note (2026-04-25):** This log is append-only and
+> chronological-newest-first. Some early entries (e.g. "BB scalper
+> +12.1 % tournament" or "ensemble +42 %/month validation") were
+> later retracted when bugs were found and the same configs were
+> re-evaluated under fixed semantics; those retractions are
+> documented in the relevant later entry (search for "retroactively"
+> or "honest re-eval"). For the current state-of-truth scoreboard,
+> see `docs/HANDOFF.md`.
 
 ## 2026-04-25 — news_fade is the first strategy to clear all 3 windows
 

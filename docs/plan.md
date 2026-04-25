@@ -8,8 +8,17 @@ Status: **v3 (final draft)** — agreed 2026-04-24.
 ## Objective
 
 Fully automated trading bot on MetaTrader 5, running on an HFM Katana
-demo account. Primary instrument **XAUUSD**, secondary **BTCUSD** (24/7).
-Starting balance **¥100,000 JPY**.
+demo account. Primary instrument **XAUUSD**. Starting balance
+**¥100,000 JPY**.
+
+> **Update (2026-04-25):** BTCUSD was originally listed as a 24/7
+> secondary instrument. After Iter 8 the user explicitly
+> deprioritised it: HFM's real BTC spread is around $10 (≈ 100
+> points), which makes M1 scalping uneconomic — every BB sweep on
+> BTC produced PF < 1. The 24/7 plumbing remains in the codebase
+> and is used to test that path. **Multi-instrument expansion is
+> now planned along EURUSD/GBPUSD instead** (same USD events for
+> `news_fade`). See `docs/HANDOFF.md` and `docs/todo.md` Phase 4.
 
 **Don't blow up the account.** Inside that constraint, optimize for
 return. Targets are high-risk / high-reward:
@@ -46,10 +55,13 @@ tried to pre-pick policy; v3 lets the loop do it.
    a strategy-defined rule.
 6. **Weekend handling.** XAUUSD: flatten before Friday close. BTCUSD:
    runs 24/7 (no weekend flatten).
-7. **News blackout.** For **both** XAUUSD and BTCUSD: no new entries
-   in the ±30 min window around high-impact events. Phase 1 uses a
-   hand-maintained CSV; replaced with a live economic-calendar API
-   in a later phase.
+7. **News blackout.** Default behaviour for *most* strategies: no
+   new entries in the ±30 min window around high-impact events. The
+   `news_fade` strategy is an explicit exception that *uses* the
+   same CSV as a trigger rather than a suppressor, so this rule is
+   "blackout unless the strategy is explicitly event-driven." Phase
+   1 uses a hand-maintained CSV; the plan still calls for a live
+   economic-calendar API in a later phase.
 8. **Crash-safe.** On restart, reconcile with the broker (adopt
    existing positions, do not re-submit). Persist the daily kill-
    switch state + day ledger + review-pause state to disk.
@@ -101,59 +113,49 @@ violated in backtest or demo.
 
 ## Roadmap
 
-### Phase 0 — demo environment ✅
+### Phase 0 — demo environment ✅ delivered
 
-Delivered. Will be reworked on the current branch to match v3 (multi-
-leg Signal, modify_sl, JPY accounting, review packets).
+### Phase 1 — iteration framework ✅ delivered
 
-### Phase 1 — iteration framework
+All deliverables in place: walk-forward splitter (3 modes), bounded
+sweep harness with try-cap, pessimistic cost model, JPY-native
+accounting + FX, multi-leg Signal + break-even, review packets +
+trigger engine, crash-safe state, news CSV. Cross-platform
+Dukascopy data loader replaces the Windows-only MT5 fetch script
+for research; MT5 fetch is kept for live HFM data fetches once a
+Windows host is available.
 
-Framework comes before strategy tuning. Deliverables:
+### Phase 2 — strategy discovery loop (in progress)
 
-- HFM OHLCV loader (from `scripts/fetch_mt5_history.py` CSV)
-- Walk-forward splitter: research / validation / tournament
-- Per-strategy declarative config (risk %, TP1/TP2, break-even
-  rules, cooldowns, params)
-- Parameter-sweep harness with **hard try-cap per iteration** to
-  prevent p-hacking; every tried combination logged with a hash
-- Pessimistic cost model: spread ×1.5 + 2-tick slippage default,
-  tunable
-- JPY-native accounting: FX-aware `tick_value` so sizing & reporting
-  live in JPY even though XAUUSD P&L comes in USD
-- **Multi-leg Signal** + `Broker.modify_sl` + engine-side break-even
-  orchestration (rule A.5)
-- Review-packet generator: `artifacts/reviews/<ts>/review.md` +
-  `review.json`
-- State persistence: open positions, day ledger, kill-switch,
-  review-pause flag
-- News blackout CSV plumbing (both instruments)
-- Pause-on-trigger + resume-from-review mechanics
+- 9 strategy families tried; `news_fade` is the only walk-forward
+  winner so far. Detailed scoreboard in `docs/HANDOFF.md`.
+- Hard cap on parameter tries per iteration enforced by the
+  sweep harness (`max_trials`).
+- Every iteration writes `progress.md` + `lessons_learned.md`,
+  including the negative ones (most of them).
+- Promotion to demo is the user's call.
 
-### Phase 2 — strategy discovery loop
+### Phase 3 — HFM demo (blocked on Windows host)
 
-- Seed strategy = your strategy A (trend pullback + fib).
-- I propose candidates, run them through the Phase 1 framework,
-  report to you. Your A/B/C ideas are **starting points**, not the
-  endpoint; I may propose volatility-breakout, session-opener,
-  regime-routed ensembles, etc. as the data justifies.
-- Hard cap on parameter tries per iteration.
-- Every iteration (including negative ones) writes a `progress.md`
-  entry and a `lessons_learned.md` entry.
-- Promotion to demo is your call in a review session.
-
-### Phase 3 — 1-week HFM demo
-
-- `run_demo.py` runs the promoted strategy on the HFM demo account.
+- Originally specified as 1 week. Revised in HANDOFF.md to
+  2 weeks for `news_fade` because event-driven means ~3 events
+  per week — 1 week is too small a sample.
+- `run_demo.py` runs the promoted strategy on the HFM demo
+  account.
 - Mandatory EOD review packet every UTC day.
 - Trigger packets on 2-SL, rule violations, weekly wrap.
-- Pass = your approval in the final review session.
+- Pass = approval in the final review session.
 
-### Phase 4 — BTCUSD
+### Phase 4 — multi-instrument expansion (revised 2026-04-25)
 
-- Separate instrument spec (contract size, tick size, tick value).
-- Separate Phase 1 / Phase 2 iterations (strategies do **not**
-  transfer blindly).
-- 24/7 loop; same news blackout calendar.
+Originally BTCUSD; now EURUSD/GBPUSD because BTC's HFM real
+spread (~$10) makes M1 scalping uneconomic.
+
+- Pull EURUSD M1 + GBPUSD M1 from Dukascopy (cross-platform).
+- Re-run `news_fade` (the current best) against the same USD-event
+  CSV (set `instrument: '*'` already supports any symbol).
+- Combined ensemble across XAUUSD + EURUSD + GBPUSD; uncorrelated
+  edge multiplier from the same calendar.
 
 ## Research methodology (how the loop stays honest)
 
