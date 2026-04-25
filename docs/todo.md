@@ -129,6 +129,21 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 - [ ] ~~Push monthly mean unconditional to +200%/mo via news/leverage.~~
       SUPERSEDED by user 2026-04-25: news strategies retired,
       tournament discipline restored. iter5-7 results contaminated.
+- [x] **Iter28: NEW PROJECT GROWTH RECORD ¥+497k (4.98×).**
+      `config/iter28/v4_ext_a_dow_no_fri.yaml` — 3-member pivot
+      ensemble on session=london_or_ny (daily+weekly), monthly
+      london, Mon-Thu only, risk=10/dml=3/conc=1. Full +497.94%,
+      val +25.64% PF 1.71, tournament -13.78%, 0 cap viol on
+      every window. ALL 4 MONTHS POSITIVE in full Jan-Apr.
+      Code changes: pivot_bounce now supports `weekdays` and
+      `block_hours_utc` filters plus pivot_period in
+      {"4h","h1"}. Single-TP signal handling generalised.
+- [x] **Iter27: project-record validation PF 4.57.**
+      `config/iter27/v4_plus_sweep_r4.yaml` — triple pivot +
+      session_sweep_reclaim, val PF 4.57 (record), full +39.18%.
+- [ ] **Iter29 candidates**: 4h pivot member is the only
+      standalone with positive tournament (+6.69%/PF 1.20) —
+      worth a deep-dive iteration.
 - [x] **Iter9: price-action restart at user sizing.**
       `config/iter9/ensemble_priceaction_v4_router.yaml` is the
       new HONEST headline: validation +20.33% (PF 2.33),

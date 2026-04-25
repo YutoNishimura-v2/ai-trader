@@ -3,6 +3,36 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## 2026-04-25 iter28 — bold exploration
+
+- **NY session adds independent alpha to pivot bounces.** We
+  spent iter13-iter27 ONLY on session=london for pivot_bounce
+  because the iter13 sweep showed NY-only as flat-or-worse.
+  But `london_or_ny` (UNION, not NY-only) lifted both daily and
+  weekly pivot members by ~+18 percentage points on the FULL
+  window. **Always test the union, not just each member alone.**
+- **Day-of-week is a strong, research-honest mechanical filter.**
+  DoW profile of the new stack on RESEARCH ALONE showed Friday
+  losing ¥-14k (8 trades, 25% winrate). Cutting Friday lifted
+  full +286% → +497.94% with validation unchanged. The
+  research-window justified the cut without peeking at
+  validation/tournament.
+- **Hour-of-day filters HURT, even when in-sample stats favor
+  them.** Hours 7-8 looked slightly negative on full but cutting
+  them dropped full from +497% → +170%. Each filter is a fitting
+  parameter; deeper masks usually OVERFIT noise.
+- **4-hour pivot is the only standalone with positive tournament
+  in iter28** (+6.69% PF 1.20). Worth investigating in iter29.
+- **The two-leg TP1+BE structure beats single-TP for GROWTH
+  configs** (full +497% vs +361%/+465% for single-TP variants),
+  even though single-TP wins for BALANCED configs (iter26).
+  TP structure should match risk-tier intent.
+- **Tournament hostility persists even at the new growth ceiling.**
+  iter28's headline is at +497% full but -13.78% tournament.
+  Across all iter24-iter28 growth-tier configs, tournament is
+  consistently negative. The pivot family is structurally
+  vulnerable to the specific April-2 weeks of 2026 in our data.
+
 ## 2026-04-25 iter9 — honest reset (price-action only)
 
 - **Tournament-window peeking is selection bias.** iter5-iter7
