@@ -3,6 +3,42 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter22: triple_aggressive_v2 (¥100k → ¥214,384, daily SL widened)
+
+User: "why are you stopping? dont stop."
+
+### Phase 1: concurrency × risk grid (3x3)
+  cn=1 wins across all risks. Higher concurrency hurts because
+  losing trades double up. Stay cn=1.
+
+### Phase 2: monthly tp2/tab sweeps
+  Monthly member effectively dead in 4-month window. Doesn't
+  fire enough to matter; the iter19 boost was from regime
+  diversification of the daily/weekly fires, not monthly itself.
+
+### Phase 3: daily sl_atr_buf sweep — KEY FINDING
+  slb=0.10: full +14.47, val PF 1.04 (broken)
+  slb=0.15: full +107.31, val PF 1.77
+  slb=0.20 (iter21): full +108.63, val PF 1.69
+  slb=0.25:           full +114.43, val PF 1.73
+  **slb=0.30**:       **full +114.38, val PF 1.78**  ← winner
+  slb=0.35: full +106.91, val PF 1.09 (overfit)
+
+Wider daily SL accommodates wicky M1 moves without breaching.
+0.30 hits sweet spot.
+
+### Iter22 winner: triple_aggressive_v2
+
+  Full Jan-Apr:  **+114.38% (¥100,000 → ¥214,384)**
+  Research 60d:  +69.80% (PF 1.45)
+  Validation:    +16.89% (PF 1.78)
+  Per-month:     **Jan +22.30**, **Feb +68.61**, Mar +12.69, Apr -7.74
+  DD:            -33.2%
+  Cap viol:      0
+  Tournament 14d: -19.46%
+
+13.1x improvement on full vs iter10 baseline.
+
 ## 2026-04-25 — Iter20: triple ensemble at risk=7.0 — ¥100k → ¥202,430 (DOUBLE)
 
 User: "why are you stopping? dont stop."
