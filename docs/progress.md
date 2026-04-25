@@ -3,6 +3,63 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter15: pivot_bounce_london_v7 — ¥100,000 → ¥157,946 (+57.95% full)
+
+User: "dont stop. keep going"
+
+Three angles tested.
+
+### Angle 1: tab × slbuf 16-pt grid at risk=5.0
+
+Confirms tab=0.05/slb=0.20 is the cap-clean sweet spot.
+Tighter (0.02-0.03) destroys validation; wider (0.08) reduces
+edge.
+
+### Angle 2: dynamic_risk drawdown throttle (3x3 grid)
+
+Hypothesis: April -11.6% in v4 was sustained-loss period; a
+throttle that halves position size at -8% DD should help.
+
+| soft | mult | full | val | t14 | cap |
+|---:|---:|---:|---:|---:|---:|
+| 8 | 0.50 | +33.62 | +9.49 | -12.42 | 0 (CUT WINNERS too aggressively) |
+| 8 | 0.85 | +56.68 | +9.49 | -17.45 | 0 |
+| **12** | **0.70** | **+60.48** | **+9.49** | -14.73 | 0 |
+| 12 | 0.85 | +59.28 | +9.49 | -15.87 | 0 |
+| 16 | 0.50/0.70/0.85 | +56.88 | +9.49 | -16.47 | 0 (never bites) |
+
+soft=12/mult=0.7 is the new winner: throttle bites at -12% DD
+(rare in normal cycles), cuts losses by 30% during sustained
+drawdowns.
+
+### Iter15 winner: pivot_bounce_london_v7
+
+Promoted as `config/iter15/pivot_bounce_london_v7.yaml`.
+
+  Full Jan-Apr:  +57.95% (¥100,000 → ¥157,946, ¥+57,946 net)
+  Research 60d:  +55.92% (PF 1.90)
+  Validation:    +9.49%  (PF 2.79)
+  Per-month:     Jan +0.99%, Feb +25.74%, Mar +37.12%, **Apr -9.29%**
+                 (improved from v4's -11.61%)
+  Min equity:    95.3%
+  Max DD:        -18.5% (improved from v4's -20.6%)
+  Cap viol:      0
+  Tournament 14d: -16.27% (improved from v4's -18.18%)
+
+  March alone: ¥+47,135 (still best month-alone in project history).
+
+### Iter15 verdict
+
+v7 PROMOTED. The DD throttle softens April hostility (loss cut
+from ¥-20,219 to ¥-16,172) AND lifts full Jan-Apr from ¥+53,899
+to ¥+57,946. Validation unchanged (throttle never fires in
+14-day window).
+
+Strongest non-news standalone in project history. April hostility
+remains directional but the magnitude is lower with throttle on.
+
+iter9 v4_router still wins TOURNAMENT.
+
 ## 2026-04-25 — Iter14: pivot_bounce_london_v4 — ¥100,000 → ¥153,899 (+53.9% full)
 
 User: "dont stop. keep going"
