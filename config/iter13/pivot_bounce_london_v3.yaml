@@ -1,0 +1,32 @@
+extends: ../default.yaml
+
+# iter13 v3: pivot_bounce London-only with TP1=1.0R + TP2=1.5R.
+# Validation parameter sweep produced this as a strong candidate:
+#   tp1=1.0/tp2=1.5: full +30.10%, val +5.61% PF 4.69
+#   tp1=0.6/tp2=1.5: full +24.41%, val +5.98% PF 1140 (suspicious — likely BE saved most losers)
+# Going with tp1=1.0/tp2=1.5 (lower PF but more honest distribution).
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+strategy:
+  __replace__: true
+  name: pivot_bounce
+  params:
+    __replace__: true
+    atr_period: 14
+    touch_atr_buf: 0.05
+    sl_atr_buf: 0.20
+    max_sl_atr: 2.0
+    tp1_rr: 1.0
+    tp2_rr: 1.5
+    leg1_weight: 0.5
+    cooldown_bars: 30
+    session: london
+    use_s2r2: true
+    max_trades_per_day: 4

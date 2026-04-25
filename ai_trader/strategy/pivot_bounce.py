@@ -35,10 +35,26 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
+from ..data.mtf import MTFContext
 from ..indicators import atr
 from .base import BaseStrategy, Signal, SignalLeg, SignalSide
 from .registry import register_strategy
 from .session import check_session
+
+
+def _adx_series_for_pivot(df: pd.DataFrame, period: int) -> np.ndarray:
+    """Causal ADX. Local helper — duplicates pattern from session_sweep_reclaim
+    to avoid cross-strategy import."""
+    high = df["high"]; low = df["low"]; close = df["close"]
+    up = high.diff(); dn = -low.diff()
+    plus_dm = np.where((up > dn) & (up > 0), up, 0.0)
+    minus_dm = np.where((dn > up) & (dn > 0), dn, 0.0)
+    tr = pd.concat([(high - low), (high - close.shift()).abs(), (low - close.shift()).abs()], axis=1).max(axis=1)
+    a = tr.ewm(alpha=1 / period, adjust=False, min_periods=period).mean()
+    plus_di = 100 * pd.Series(plus_dm, index=df.index).ewm(alpha=1 / period, adjust=False, min_periods=period).mean() / a
+    minus_di = 100 * pd.Series(minus_dm, index=df.index).ewm(alpha=1 / period, adjust=False, min_periods=period).mean() / a
+    dx = 100 * (plus_di - minus_di).abs() / (plus_di + minus_di).replace(0, np.nan)
+    return dx.ewm(alpha=1 / period, adjust=False, min_periods=period).mean().to_numpy(dtype=float)
 
 
 @register_strategy
@@ -58,6 +74,11 @@ class PivotBounce(BaseStrategy):
         session: str | None = "london_or_ny",
         use_s2r2: bool = True,
         max_trades_per_day: int = 4,
+        # Optional HTF ADX gate (skip strong-trend regimes for the
+        # mean-reversion-style bounce). adx_max=None disables.
+        htf: str | None = None,
+        adx_period: int = 14,
+        adx_max: float | None = None,
         min_history: int | None = None,
     ) -> None:
         super().__init__(
@@ -72,11 +93,16 @@ class PivotBounce(BaseStrategy):
             session=session,
             use_s2r2=use_s2r2,
             max_trades_per_day=max_trades_per_day,
+            htf=htf,
+            adx_period=adx_period,
+            adx_max=adx_max,
         )
         self.min_history = min_history or max(atr_period * 3, 60)
         self._atr_cache: pd.Series | None = None
         # Per-bar pivot levels precomputed in prepare().
         self._pivots: pd.DataFrame | None = None
+        self._mtf: MTFContext | None = None
+        self._htf_adx: np.ndarray | None = None
         self._last_signal_iloc: int = -(10**9)
         self._day_key: str | None = None
         self._day_trades: int = 0
@@ -113,6 +139,15 @@ class PivotBounce(BaseStrategy):
         # Map back onto each M1 bar via the bar's day-key.
         per_bar = prev.loc[days, ["P", "R1", "S1", "R2", "S2"]].set_axis(idx)
         self._pivots = per_bar
+
+        # Optional HTF ADX gate.
+        if p.get("htf") and p.get("adx_max") is not None:
+            self._mtf = MTFContext(base=df, timeframes=[p["htf"]])
+            htf_df = self._mtf.frame(p["htf"])
+            self._htf_adx = _adx_series_for_pivot(htf_df, int(p["adx_period"]))
+        else:
+            self._mtf = None
+            self._htf_adx = None
 
     def _build_signal(
         self, side: SignalSide, entry: float, sl: float, risk: float, reason: str,
@@ -156,6 +191,17 @@ class PivotBounce(BaseStrategy):
         atr_val = float(self._atr_cache.iloc[i])
         if not np.isfinite(atr_val) or atr_val <= 0:
             return None
+
+        # HTF ADX gate (skip strong-trend regimes where pivot bounces fail).
+        if self._mtf is not None and self._htf_adx is not None:
+            pos = self._mtf.last_closed_idx(p["htf"], ts_utc)
+            if pos is None or pos >= len(self._htf_adx):
+                return None
+            adx_val = float(self._htf_adx[pos])
+            if not np.isfinite(adx_val):
+                return None
+            if adx_val > float(p["adx_max"]):
+                return None
 
         last = history.iloc[-1]
         h = float(last["high"])

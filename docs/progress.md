@@ -3,6 +3,80 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter13: pivot_bounce_london_v3 — best val PF (4.69) in project history
+
+User: "keep going"
+
+Three angles tested:
+
+### Angle 1: pivot_bounce on M5 base timeframe — FALSIFIED
+
+  Full -9.36%, val -4.33% PF 0.53, only 81 trades. M5 too few
+  signals; M1 is the right base TF.
+
+### Angle 2: pivot_bounce + HTF ADX gate — FALSIFIED
+
+  Tried adx_max ∈ {18, 22, 25, 28}. All variants WORSE than no-gate.
+  Best (adx_max=28): full -0.75%, val +2.83% PF 1.79.
+  Counterintuitive: pivot bounces work fine in trend regimes
+  (the gate just removes good trades without removing bad ones).
+
+### Angle 3: pivot_bounce session sweep — KEY FINDING
+
+| session | full | val | val PF | trades |
+|---|---:|---:|---:|---:|
+| london | +22.14% | +3.75% | **3.47** | 103 |
+| ny | -18.04% | -4.04% | 0.39 | 116 |
+| overlap | -12.12% | -4.52% | 0.00 | 75 |
+| london_or_ny (baseline) | +27.21% | +4.23% | 2.18 | 140 |
+
+**London-only val PF 3.47** — highest val PF in project history
+to that point. NY pivot bounces have NO edge (PF 0.39).
+
+### Angle 4: pivot_bounce_london TP sweep (15-point grid)
+
+Best variant: tp1=1.0R, tp2=1.5R:
+
+  Full Jan-Apr: +30.10% (¥100,000 → ¥130,098)
+  Research:     +32.79% (PF 2.51)
+  Validation:   +5.61%  (PF 4.69)  ← project record
+  Per-month:    Jan +2.81%, Feb +13.89%, Mar +19.41%, Apr -6.95%
+  Min equity:   97.6%   ← project record
+  Max DD:       -10.7%
+  Cap viol:     0
+  104 trades = ~1.2/day
+
+Tournament 14d: -8.75%, 7d: -7.87% (April still hostile).
+
+### Iter13 winner: pivot_bounce_london_v3
+
+Promoted as `config/iter13/pivot_bounce_london_v3.yaml`.
+
+Strongest validation PF (4.69) and strongest min_equity (97.6%)
+of any standalone strategy in project history. Full Jan-Apr
++30.10% beats iter11 v2's +27.21%. NY trades were the bad half
+all along — restricting to London-only removed the noise.
+
+April tournament hostile remains the unsolved single-edge regime
+problem. April's regime apparently inverts pivot-bounce
+expectancy regardless of session, parameter, or filter.
+
+### Tested ensemble: London v1 (pivot_london + sweep_reclaim)
+
+Full +4.81%, val +1.17% PF 1.28, every month positive in full,
+BUT tournament -6.01%. **Standalone pivot_bounce_london_v3 BEATS
+the ensemble.** Adding sweep_reclaim dilutes the strong London
+edge.
+
+### Iter13 verdict
+
+- pivot_bounce_london_v3 PROMOTED as new strongest standalone.
+- iter9 v4_router REMAINS the best tournament number.
+- Two co-existing headlines:
+  * Best full Jan-Apr / val PF: pivot_bounce_london_v3
+  * Best tournament: ensemble_priceaction_v4_router
+- 168 tests still passing. Tournament discipline preserved.
+
 ## 2026-04-25 — Iter12: comprehensive web-driven search (KELTNER, ORDER BLOCK both FALSIFIED)
 
 User 2026-04-25: "conduct a truly comprehensive search across the
