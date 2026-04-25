@@ -14,33 +14,46 @@ other doc. The rest of `docs/` is supporting material:
 
 ## TL;DR
 
-We've built and falsified 9 different scalping strategy families
-on real 2026 XAUUSD M1 data. **Exactly one of them produces a
-positive walk-forward result on every evaluation window:
-`news_fade`** — a calendar-driven strategy that trades only the
-post-news overshoot. Everything else either looks good on
-validation but fails on the held-out tournament, or just bleeds
-money on the full 4-month window.
+We've built and falsified 10+ different scalping strategy families
+on real 2026 XAUUSD M1 data. Under the original conservative
+constraints, **`news_fade`** was the first positive walk-forward
+winner. After the user's 2026-04-25 GOLD-only high-risk revision,
+the strongest current held-out result is now
+**`session_sweep_reclaim`** — a London/NY false-breakout reclaim of
+the Asian range.
 
-The current best signal is real but small (~+0.6 %/month); the
-user's aspiration is +200 %/month. The gap is large but for the
-first time the floor is positive instead of zero.
+The current best recent held-out signal is materially larger but
+still far below the 200 %/month aspiration: `session_sweep_reclaim`
+returned **+7.9 % over the latest 14-day tournament** and **+9.25 %
+over the latest 7-day tournament** at 2 % risk, with no cap
+violations and min equity > 98 %. Full Jan-April remains negative,
+so the latest regime is the only reason this is a candidate.
 
-The next concrete moves (in `docs/todo.md`): expand `news_fade` to
-EURUSD/GBPUSD around the same USD events; build a regime router
-to add the price-action strategies only in their preferred regimes;
-ship `news_fade` to a 2-week HFM demo run.
+The next concrete moves (in `docs/todo.md`): refine
+`session_sweep_reclaim` with M5/M15 confirmation and risk/BE
+management; build a GOLD-only regime router; keep `news_fade` as a
+low-frequency defensive component; and continue staged research
+batches without tuning against the held-out windows.
 
 ## Project facts
 
-- **Symbol:** XAUUSD primary; BTCUSD was tried and deprioritised
-  (HFM real spread ~ $10 makes M1 scalping uneconomic).
+- **Symbol:** XAUUSD only for active research. BTCUSD was tried and
+  deprioritised (HFM real spread ~ $10 makes M1 scalping
+  uneconomic). EURUSD/GBPUSD expansion was considered, then
+  explicitly rejected by the user on 2026-04-25 because each symbol
+  has distinct behavior and the mandate is now GOLD-only.
 - **Timeframe:** M1, with M5/M15/H1 used as higher-TF context.
 - **Broker / spec:** HFM Katana demo account, ¥100,000 JPY
   starting balance. Hard rules in `docs/plan.md §A`:
-  - leverage ≤ 1:100
-  - lot cap ≤ `0.1 × balance_JPY / 100_000` (so 0.1 lot at ¥100k)
-  - daily envelope: **+30 % profit / −10 % loss → flatten + stop**
+  - Conservative baseline: leverage ≤ 1:100
+  - Conservative baseline lot cap ≤ `0.1 × balance_JPY / 100_000`
+    (so 0.1 lot at ¥100k)
+  - Conservative baseline daily envelope:
+    **+30 % profit / −10 % loss → flatten + stop**
+  - 2026-04-25 revision: these sizing/cap values may be loosened in
+    clearly labelled research simulations. The non-negotiable guardrail
+    is avoid margin-call / zero-cut ruin. No martingale, no blind
+    averaging down, and no lookahead remain prohibited.
   - pullback-only entries; no martingale
   - XAUUSD: flatten before Friday close. BTCUSD: 24/7.
   - news blackout ±30 min around high-impact events
@@ -187,7 +200,8 @@ record but should not be promoted.
 | `volume_reversion` | M1 mean-rev + vol | val 1.18 / tournament 0.82 | falsified |
 | `vwap_reversion` | M1 VWAP fade | val PF 1.48 / tournament PF 0.93 (14d) | thin |
 | `london_orb` | session breakout | flat (~0.2 trades/day) | shelved |
-| **`news_fade`** | **calendar event fade** | **research PF 3.24 / val PF 10.6 / tournament PF 3.87** | **first walk-forward winner** |
+| **`news_fade`** | **calendar event fade** | **research PF 3.24 / val PF 10.6 / tournament PF 3.87** | **first conservative walk-forward winner** |
+| **`session_sweep_reclaim`** | **Asian-range sweep/reclaim** | **latest 14d tournament +7.9 %, PF 2.65, DD -5.9 %** | **current high-risk GOLD candidate** |
 | `ensemble` | wrapper | best as `news_fade + vwap_reversion` | tournament floor better than VWAP alone |
 
 ### `news_fade` — the current best
@@ -210,6 +224,32 @@ with TP back at the anchor.
 - Why it works: scheduled events, structurally consistent
   overshoot, real anchor price for SL/TP. **Different population
   of trades from price-action scalping → uncorrelated edge.**
+
+### `session_sweep_reclaim` — current high-risk GOLD candidate
+
+Fades false breakouts of the Asian range during the London/NY
+session. It waits for price to sweep an Asian-session extreme,
+then close back inside the range before entering in the reclaim
+direction. This matches the user's discretionary premise better
+than the prior ORB breakout: do not chase the liquidity grab; trade
+the reclaim after the stop-hunt.
+
+- **Config:** `config/session_sweep_reclaim_aggressive.yaml`
+- **Best params (session-sweep-v1):**
+  `trade_start_hour=7, trade_end_hour=12, min_sweep_atr=0.1,
+  risk_per_trade_pct=2.0`
+- **Numbers:**
+  - Research: PF 0.50, −8.26 %, DD −11.1 %, 51 trades
+  - Validation: PF 2.59, +4.95 %, DD −3.95 %, 13 trades
+  - 14d tournament: PF 2.65, +7.90 %, DD −5.91 %, 17 trades,
+    min equity 98.2 %, no cap violations
+  - 7d tournament: PF 5.52, +9.25 %, DD −5.83 %, 8 trades,
+    min equity 99.7 %, no cap violations
+  - Full Jan-April: monthly mean −4.48 %, April +2.02 %,
+    March −5.0 %, Jan −13.7 %
+- Interpretation: strong latest-regime candidate, not a universal
+  4-month winner. Needs regime gating or "recent-only" promotion
+  framing.
 
 ### `ensemble`
 
@@ -280,19 +320,21 @@ right now.
 ## Where to look next (recommended order)
 
 1. **Multi-instrument `news_fade`.** Same pattern likely works
-   on EURUSD/GBPUSD around the same USD events. Easy expected
-   value: 3× the trade count from one uncorrelated edge. Will
-   need pulling those instruments from Dukascopy and adding
-   them to the news CSV with `instrument: '*'`.
-2. **Regime router.** Add `vwap_reversion` and friends only in
+   on EURUSD/GBPUSD around the same USD events, but the user has
+   explicitly rejected multi-symbol expansion for now. Do not pursue
+   unless the user reverses that direction.
+2. **Refine `session_sweep_reclaim`.** Add M5/M15 confirmation,
+   session-specific filters, and BE/runner variants. It is the best
+   latest-tournament GOLD-only result so far.
+3. **Regime router.** Add `vwap_reversion` and friends only in
    chop regimes (ADX < 25 or realized vol below median). The
    hypothesis is they validate but die in trend; gating by
    regime should recover their validated edge.
-3. **Richer event calendar.** Current `data/news/xauusd_2026.csv`
+4. **Richer event calendar.** Current `data/news/xauusd_2026.csv`
    is hand-curated 14 events for 4 months. A complete calendar
    (ISM, retail sales, PPI, ADP, jobless claims) doubles trade
    count.
-4. **Live demo on HFM.** Either you provision a Windows host /
+5. **Live demo on HFM.** Either you provision a Windows host /
    VPS, or get HFM's free VPS approved (last we checked, it
    typically requires a funded live account; demo accounts
    often don't qualify).

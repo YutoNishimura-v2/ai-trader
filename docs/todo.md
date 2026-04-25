@@ -68,9 +68,18 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 
 ### Active / next
 
-- [ ] **Multi-instrument `news_fade`**: same pattern likely works
-      on EURUSD/GBPUSD around the same USD events. Different
-      instrument = uncorrelated edge multiplier.
+- [x] **GOLD-only high-risk expansion v1**: user redirected the
+      project away from multi-instrument expansion and toward
+      aggressive XAUUSD-only search with "avoid zero cut" as the
+      primary guardrail. Added high-risk configs, ruin diagnostics,
+      batch runner, `news_breakout`, and `session_sweep_reclaim`.
+      First result: `session_sweep_reclaim` cleared 7d/14d
+      tournament (+9.25%/+7.90%) while prior validation winners
+      failed tournament.
+- [ ] **Risk/BE frontier for `session_sweep_reclaim`**: sweep
+      risk 1-5%, TP1/TP2, range/session windows, and SL caps to see
+      whether April-positive edge can scale toward 50-100%/month
+      without near-zero-cut drawdowns.
 - [ ] **Regime router**: arm `vwap_reversion` only in chop, BB-
       family only in low-vol, leave `news_fade` always on.
       Hypothesis: route by regime to recover the validation edges
@@ -94,10 +103,9 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 
 ## Phase 4 — multi-instrument expansion
 
-- [ ] Pull EURUSD M1 from Dukascopy.
-- [ ] Re-run `news_fade` on EURUSD with the same USD-event CSV.
-- [ ] Pull GBPUSD M1; same.
-- [ ] Combined ensemble across XAUUSD + EURUSD + GBPUSD.
+- [ ] Deferred by user direction: focus exclusively on XAUUSD/GOLD.
+      Do not spend research budget on EURUSD/GBPUSD unless the user
+      reverses this instruction.
 - [ ] *(BTCUSD remains deprioritised — HFM real spread ~$10
       makes M1 scalping uneconomic.)*
 

@@ -236,6 +236,25 @@ progress entry for the full story.
 
 ## Phase 2
 
+- **GOLD-only sweep-and-reclaim is the best new recent-period edge.**
+  After the user narrowed scope back to XAUUSD and allowed higher
+  risk, a London-session sweep/reclaim strategy (Asian range stop
+  hunt → close back inside → continuation to opposite edge) cleared
+  the held-out recent tournament: +7.9% over 14 days / PF 2.65 /
+  DD -5.9%, and +9.25% over the last 7 days / PF 5.52 / DD -5.8%.
+  This is not 200%/month, but it is materially stronger recent
+  tournament performance than the previous news-only floor.
+- **Validation winners still routinely fail the freshest window.**
+  In the first high-risk GOLD batch, VWAP (+29% validation) and BOS
+  (+21% validation) both collapsed on the 14-day tournament (-19%
+  and -20%). Higher risk amplifies the familiar validation→tournament
+  noise problem; ruin metrics must accompany every leaderboard.
+- **Post-news continuation did not fire enough with strict retest
+  rules.** The new `news_breakout` strategy is coded and tested, but
+  the first batch produced zero validation trades. The continuation
+  thesis may need a looser "break/hold" trigger or M5 confirmation,
+  not the current strict range-retest trigger.
+
 - **The walk-forward ratchet actually catches overfitting.** First
   real sweep on 2024 XAUUSD: research PF 1.50 → validation PF 0.33
   on the same parameters. Without the splitter + validation step

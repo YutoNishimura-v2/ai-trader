@@ -12,6 +12,69 @@ Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 > or "honest re-eval"). For the current state-of-truth scoreboard,
 > see `docs/HANDOFF.md`.
 
+## 2026-04-25 — GOLD-only HRHR sprint: session sweep/reclaim is a new April winner
+
+User revised the mandate: **XAUUSD only**, target remains 200 %/mo
+but 50-100 % would be excellent, and the primary hard guardrail is
+avoid margin-call / zero-cut ruin. Implemented high-risk diagnostics
+(`min_equity_pct`, recent 14/30d return, monthly return map,
+`ruin_flag`) and aggressive 2-4 % research configs.
+
+Built a GOLD-only batch harness (`gold_hrhr_v1`) and ran 80
+pre-declared trials across news_fade, news_breakout, VWAP, BB, BOS,
+MTF-ZigZag-BOS. Top validation candidates looked strong but most
+failed held-out April:
+
+| candidate | validation | 14d tournament |
+|---|---|---|
+| VWAP dev=2.5 risk=2 % | +29.2 %, PF 1.83, 82 tr | **−19.0 %, PF 0.21** |
+| BOS swing=6/min_legs=2 risk=3 % | +21.0 %, PF 1.43, 108 tr | **−20.3 %, PF 0.71** |
+| BB n=40/k=2.0 risk=3 % | +20.1 %, PF 1.09, 462 tr | **−33.6 %, PF 0.82** |
+| MTF-ZZ M5/th=0.5/retest=1 risk=2 % | +4.2 %, PF 1.18, 47 tr | **−6.1 %, PF 0.86** |
+| news_fade risk=3 % | +0.4 %, PF 3.87, 2 tr | **−2.8 %, PF 0.00**, 2 tr |
+
+Added `news_breakout` (post-news continuation) as the complement
+to news_fade. In this batch it produced **0 validation trades** —
+not useful yet, but the implementation is now available for richer
+event calendars / looser trigger research.
+
+Then built **`session_sweep_reclaim`**, a London/NY Asian-range
+false-breakout strategy:
+
+- Build Asian range.
+- Wait for London/NY sweep beyond one edge.
+- Enter only after price reclaims back inside the box.
+- SL beyond sweep with ATR cap; TP1 moves runner to break-even;
+  TP2 targets opposite edge or RR.
+
+Sweep (recent_only 60/14/14) selected:
+`trade_start_hour=7, trade_end_hour=12, min_sweep_atr=0.1,
+risk_per_trade_pct=2`.
+
+Results:
+
+| window | trades | PF | return | DD | min equity | notes |
+|---|---:|---:|---:|---:|---:|---|
+| research | 51 | 0.50 | −8.3 % | −11.1 % | n/a | weak older window |
+| validation | 13 | 2.59 | +4.95 % | −3.95 % | n/a | cleared |
+| 14d tournament | 17 | **2.65** | **+7.90 %** | **−5.91 %** | **98.2 %** | 0 cap violations |
+| 7d tournament | 8 | **5.52** | **+9.25 %** | **−5.83 %** | **99.7 %** | 0 cap violations |
+| full Jan-Apr | 129 | 0.66 | −17.4 % | −33.2 % | 77.1 % | April +2.0 %, March −5.0 % |
+
+Interpretation:
+
+- This is the best **held-out April** result found so far under the
+  high-risk GOLD-only sprint: +7.9 % over 14 days and +9.25 % over
+  the most recent 7 days, with shallow drawdown and no ruin signal.
+- It is not yet a full-period winner. Jan/Feb and March drag the
+  full 4-month score negative. This makes it a strong candidate for
+  **regime routing / recent-regime deployment**, not a standalone
+  all-regime bot.
+- The validation→tournament survival is materially better than VWAP,
+  BOS, BB, MTF-ZZ, and aggressive news_fade in this sprint.
+
+Tests: full suite **141 passed**.
+
 ## 2026-04-25 — news_fade is the first strategy to clear all 3 windows
 
 Iterated through the literature: built **London ORB** (Asian-range
