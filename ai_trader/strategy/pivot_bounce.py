@@ -82,6 +82,14 @@ class PivotBounce(BaseStrategy):
         # "daily" (default) — pivots from prior UTC day OHLC.
         # "weekly"          — pivots from prior calendar week OHLC.
         pivot_period: str = "daily",
+        # iter28: day-of-week filter (UTC weekday 0=Mon..4=Fri,5=Sat,6=Sun).
+        # If set, only trade on these days. None = all days allowed.
+        # Set as e.g. [0,2,3] to trade only Mon/Wed/Thu (the strong days
+        # discovered in the iter28 dow-profile of v4_extended_a).
+        weekdays: list[int] | tuple[int, ...] | None = None,
+        # iter28: hour-of-day blacklist (UTC). Skip these hours entirely
+        # even if inside the session window. e.g. [8,13] = avoid worst hours.
+        block_hours_utc: list[int] | tuple[int, ...] | None = None,
         min_history: int | None = None,
     ) -> None:
         super().__init__(
@@ -100,6 +108,8 @@ class PivotBounce(BaseStrategy):
             adx_period=adx_period,
             adx_max=adx_max,
             pivot_period=pivot_period,
+            weekdays=tuple(weekdays) if weekdays is not None else None,
+            block_hours_utc=tuple(block_hours_utc) if block_hours_utc is not None else None,
         )
         self.min_history = min_history or max(atr_period * 3, 60)
         self._atr_cache: pd.Series | None = None
@@ -187,6 +197,14 @@ class PivotBounce(BaseStrategy):
         ts_utc = ts_dt.astimezone(timezone.utc)
         sess = p.get("session")
         if sess and not check_session(ts_utc.time(), sess):
+            return None
+        # iter28: day-of-week filter (UTC weekday 0=Mon).
+        wds = p.get("weekdays")
+        if wds is not None and ts_utc.weekday() not in wds:
+            return None
+        # iter28: hour blacklist (UTC).
+        bhrs = p.get("block_hours_utc")
+        if bhrs is not None and ts_utc.hour in bhrs:
             return None
 
         day_key = ts_utc.date().isoformat()
