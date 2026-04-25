@@ -122,10 +122,20 @@ def _preset_gold_hrhr_v1() -> list[dict[str, Any]]:
             "config": "config/squeeze_breakout_aggressive.yaml",
             "grid": {
                 "bb_n": [20, 40],
-                "breakout_atr": [0.1, 0.2],
+                "break_atr": [0.1, 0.2],
                 "risk.risk_per_trade_pct": [2.0, 3.0],
             },
             "min_validation_trades": 10,
+        },
+        {
+            "name": "momentum_pullback_candidate",
+            "config": "config/momentum_pullback_aggressive.yaml",
+            "grid": {
+                "impulse_atr": [1.2, 1.8],
+                "pullback_min": [0.25, 0.38],
+                "risk.risk_per_trade_pct": [2.0, 3.0],
+            },
+            "min_validation_trades": 20,
         },
     ]
 
