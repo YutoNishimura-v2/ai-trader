@@ -1,0 +1,78 @@
+extends: ../default.yaml
+
+# iter9: pure-price-action ensemble (NO news strategies).
+# Members chosen because they cleared the validation binary gates:
+#   - session_sweep_reclaim (2 trades/day variant): val +4.58% PF 1.71
+#   - bos_retest_scalper: val ~0% but full DD acceptable, low cap_viol
+#   - friday_flush_fade: val barely tested but full +5.2%
+#
+# Risk inherits user-iter9 defaults (2.5% per trade, 0.1 lot ceiling,
+# spread=8, withdraw=off).
+# concurrency=2 lets 2 members fire in the same bar window.
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+risk:
+  risk_per_trade_pct: 2.5
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 2
+  lot_cap_per_unit_balance: 0.000001
+
+strategy:
+  __replace__: true
+  name: ensemble
+  params:
+    __replace__: true
+    members:
+      - name: session_sweep_reclaim
+        params:
+          range_start_hour: 0
+          range_end_hour: 6
+          trade_start_hour: 7
+          trade_end_hour: 16
+          min_range_atr: 0.8
+          min_sweep_atr: 0.2
+          sl_atr_buffer: 0.3
+          max_sl_atr: 2.0
+          atr_period: 14
+          tp_mode: opposite_edge
+          tp1_rr: 0.6
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          max_trades_per_day: 2
+      - name: bos_retest_scalper
+        params:
+          swing_lookback: 10
+          min_legs: 2
+          atr_period: 14
+          retest_tolerance_atr: 0.5
+          sl_atr_buffer: 0.3
+          tp1_rr: 1.0
+          tp2_rr: 3.0
+          leg1_weight: 0.5
+          cooldown_bars: 5
+          setup_ttl_bars: 60
+          session: london_or_ny
+      - name: friday_flush_fade
+        params:
+          anchor_hour: 18
+          delay_min: 30
+          fri_close_hour: 20
+          trigger_atr: 1.5
+          sl_atr_mult: 0.6
+          tp_to_anchor: true
+          tp_rr: 1.5
+          atr_period: 14
+          cooldown_bars: 5
+          use_two_legs: true
+          tp1_rr: 0.6
+          leg1_weight: 0.5
+          max_trades_per_day: 1
