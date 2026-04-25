@@ -3,6 +3,60 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter17: pivot_bounce_london_v8 — ¥100k → ¥160,560 (+60.56% full)
+
+User: "gogo keep going!!!!"
+
+Five parameter sweeps on iter15 v7 baseline:
+
+### Sweep 1: cooldown × use_s2r2 (10 pts)
+  cd=60/s2=true: full +60.76% (slight improvement from v7's +57.95%)
+  s2=false (no S2/R2 levels): val PF 0.00 — S2/R2 are CRITICAL
+
+### Sweep 2: max_trades_per_day (6 levels)
+  No-op — cap=4 was already past actual fires (cd=60 throttles).
+
+### Sweep 3: ATR period (5 levels)
+  ATR=14 essentially optimal (vs 7/10/21/30 marginal differences).
+
+### Sweep 4: daily_max_loss (5 levels) ← KEY FINDING
+  kill=3.0: full +60.56%, t14 -14.11%, DD -15.54%
+  kill=5.0 (v7):   full +60.76%, t14 -16.27%, DD -17.99%
+  kill=8.0:        full +60.76%, t14 -16.27%, DD -17.99%
+
+  Tighter daily kill HELPS — gates worst-day disasters without
+  hurting normal cycle.
+
+### Sweep 5: ultra-tight kill (4 levels)
+  kill=2.0/2.5/3.0/3.5: all identical to kill=3.0.
+  kill=3 captures all the necessary throttling.
+
+### Iter17 winner: pivot_bounce_london_v8
+
+Promoted as `config/iter17/pivot_bounce_london_v8.yaml`:
+  cd=60, kill=3.0, atr=14, all else from v7.
+
+  Full Jan-Apr:  +60.56% (¥100,000 → ¥160,560, ¥+60,560 net)
+  Research 60d:  +67.32% (PF 2.14, ¥+67,320 in research alone)
+  Validation:    +9.49%  (PF 2.79)
+  Per-month:     Jan -4.05%, Feb +35.66%, Mar +31.01%, Apr -5.85%
+  Min equity:    92.6%
+  Max DD:        -15.5% (improved from v7's -18.5%)
+  Cap viol:      0
+  Tournament 14d: -14.11% (improved from v7's -16.27%)
+  Tournament 7d:  -11.12% (improved from v7's -15.68%)
+
+### Iter17 verdict
+
+v8 PROMOTED. Tighter daily kill (3% vs 5%) softens April losses
+from -9.29% to -5.85% AND improves tournament 14d from -16.27%
+to -14.11%. Cooldown 30→60 adds slight full-period improvement.
+
+Strongest non-news standalone in project history on full+research:
+v8 research +67.32% (PF 2.14), full +60.56%, val PF 2.79.
+
+168 tests still passing.
+
 ## 2026-04-25 — Iter16: London ensemble v2 (val PF 3.05 record); sweep_london risk×TP grid
 
 User: "dont stop. keep going"
