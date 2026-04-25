@@ -29,6 +29,16 @@ return. Targets are high-risk / high-reward:
   multiple iterations show it's unreachable we discuss in a review
   session and adjust.
 
+> **Update (2026-04-25, GOLD-only HRHR revision):** The user has
+> explicitly narrowed research back to **XAUUSD only** and authorized
+> materially more risk if needed. The primary non-negotiable guardrail
+> is now **avoid margin-call / zero-cut ruin**. The historic lot cap,
+> daily envelope, and 1:100 leverage remain the conservative HFM
+> baseline, but may be loosened in clearly labelled simulation-only
+> research runs to discover whether the return ceiling is caused by
+> signal quality or by sizing constraints. No martingale, no blind
+> averaging down, and no lookahead remain prohibited.
+
 Real-money promotion is **out of scope** until separately approved.
 
 ## Two categories, made explicit
@@ -37,7 +47,13 @@ This plan deliberately separates what we *fix up front* (user constraints)
 from what the iteration loop *discovers* (policy numbers). Earlier drafts
 tried to pre-pick policy; v3 lets the loop do it.
 
-### A. User constraints (locked, enforced in code)
+### A. User constraints / baseline guardrails
+
+As of the 2026-04-25 GOLD-only HRHR revision, items 1-3 are the
+**default executable baseline** rather than immutable research limits.
+They stay enforced in normal configs. Aggressive research configs may
+vary them only when labelled as simulation-only and only while tracking
+ruin metrics (`min_equity_pct`, drawdown, cap hits, and margin-call risk).
 
 1. **Leverage cap:** effective leverage on account notional ≤ **1:100**.
 2. **Position cap, per instrument:** lots ≤ `0.1 × balance_JPY / 100_000`,
@@ -146,16 +162,21 @@ Windows host is available.
 - Trigger packets on 2-SL, rule violations, weekly wrap.
 - Pass = approval in the final review session.
 
-### Phase 4 — multi-instrument expansion (revised 2026-04-25)
+### Phase 4 — GOLD-only high-risk research expansion (revised 2026-04-25)
 
-Originally BTCUSD; now EURUSD/GBPUSD because BTC's HFM real
-spread (~$10) makes M1 scalping uneconomic.
+The user rejected multi-instrument expansion for now: each symbol has
+different character, so all search effort should remain on XAUUSD.
 
-- Pull EURUSD M1 + GBPUSD M1 from Dukascopy (cross-platform).
-- Re-run `news_fade` (the current best) against the same USD-event
-  CSV (set `instrument: '*'` already supports any symbol).
-- Combined ensemble across XAUUSD + EURUSD + GBPUSD; uncorrelated
-  edge multiplier from the same calendar.
+- Expand GOLD-only strategy search substantially: event fade,
+  event continuation, regime-routed VWAP/BB/BOS, session sweep/reclaim,
+  momentum pullback, and squeeze breakout.
+- Include high-risk position-management sweeps in the user's practical
+  range (2-4% per trade, plus stress variants), with TP1/TP2 and
+  break-even moves emphasized.
+- Track ruin explicitly: minimum equity %, max drawdown, cap hits,
+  and whether a configuration approaches margin-call-style failure.
+- Keep tournament discipline: broad research/validation exploration is
+  allowed, but held-out tournament windows are still not tuned against.
 
 ## Research methodology (how the loop stays honest)
 

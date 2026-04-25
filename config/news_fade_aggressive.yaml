@@ -1,0 +1,16 @@
+extends: news_fade.yaml
+
+risk:
+  # High-risk research profile per user direction (2-4% practical
+  # discretionary range). Conservative config remains in news_fade.yaml.
+  risk_per_trade_pct: 3.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000003
+
+strategy:
+  params:
+    use_two_legs: true
+    tp1_rr: 0.6
+    leg1_weight: 0.5

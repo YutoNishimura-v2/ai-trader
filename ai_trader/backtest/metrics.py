@@ -81,6 +81,28 @@ def _monthly_returns(result: BacktestResult, starting_balance: float) -> pd.Seri
     return monthly
 
 
+def _period_return_pct(equity: pd.Series, starting_balance: float, days: int) -> float:
+    """Return % over the last ``days`` calendar days of an equity curve.
+
+    The equity curve already includes withdrawn_total in the backtest
+    engine, so this is the correct total-account curve for high-risk
+    research. If there is not enough history to establish a prior
+    baseline, ``starting_balance`` is used so a short backtest's
+    "recent 30d" return is still measured against the account's
+    initial equity, not the first post-trade equity point.
+    """
+    if equity.empty:
+        return 0.0
+    end = equity.index[-1]
+    start_cutoff = end - pd.Timedelta(days=days)
+    base_series = equity[equity.index <= start_cutoff]
+    start_equity = float(base_series.iloc[-1]) if len(base_series) else float(starting_balance)
+    end_equity = float(equity.iloc[-1])
+    if start_equity == 0:
+        return 0.0
+    return float((end_equity / start_equity - 1.0) * 100.0)
+
+
 def compute_metrics(result: BacktestResult, starting_balance: float) -> dict[str, Any]:
     trades = result.trades
     pnls = np.array([t.pnl for t in trades], dtype=float)
@@ -95,6 +117,13 @@ def compute_metrics(result: BacktestResult, starting_balance: float) -> dict[str
 
     daily = _daily_realized_pnl(result, starting_balance)
     monthly = _monthly_returns(result, starting_balance)
+
+    equity = result.equity_curve
+    min_equity = float(equity.min()) if not equity.empty else float(starting_balance)
+    max_equity = float(equity.max()) if not equity.empty else float(starting_balance)
+    min_equity_pct = (min_equity / starting_balance * 100.0) if starting_balance else 0.0
+    max_equity_pct = (max_equity / starting_balance * 100.0) if starting_balance else 0.0
+    monthly_map = {str(k): float(v) for k, v in monthly.items()}
 
     daily_hit_target = int((daily["pct"] >= 30.0).sum()) if not daily.empty else 0
     daily_hit_max_loss = int((daily["pct"] <= -10.0).sum()) if not daily.empty else 0
@@ -137,5 +166,20 @@ def compute_metrics(result: BacktestResult, starting_balance: float) -> dict[str
         "monthly_pct_max": float(monthly.max()) if len(monthly) else 0.0,
         "months_profitable": int((monthly > 0).sum()) if len(monthly) else 0,
         "months_count": int(len(monthly)),
+        # --- high-risk / ruin-control diagnostics ---
+        "min_equity": min_equity,
+        "max_equity": max_equity,
+        "min_equity_pct": float(min_equity_pct),
+        "max_equity_pct": float(max_equity_pct),
+        "recent_14d_return_pct": _period_return_pct(equity, starting_balance, 14),
+        "recent_30d_return_pct": _period_return_pct(equity, starting_balance, 30),
+        "monthly_returns": monthly_map,
+        "march_return_pct": float(monthly_map.get("2026-03", 0.0)),
+        "april_return_pct": float(monthly_map.get("2026-04", 0.0)),
+        # Research-only red flag: under the user's revised guardrail,
+        # this approximates a "near-zero-cut" trajectory. It is not a
+        # broker margin model, but it prevents high-return variants from
+        # hiding near-wipeout equity troughs.
+        "ruin_flag": bool(min_equity_pct <= 25.0),
     }
     return metrics
