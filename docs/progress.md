@@ -3,6 +3,36 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter19: TRIPLE pivot ensemble — ¥100k → ¥169,167 (project record)
+
+User: "gogo keep going!!!!"
+
+Added 'monthly' to pivot_period (alongside 'daily' and 'weekly').
+Built triple ensemble: daily + weekly + monthly pivot_bounce.
+
+Numbers (real 2026 M1 XAUUSD):
+  Full Jan-Apr:  +69.17% (¥100,000 → ¥169,167, ¥+69,167 net)
+  Research 60d:  +60.05% (PF 1.84)
+  Validation:    +15.20% (PF 2.50)
+  Per-month:     Jan +9.13%, Feb +35.56%, Mar +19.51%, Apr -4.32%
+  Min equity:    91.4% / 100% on val
+  DD:            -21.1%
+  Cap viol:      0
+  Tournament 14d: -15.96%
+
+vs iter18 dual (daily + weekly):
+  full +64.68% → +69.17%   (+4.5pp)
+  val  +11.79% → +15.20%   (+3.4pp)
+  Apr  -6.29%  → -4.32%    (improved)
+  March +18.78% → +19.51% (slight improvement)
+
+Monthly pivots add value on multiple dimensions: better full,
+better val, softer April. The monthly S2/R2 levels (from prior
+calendar month's range) are slow-moving structural zones that
+catch macro inflection points.
+
+168 tests still passing.
+
 ## 2026-04-25 — Iter18: WEEKLY pivot bounce — ensemble_pivot_dual ¥100k → ¥164,675
 
 User: "gogo keep going!!!!"

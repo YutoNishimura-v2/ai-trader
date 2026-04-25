@@ -128,6 +128,8 @@ class PivotBounce(BaseStrategy):
         if period == "weekly":
             # Group by Mon-anchored ISO week (Mon..Sun)
             buckets = idx.to_period("W-SUN").to_timestamp().tz_localize("UTC")
+        elif period == "monthly":
+            buckets = idx.to_period("M").to_timestamp().tz_localize("UTC")
         else:
             buckets = idx.normalize()
         agg = df_utc.groupby(buckets).agg(
