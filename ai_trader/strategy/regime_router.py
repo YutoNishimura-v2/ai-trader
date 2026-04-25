@@ -90,6 +90,10 @@ class RegimeRouterStrategy(BaseStrategy):
         range_adx_max: float = 20.0,
         trend_adx_min: float = 25.0,
         default_regimes: tuple[str, ...] = ("range", "transition", "trend"),
+        regime_risk_multipliers: dict[str, float] | None = None,
+        member_risk_multipliers: dict[str, float] | None = None,
+        regime_confidence: dict[str, float] | None = None,
+        adx_confidence_weight: float = 0.5,
     ) -> None:
         super().__init__(
             members=members or [],
@@ -98,6 +102,10 @@ class RegimeRouterStrategy(BaseStrategy):
             range_adx_max=range_adx_max,
             trend_adx_min=trend_adx_min,
             default_regimes=default_regimes,
+            regime_risk_multipliers=regime_risk_multipliers or {},
+            member_risk_multipliers=member_risk_multipliers or {},
+            regime_confidence=regime_confidence or {},
+            adx_confidence_weight=adx_confidence_weight,
         )
         if not members:
             raise ValueError("RegimeRouterStrategy needs a non-empty 'members' list")
@@ -116,6 +124,7 @@ class RegimeRouterStrategy(BaseStrategy):
         self.min_history = max(getattr(m.strategy, "min_history", 0) for m in self._members)
         self._mtf: MTFContext | None = None
         self._adx: np.ndarray | None = None
+        self._last_adx: float | None = None
 
     def prepare(self, df: pd.DataFrame) -> None:
         p = self.params
@@ -138,11 +147,44 @@ class RegimeRouterStrategy(BaseStrategy):
         val = float(self._adx[pos])
         if not np.isfinite(val):
             return None
+        self._last_adx = val
         if val <= float(p["range_adx_max"]):
             return "range"
         if val >= float(p["trend_adx_min"]):
             return "trend"
         return "transition"
+
+    def _risk_meta(self, member_name: str, regime: str) -> dict[str, float]:
+        p = self.params
+        r_mult = {
+            "range": 1.00,
+            "transition": 0.85,
+            "trend": 1.10,
+        }
+        r_mult.update(p.get("regime_risk_multipliers") or {})
+        m_mult = p.get("member_risk_multipliers") or {}
+        regime_mult = float(r_mult.get(regime, 1.0))
+        member_mult = float(m_mult.get(member_name, 1.0))
+        risk_multiplier = max(0.1, regime_mult * member_mult)
+
+        base_conf = {
+            "range": 0.60,
+            "transition": 0.45,
+            "trend": 0.65,
+        }
+        base_conf.update(p.get("regime_confidence") or {})
+        confidence = float(base_conf.get(regime, 0.5))
+        adx = self._last_adx
+        if adx is not None:
+            # Normalize ADX into 0..1 and blend with regime prior confidence.
+            adx_norm = min(1.0, max(0.0, adx / 50.0))
+            w = min(1.0, max(0.0, float(p.get("adx_confidence_weight", 0.5))))
+            confidence = confidence * (1.0 - w) + adx_norm * w
+        confidence = min(1.0, max(0.0, confidence))
+        return {
+            "risk_multiplier": risk_multiplier,
+            "confidence": confidence,
+        }
 
     def on_bar(self, history: pd.DataFrame) -> Signal | None:
         n = len(history)
@@ -157,5 +199,12 @@ class RegimeRouterStrategy(BaseStrategy):
             sig = member.strategy.on_bar(history)
             if sig is not None:
                 object.__setattr__(sig, "reason", f"[{member.name}|{regime}] {sig.reason}")
+                meta = dict(sig.meta or {})
+                meta.update(self._risk_meta(member.name, regime))
+                meta["regime"] = regime
+                meta["router_member"] = member.name
+                if self._last_adx is not None:
+                    meta["regime_adx"] = float(self._last_adx)
+                object.__setattr__(sig, "meta", meta)
                 return sig
         return None

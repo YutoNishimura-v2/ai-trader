@@ -106,3 +106,45 @@ def test_concurrent_position_limit():
     d = rm.evaluate(sig, ref_price=2000.0, open_positions=1, now=now)
     assert not d.approved
     assert "concurrent" in d.reason
+
+
+def test_dynamic_risk_uses_signal_confidence_and_multiplier():
+    rm = _rm(
+        dynamic_risk_enabled=True,
+        confidence_risk_floor=0.5,
+        confidence_risk_ceiling=1.5,
+    )
+    sig = Signal(
+        side=SignalSide.BUY,
+        entry=None,
+        stop_loss=1995.0,
+        take_profit=2005.0,
+        meta={"confidence": 1.0, "risk_multiplier": 2.0},
+    )
+    now = datetime(2026, 1, 2, 12, tzinfo=timezone.utc)
+    d = rm.evaluate(sig, ref_price=2000.0, open_positions=0, now=now)
+    assert d.approved
+    # Base lots would be 0.10 in test_sizing_is_risk_pct_bounded.
+    # confidence=1.0 -> x1.5 and risk_multiplier=2.0 => x3.0.
+    assert d.lots == pytest.approx(0.30, abs=1e-9)
+
+
+def test_dynamic_risk_drawdown_throttle_reduces_lot_size():
+    rm = _rm(
+        risk_per_trade_pct=1.0,
+        dynamic_risk_enabled=True,
+        daily_max_loss_pct=10.0,
+        drawdown_soft_limit_pct=5.0,
+        drawdown_soft_multiplier=0.5,
+        confidence_risk_floor=1.0,
+        confidence_risk_ceiling=1.0,
+    )
+    # Force a >5% drawdown from peak so soft throttle applies.
+    rm.on_trade_closed(-600.0, when=datetime(2026, 1, 2, 9, tzinfo=timezone.utc))
+    sig = Signal(side=SignalSide.BUY, entry=None, stop_loss=1995.0, take_profit=2005.0)
+    now = datetime(2026, 1, 2, 12, tzinfo=timezone.utc)
+    d = rm.evaluate(sig, ref_price=2000.0, open_positions=0, now=now)
+    assert d.approved
+    # Without throttle: balance 9,400 and 1% risk -> 94 budget, lots 0.188.
+    # With soft multiplier 0.5 -> budget 47, lots 0.094, rounded to 0.09.
+    assert d.lots == pytest.approx(0.09, abs=1e-9)

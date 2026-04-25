@@ -7,6 +7,7 @@ Enforces every user constraint from `docs/plan.md §A`:
 - daily envelope: +30 % / -10 % on combined realized P&L (§A.3)
 - half-of-daily-profit withdrawal hint (§A.9)
 - risk-% sizing bounded by all caps + broker lot step
+- optional dynamic risk scaling from signal conviction + drawdown throttle
 - entry-decision concurrency limit
 
 Balance is in ACCOUNT currency (JPY for HFM Katana). An
@@ -89,12 +90,28 @@ class RiskManager:
     # ledger, kill-switch, and consecutive-SL counter survive
     # restarts (plan v3 §A.8).
     state_store: StateStore | None = None
+    # Optional dynamic sizing layer:
+    # - ``signal.meta["risk_multiplier"]`` scales risk directly.
+    # - ``signal.meta["confidence"]`` (0..1) maps to
+    #   [confidence_risk_floor, confidence_risk_ceiling].
+    # - a drawdown throttle reduces risk when account value is below
+    #   peak to avoid ruin spirals during bad streaks.
+    dynamic_risk_enabled: bool = False
+    min_risk_per_trade_pct: float | None = None
+    max_risk_per_trade_pct: float | None = None
+    confidence_risk_floor: float = 0.75
+    confidence_risk_ceiling: float = 1.50
+    drawdown_soft_limit_pct: float = 12.0
+    drawdown_hard_limit_pct: float = 25.0
+    drawdown_soft_multiplier: float = 0.70
+    drawdown_hard_multiplier: float = 0.40
 
     balance: float = field(init=False)
     withdrawn_total: float = 0.0
     _ledger: Optional[DailyLedger] = field(default=None, init=False, repr=False)
     _state: BotState = field(default_factory=BotState, init=False, repr=False)
     consecutive_sl: int = field(default=0, init=False)
+    _peak_account_value: float = field(default=0.0, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.balance = float(self.starting_balance)
@@ -121,6 +138,7 @@ class RiskManager:
                     kill_switch=self._state.kill_switch,
                     kill_reason=self._state.kill_reason,
                 )
+        self._peak_account_value = max(float(self.starting_balance), self._account_value())
 
     def _persist(self) -> None:
         if self.state_store is None:
@@ -134,6 +152,59 @@ class RiskManager:
         self._state.withdrawn_total = self.withdrawn_total
         self._state.consecutive_sl = self.consecutive_sl
         self.state_store.save(self._state)
+
+    def _account_value(self) -> float:
+        """Trading balance plus swept/withdrawn ledger."""
+        return float(self.balance + self.withdrawn_total)
+
+    def _current_drawdown_pct(self) -> float:
+        if self._peak_account_value <= 0:
+            return 0.0
+        return max(0.0, (1.0 - self._account_value() / self._peak_account_value) * 100.0)
+
+    @staticmethod
+    def _as_float(x: object) -> float | None:
+        try:
+            if x is None:
+                return None
+            return float(x)
+        except (TypeError, ValueError):
+            return None
+
+    def _effective_risk_pct(self, signal: Signal) -> float:
+        risk_pct = float(self.risk_per_trade_pct)
+        if not self.dynamic_risk_enabled:
+            return max(0.0, risk_pct)
+
+        meta = signal.meta or {}
+        mult = 1.0
+
+        m = self._as_float(meta.get("risk_multiplier"))
+        if m is not None and m > 0:
+            mult *= m
+
+        c = self._as_float(meta.get("confidence"))
+        if c is not None:
+            c = min(max(c, 0.0), 1.0)
+            conf_floor = max(0.0, float(self.confidence_risk_floor))
+            conf_ceiling = max(conf_floor, float(self.confidence_risk_ceiling))
+            conf_mult = conf_floor + (conf_ceiling - conf_floor) * c
+            mult *= conf_mult
+
+        dd = self._current_drawdown_pct()
+        if dd >= float(self.drawdown_hard_limit_pct):
+            mult *= float(self.drawdown_hard_multiplier)
+        elif dd >= float(self.drawdown_soft_limit_pct):
+            mult *= float(self.drawdown_soft_multiplier)
+
+        eff = risk_pct * mult
+        min_risk = self._as_float(self.min_risk_per_trade_pct)
+        max_risk = self._as_float(self.max_risk_per_trade_pct)
+        if min_risk is not None and min_risk > 0:
+            eff = max(eff, min_risk)
+        if max_risk is not None and max_risk > 0:
+            eff = min(eff, max_risk)
+        return max(0.0, eff)
 
     def tick_value_account(self, ref_price: float | None = None) -> float:
         """``tick_value`` expressed in the account currency."""
@@ -182,6 +253,7 @@ class RiskManager:
     ) -> None:
         ledger = self._ensure_day(when)
         self.balance += pnl
+        self._peak_account_value = max(self._peak_account_value, self._account_value())
         ledger.realized_pnl += pnl
         self._check_kill_switch(ledger)
         # Consecutive-SL counter for the review-trigger engine.
@@ -229,7 +301,10 @@ class RiskManager:
         # All maths below are in the ACCOUNT currency.
 
         # 1) Risk-% sizing.
-        risk_budget = self.balance * (self.risk_per_trade_pct / 100.0)
+        effective_risk_pct = self._effective_risk_pct(signal)
+        risk_budget = self.balance * (effective_risk_pct / 100.0)
+        if risk_budget <= 0:
+            return RiskDecision(False, 0.0, "risk budget is zero")
         ticks = sl_distance / self.instrument.tick_size
         if ticks <= 0:
             return RiskDecision(False, 0.0, "zero tick distance")

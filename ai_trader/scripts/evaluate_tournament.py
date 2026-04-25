@@ -143,6 +143,23 @@ def main() -> int:
         withdraw_half_of_daily_profit=bool(risk_cfg.get("withdraw_half_of_daily_profit", True)),
         max_concurrent_positions=int(risk_cfg.get("max_concurrent_positions", 1)),
         lot_cap_per_unit_balance=float(risk_cfg.get("lot_cap_per_unit_balance", 0.0)),
+        dynamic_risk_enabled=bool(risk_cfg.get("dynamic_risk_enabled", False)),
+        min_risk_per_trade_pct=(
+            float(risk_cfg["min_risk_per_trade_pct"])
+            if risk_cfg.get("min_risk_per_trade_pct") is not None
+            else None
+        ),
+        max_risk_per_trade_pct=(
+            float(risk_cfg["max_risk_per_trade_pct"])
+            if risk_cfg.get("max_risk_per_trade_pct") is not None
+            else None
+        ),
+        confidence_risk_floor=float(risk_cfg.get("confidence_risk_floor", 0.75)),
+        confidence_risk_ceiling=float(risk_cfg.get("confidence_risk_ceiling", 1.5)),
+        drawdown_soft_limit_pct=float(risk_cfg.get("drawdown_soft_limit_pct", 12.0)),
+        drawdown_hard_limit_pct=float(risk_cfg.get("drawdown_hard_limit_pct", 25.0)),
+        drawdown_soft_multiplier=float(risk_cfg.get("drawdown_soft_multiplier", 0.7)),
+        drawdown_hard_multiplier=float(risk_cfg.get("drawdown_hard_multiplier", 0.4)),
     )
     risk_kwargs.update(risk_overrides)
     risk = RiskManager(**risk_kwargs)
