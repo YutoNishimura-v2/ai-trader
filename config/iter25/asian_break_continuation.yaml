@@ -1,0 +1,31 @@
+extends: ../default.yaml
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+risk:
+  risk_per_trade_pct: 5.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 5.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000010
+strategy:
+  __replace__: true
+  name: asian_break_continuation
+  params:
+    range_start_hour: 0
+    range_end_hour: 6
+    trade_start_hour: 7
+    trade_end_hour: 10
+    atr_period: 14
+    min_range_atr: 0.5
+    break_atr: 0.20
+    sl_atr_buf: 0.30
+    max_sl_atr: 2.5
+    tp_rr: 2.0
+    cooldown_bars: 30
+    max_trades_per_day: 1

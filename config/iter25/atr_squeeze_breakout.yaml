@@ -1,0 +1,30 @@
+extends: ../default.yaml
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+risk:
+  risk_per_trade_pct: 5.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 5.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000010
+strategy:
+  __replace__: true
+  name: atr_squeeze_breakout
+  params:
+    atr_period: 14
+    squeeze_lookback: 100
+    squeeze_pct: 25.0
+    range_lookback: 20
+    sl_atr_buf: 0.30
+    max_sl_atr: 2.5
+    tp_rr: 2.5
+    cooldown_bars: 30
+    max_trades_per_day: 3
+    htf: M15
+    session: london_or_ny

@@ -1,0 +1,87 @@
+extends: ../default.yaml
+
+# iter25 single-TP variant per user 2026-04-25 feedback:
+# "Why splitting it into TP1 and TP2? TP1 alone would be enough."
+# Tested tp_only sweep: tp=1.0R wins with val PF 1.90.
+#
+# Numbers (real 2026 M1 XAUUSD):
+#   Full +102.26% (vs v4 two-leg +166.23%)
+#   Val PF 1.90 (vs v4's 1.78) — STRONGER validation
+#   Simpler engine, easier to live-execute.
+#
+# Trade-off: v4 (two-leg) wins growth; this single-TP wins validation
+# robustness AND simplicity.
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+risk:
+  risk_per_trade_pct: 10.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 3.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000020
+  dynamic_risk_enabled: true
+  min_risk_per_trade_pct: 1.0
+  max_risk_per_trade_pct: 10.0
+  confidence_risk_floor: 1.0
+  confidence_risk_ceiling: 1.0
+  drawdown_soft_limit_pct: 12.0
+  drawdown_hard_limit_pct: 22.0
+  drawdown_soft_multiplier: 0.7
+  drawdown_hard_multiplier: 0.4
+
+strategy:
+  __replace__: true
+  name: ensemble
+  params:
+    __replace__: true
+    members:
+      - name: pivot_bounce
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.0       # = TP1 (single-TP behavior)
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 4
+      - name: pivot_bounce
+        params:
+          pivot_period: weekly
+          atr_period: 14
+          touch_atr_buf: 0.10
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.0
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 2
+      - name: pivot_bounce
+        params:
+          pivot_period: monthly
+          atr_period: 14
+          touch_atr_buf: 0.15
+          sl_atr_buf: 0.30
+          max_sl_atr: 3.0
+          tp1_rr: 1.0
+          tp2_rr: 1.0
+          leg1_weight: 0.5
+          cooldown_bars: 120
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 1

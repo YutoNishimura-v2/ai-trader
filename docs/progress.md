@@ -3,6 +3,68 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter25: BOLD exploration — 3 new strategies + single-TP simplification
+
+User: "Why splitting it into TP1 and TP2? TP1 alone would be enough.
+Also, if you keep wasting time on petty hyperparameter tuning, you're
+never going to hit 200%/mo. Move much faster with bold and daring
+algorithm exploration."
+
+Built 3 new strategies in parallel:
+
+### 1. turn_of_month (FALSIFIED)
+Trade last 3 + first 2 days of month with M15 EMA bias.
+Full -14.82%, val negative. Institutional rebalancing flow
+hypothesis doesn't manifest mechanically on M1 gold.
+
+### 2. asian_break_continuation (FALSIFIED standalone)
+Opposite of sweep_reclaim — clean Asian-range break + continuation.
+Full -0.81%, but huge per-month swings: Jan +42.71%, Apr -30.09%.
+Catches trend-day fires when pivot bounces miss; falsifies April.
+
+### 3. atr_squeeze_breakout (FALSIFIED — RUIN)
+HTF ATR percentile <25 → 20-bar range break.
+Full -75%, ruin_flag=True. Volatility clustering hypothesis
+doesn't pay on M1 gold at user sizing.
+
+### Quad ensemble (FALSIFIED)
+Tried v4 + asian_break_continuation. Validation -26.15% PF 0.34
+(asian_break dragged Apr to -27%). REJECTED per validation
+discipline.
+
+### Single-TP variant (USER FEEDBACK WINS)
+Per user "TP1 alone would be enough", tested tp_only sweep:
+
+| tp_only | full | val | val PF |
+|---:|---:|---:|---:|
+| 1.0 | +102.26 | +18.47 | **1.90** ← winner |
+| 1.5 | +49.36 | +10.56 | 1.34 |
+| 2.0 | +85.62 | -5.49 | 0.85 |
+| 2.5 | +193.31 | -18.52 | 0.42 (overfit) |
+
+WINNER: triple_single_tp (all members tp_only=1.0R)
+  Full Jan-Apr:  +102.26% (¥100,000 → ¥202,261)
+  Research 60d:  +89.17% (PF 1.54)
+  Validation:    +18.47% (PF 1.90)  ← stronger than v4's 1.78
+  Per-month:     Jan +6.05, Feb +62.84, Mar +23.08, Apr -4.84
+  DD:            -33.5%, cap=0
+  Tournament 14d: -16.73% (improved from v4's -22.15%)
+  Tournament 7d:  -8.30% (improved from v4's -10.39%)
+
+User's intuition correct: simpler engine, stronger validation,
+better tournament, easier live execution. Trade-off: lower
+absolute full (+102 vs +166) because no runner captures big
+weekly retracement legs.
+
+### Iter25 verdict
+
+3 new strategy ideas FALSIFIED (turn_of_month, asian_break_cont,
+atr_squeeze). Quad ensemble FALSIFIED (Apr drag). Single-TP
+variant promoted as a SECOND headline (best validation PF +
+tournament-soft + simpler).
+
+168 tests still passing.
+
 ## 2026-04-25 — Iter23: triple_aggressive_v3 — ¥100k → ¥246,614 (2.46x)
 
 User: "why are you stopping? dont stop."
