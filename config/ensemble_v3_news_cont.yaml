@@ -101,12 +101,31 @@ strategy:
       session_sweep_reclaim: 1.00
       news_fade: 1.30
       friday_flush_fade: 1.15
+      news_continuation: 1.50
     regime_confidence:
       range: 0.65
       transition: 0.45
       trend: 0.55
     adx_confidence_weight: 0.50
     members:
+      - name: news_continuation
+        regimes: ["all"]
+        params:
+          news_csv: data/news/xauusd_2026_full.csv
+          impact_filter: ["high", "medium"]
+          delay_min: 5
+          window_min: 60
+          trigger_atr: 3.0
+          confirm_bars: 3
+          sl_atr_mult: 0.8
+          tp_rr: 2.0
+          atr_period: 14
+          cooldown_bars: 5
+          use_two_legs: true
+          tp1_rr: 1.0
+          leg1_weight: 0.5
+          symbol: XAUUSD
+
       - name: news_fade
         regimes: ["all"]
         params:
