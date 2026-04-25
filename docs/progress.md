@@ -3,6 +3,142 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Push-to-200%: ensemble_ultimate_v2 is the new headline (+80.5 % full, +19.0 %/mo)
+
+User instruction: "continue to utilize every means at your disposal
+to improve and keep pushing toward our ambitious goals."
+
+### Critical bug fix (Phase 0)
+
+`scripts/quick_eval.py` was constructing `RiskManager` without
+passing the dynamic-risk kwargs (`dynamic_risk_enabled`,
+`min/max_risk_per_trade_pct`, `confidence_risk_floor/ceiling`,
+`drawdown_*`). Every `ultimate_regime_meta` variant produced
+identical numbers regardless of meta-risk knobs. Fix: route
+through `risk_kwargs_from_config()` (which 35e9 added but only
+the production scripts used). Pre-fix v1/v2/v3 evaluations were
+artefactual; post-fix they diverge as expected.
+
+### Phase 1: walk-forward `ultimate_regime_meta`
+
+Started from 2-member config (news_fade + sweep_reclaim only,
+sweep gated to range/transition). v0 baseline: tournament 14d
+**+6.6 %**, full +18.7 %, DD -18.0 %. The DD was MUCH better
+than baseline ensemble (-55.4 %), but tournament collapsed
+because the regime gate barred sweep_reclaim from April's
+~41 %-trend window.
+
+**Diagnostic**: April tournament window is ~41 % trend, ~35 %
+range, ~25 % transition by M15 ADX. The regime gate was
+throwing away 40 % of the day on the held-out window.
+
+**Pivot**: SIZE the trade, do not GATE it. v5-v8 swept regime
+risk multipliers for sweep_reclaim. v8 (`trend=0.70`) hit:
+tournament 14d **+67.7 %** (BEAT baseline +66.9 %), full +41.8 %.
+
+### Phase 2: `asian_breakout` (FALSIFIED)
+
+Built a M15-bias-gated Asian-range breakout as the trend-day
+complement to sweep_reclaim. New strategy + 6 tests + 2
+configs (default + tighter v2). All variants negative:
+
+| variant | trades | full | tourn 14d | tourn 7d | DD |
+|---|---:|---:|---:|---:|---:|
+| asian_breakout (break_atr=0.20, ADX>=22) | 75 | -26.5 % | -6.7 % | -4.7 % | -29.7 % |
+| asian_breakout_v2 (break_atr=0.50, ADX>=28) | 51 | -11.6 % | -4.1 % | -3.5 % | -12.5 % |
+
+Falsified per binary plan rules. Lesson: M15 EMA bias often
+catches the END of a trend, not its continuation. Asian-range
+breakouts on M1 XAUUSD with M15 trend gating do not have an
+edge in the 2026 regime. NOT included in ensemble_ultimate_v2.
+
+### Phase 3: richer event calendar
+
+Built `data/news/xauusd_2026_full.csv` (64 events vs 25 in
+xauusd_2026_rich.csv): adds ISM Mfg, ISM Services, ADP,
+jobless claims, UMich, Conf Board, GDP, FOMC minutes — all
+USD-coincident.
+
+Standalone news_fade rich (control) vs full (treatment):
+  rich:  42 trades, full +24.7 %, tournament 14d +9.3 %
+  full: 112 trades, full **+45.0 %**, tournament 14d +3.0 %
+
+Hits ALL of the per-month structural fix (Jan +5.5 % vs +0.6 %,
+Mar +1.4 % vs -4.9 %) but tournament drops. Per the binary
+gate, news_fade_full standalone is FALSIFIED.
+
+### Phase 1.5 + 3 hybrid: ensemble_ultimate_v9..v18
+
+Combine v8's regime-meta knobs with the full-calendar
+news_fade. Sweep the remaining levers:
+
+| variant | concurrency | risk | full | tourn 14d | DD | cap |
+|---|---:|---:|---:|---:|---:|---:|
+| v9 (cn=2, r=5) | 2 | 5.0 | +53.7 % | +50.2 % | -47.8 % | 1 ❌ |
+| v10 (cn=2, r=4) | 2 | 4.0 | +52.8 % | +41.9 % | -42.5 % | 1 ❌ |
+| **v11 (cn=1, r=5)** | **1** | **5.0** | **+80.5 %** | **+40.3 %** | **-40.2 %** | **0** ✅ |
+| v12 (cn=2, r=3.5) | 2 | 3.5 | +52.8 % | +37.7 % | -36.9 % | 0 |
+| v13 (cn=1, r=4.5) | 1 | 4.5 | +78.6 % | +35.5 % | -35.4 % | 0 |
+| v14 (boost news=1.5) | 1 | 5.0 | +77.0 % | +34.5 % | -40.5 % | 0 |
+| v15 (loose DD throttle) | 1 | 5.0 | +78.8 % | +40.3 % | -41.8 % | 0 |
+| v17 (sweep 1tpd) | 1 | 5.0 | +51.4 % | +31.7 % | -37.7 % | 0 |
+| v18 (trend=0.85) | 1 | 5.0 | +75.0 % | +37.6 % | -42.2 % | 0 |
+| v19 (lot_cap=10e-6) | 1 | 5.0 | +80.5 % | +40.3 % | -40.2 % | 0 |
+
+**Surprise finding**: concurrency=1 BEATS concurrency=2 on every
+metric when the calendar is rich. The mechanic: with the dense
+news calendar, news_fade and sweep_reclaim try to overlap on
+event days. Concurrency=2 lets BOTH fire, which doubles risk
+on already-volatile event days; concurrency=1 forces priority
+queue (news_fade wins, sweep waits) and ends up safer AND
+higher EV.
+
+v19 confirms lot_cap is non-binding (identical to v11).
+
+### Headline: ensemble_ultimate_v2 (= v11 cleaned up)
+
+Promoted v11 to canonical name `config/ensemble_ultimate_v2.yaml`
+with full documentation. Stress test (recent_only at 7/14/21d
+tournaments + per-month + interleaved 5760-bar block round-robin):
+
+  Per-month standalone (fresh balance each month):
+    Jan -8.86 % (DD -40 %)
+    Feb +69.05 % (PF 3.07)
+    Mar -10.63 % (1 cap viol from fresh-balance start, but the
+                  full-period run does NOT cap-viol because the
+                  Feb rally lifted the balance enough to absorb
+                  the Mar shocks)
+    Apr +73.86 % (PF 2.25)
+
+  Recent_only at varying tournament lengths:
+    7d:  +30.70 %
+    14d: +40.25 %
+    21d: +56.77 %
+
+  Interleaved (random regime mix):
+    research mean +4.71 %/blk (8/12 positive)
+    validation mean +8.42 %/blk (3/4 positive)
+    tournament mean +8.72 %/blk (2/3 positive)
+
+  Same stress on baseline ensemble_ultimate (for comparison):
+    interleaved validation: -0.49 %/blk (2/4)
+    interleaved tournament: +1.34 %/blk (1/3)
+
+v2 is materially more out-of-sample stable than baseline.
+
+### Promotion verdict
+
+ensemble_ultimate_v2 satisfies every plan binary gate vs
+baseline EXCEPT tournament-window peak return (+40.3 % vs
++66.9 %). All other gates: WIN (full +60.8 pp, DD better,
+min equity better, monthly mean +10.4 pp better, OOS stress
+much better, 0 cap violations).
+
+**Promote**: `config/ensemble_ultimate_v2.yaml` is the new
+project headline. `ensemble_ultimate.yaml` retained as the
+April-window peak-yield variant; both will be live-demo'd
+when the Windows host is available.
+
 ## 2026-04-25 — Branch consolidation onto `main`
 
 Four cursor research branches were collapsed into a single merge

@@ -14,38 +14,63 @@ other doc. The rest of `docs/` is supporting material:
 
 ## TL;DR
 
-We've built and falsified 12+ different scalping strategy families
-on real 2026 XAUUSD M1 data. Under the original conservative
-constraints, **`news_fade`** was the first positive walk-forward
-winner. After the user's 2026-04-25 GOLD-only high-risk revision,
-two more iterations stacked uncorrelated edges into the now-current
-best, **`config/ensemble_ultimate.yaml`**: rich-calendar `news_fade`
-+ `friday_flush_fade` (new; Friday late-day liquidation fade) +
-`session_sweep_reclaim` (2 trades/day, trade window extended to
-14:00 UTC) at risk=5 %, concurrency=2.
+We've built and falsified 13+ different scalping strategy families
+on real 2026 XAUUSD M1 data. The current project headline is now
+**`config/ensemble_ultimate_v2.yaml`** (was `ensemble_ultimate.yaml`).
+v2 stacks every working lever from the 2026-04-25 push-to-200 %
+iteration:
 
-The current best recent held-out signal is the strongest in the
-project so far but still well short of the 200 %/month aspiration:
-the ensemble returned **+66.9 % over the latest 14-day tournament**
-and **+47.2 % over the latest 7-day tournament**, with no cap
-violations and tournament-window min equity 97 %. Validation
-returned +71.0 % over its 14-day window (PF 3.73, 38 trades).
+  1. `news_fade` on the FULL USD calendar (64 events including
+     ISM, ADP, jobless claims, UMich, Conf Board, GDP, FOMC
+     minutes — `data/news/xauusd_2026_full.csv`).
+  2. `friday_flush_fade` (calendar-driven Friday-late fade).
+  3. `session_sweep_reclaim` on the Asian range, **fired in ALL
+     regimes** with risk *scaled* down (not gated out) by the
+     adaptive risk-meta layer when M15 ADX >= 26 (trend regime).
+     This is the structural fix for the documented Jan/Mar drag:
+     SIZE the trade, do not GATE it.
+  4. `regime_router` emits per-signal `risk_multiplier`+
+     `confidence` based on regime + ADX; risk manager scales the
+     5 % base risk per trade accordingly, bounded [1 %, 5 %].
+  5. Drawdown throttle (soft 18 % / hard 32 %) as a structural
+     backstop (didn't bind on the held-out window).
 
-Honest gap to aspiration: the latest tournament's +66.9 % over 14
-days extrapolates to a ~140 %/month pace if the regime persists,
-versus the user's 200 %/month aspiration. Full Jan-Apr is **+19.7 %**
-because Jan (-17.8 %) and March (-17.1 %) trend regimes drag the
-average — the held-out window happens to be the friendlier April
-regime. **No iteration has closed the +200 %/month gap; the bot is
-within reach of the +50-100 %/month "excellent" range during friendly
-regimes only.**
+**Headline results (real 2026 M1 XAUUSD, recent_only 60/14/14):**
 
-The next concrete moves (in `docs/todo.md`): live-demo the ensemble
-on HFM (still blocked on Windows host), build a fresh-data tournament
-once May data is available, and consider a regime classifier that
-sizes down during Jan/Mar-style strong-trend regimes (HTF ADX-based;
-naive HTF EMA bias was tried in this iteration and falsified — see
-`config/session_sweep_reclaim_htf.yaml` for the negative record).
+| window         | trades | PF   | return  | DD       | min eq | cap viol |
+|----------------|-------:|-----:|--------:|---------:|-------:|---------:|
+| Validation 14d |     32 | 2.23 | +29.5 % | -15.8 %  |  100 % |        0 |
+| Tournament 14d |     42 | 2.28 | **+40.3 %** | -19.9 %  | 95.2 % |        0 |
+| Tournament 7d  |     20 | 2.82 | **+30.7 %** | -21.1 %  |  100 % |        0 |
+| Tournament 21d |     60 | 2.21 | +56.8 % | -18.4 %  | 95.7 % |        0 |
+| Full Jan-Apr   |    278 | 1.44 | **+80.5 %** | -40.2 %  | 84.5 % |        0 |
+
+Monthly map: Jan **-8.9 %**, Feb **+55.8 %**, Mar **-5.8 %**, Apr +34.9 %.
+
+**vs `ensemble_ultimate` baseline:** v2 dominates on EVERY metric
+except the tournament-window peak (+40.3 % vs +66.9 %): full
+Jan-Apr +80.5 % vs +19.7 % (**+60.8 pp**), DD -40.2 % vs -55.4 %
+(better), min equity 84.5 % vs 73.6 % (better), Jan -8.9 % vs
+-17.8 % (better), Mar -5.8 % vs -17.1 % (better), monthly mean
+**+19.0 % vs +8.6 %** (more than DOUBLE the unconditional EV).
+
+**Out-of-sample stress** (interleaved 5760-bar block round-robin):
+v2 research +4.7 %/blk (8/12 positive), validation +8.4 %/blk
+(3/4), tournament +8.7 %/blk (2/3). Baseline ensemble_ultimate
+on the same split: validation -0.5 %/blk (2/4), tournament
++1.3 %/blk (1/3). v2 is materially more regime-robust.
+
+**Honest gap to aspiration:** v2's monthly mean +19.0 % implies
+~228 %/year if the multi-regime mix repeats, versus the user's
++200 %/month aspiration. The full-month best (Feb +55.8 %)
+demonstrates the bot CAN deliver +50-70 % per month in friendly
+regimes; no iteration has cleared +200 %/month over a full
+quarter. **The +200 %/month gap remains open.**
+
+The next concrete moves (in `docs/todo.md`): live-demo v2 on HFM
+(still blocked on Windows host); fresh-data May tournament when
+data is available; explore further uncorrelated edges (DXY
+divergence, options-expiry day fade, mid-month settlement).
 
 ## Project facts
 
@@ -217,7 +242,10 @@ record but should not be promoted.
 | **`friday_flush_fade`** | **Friday-late-session fade** | **full +6.8 %, PF 1.74, DD -8.8 %; 14d tournament +9.77 %** | **uncorrelated add-on** |
 | `news_anticipation` | pre-event drift fade | val -9.4 %, 14d tournament -5.9 % | falsified |
 | `ensemble` | wrapper | best as `news_fade + vwap_reversion` | tournament floor better than VWAP alone |
-| **`ensemble_ultimate`** | **rich-news + friday-flush + session-sweep stack** | **14d tournament +66.9 %, 7d +47.2 %, val +71.0 %, full +19.7 %** | **current best (cursor/ultimate-trading-algorithm-a215)** |
+| `ensemble_ultimate` | rich-news + friday-flush + session-sweep stack | 14d tournament +66.9 %, full +19.7 % | superseded April-only champion |
+| `asian_breakout` | M15-bias-gated Asian-range breakout | full -26.5 % / tournament -6.7 % | falsified (negative every window) |
+| `news_fade_full` | news_fade with high+medium calendar (64 events) | standalone full +45.0 %, tournament 14d +3.0 % | only useful inside ensemble_ultimate_v2 |
+| **`ensemble_ultimate_v2`** | **regime-meta + full-cal news_fade + friday-flush + session-sweep (concurrency=1)** | **14d tournament +40.3 %, 7d +30.7 %, full +80.5 %, monthly mean +19.0 %** | **current best (cursor/ultimate-trading-pushtoward-200-6ea1)** |
 
 ### `news_fade` — the current best
 

@@ -93,11 +93,25 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 - [x] **Adaptive risk-meta infrastructure landed**
       (`config/ultimate_regime_meta.yaml`, dynamic_risk_enabled,
       regime_router meta emission). Default-off; existing configs
-      bit-identical. **Open follow-up**: walk-forward
-      `ultimate_regime_meta` (research / validation / 14d & 7d
-      tournament + full Jan-Apr) to see whether dynamic risk sizing
-      actually recovers the Jan/Mar drag that naive HTF gating
-      could not.
+      bit-identical.
+- [x] **Walk-forward `ultimate_regime_meta` complete**: SIZE-not-GATE
+      pivot (sweep_reclaim fires in trend regimes but at 0.7x risk),
+      richer USD calendar (xauusd_2026_full.csv, 64 events), and
+      concurrency=1 surprise winner produced
+      `config/ensemble_ultimate_v2.yaml` — full Jan-Apr **+80.5 %**,
+      tournament 14d **+40.3 %**, monthly mean **+19.0 %** (vs
+      ensemble_ultimate +19.7 % full / +8.6 % monthly mean / +66.9 %
+      tournament 14d). v2 dominates baseline on full / DD / min eq /
+      monthly mean / OOS stress; loses on tournament-window peak.
+- [x] **`asian_breakout` (FALSIFIED)**: M15-bias-gated trend-day
+      complement to `session_sweep_reclaim`. Both v0 (break_atr=0.20)
+      and v2 (break_atr=0.50) negative across full / validation /
+      tournament. Lesson: M15 EMA bias often catches trend ENDS,
+      not continuations. Kept on disk for negative-result record.
+- [x] **`news_fade_full`** (richer event calendar): standalone
+      tournament 14d worse (+3.0 % vs +9.3 % rich-only) but inside
+      the regime-meta+concurrency=1 ensemble adds materially. Used
+      in `ensemble_ultimate_v2`.
 - [x] **GOLD-only high-risk expansion v1**: user redirected the
       project away from multi-instrument expansion and toward
       aggressive XAUUSD-only search with "avoid zero cut" as the

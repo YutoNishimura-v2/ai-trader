@@ -3,6 +3,58 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## 2026-04-25 push-to-200% iteration
+
+- **SIZE the trade, do not GATE it.** Naive HTF EMA / ADX gating
+  bars `session_sweep_reclaim` from trend regimes — but the
+  April tournament window is ~41 % trend by M15 ADX, so the gate
+  throws away 40 % of the day. Instead, let the strategy fire in
+  every regime and pass a per-regime risk_multiplier through the
+  signal meta. v2's regime_risk_multipliers={range:1.30,
+  transition:1.00, trend:0.70} recovers April while killing the
+  Jan/Mar drag.
+- **Concurrency=1 can BEAT concurrency=2 with a richer signal
+  source.** With xauusd_2026_full.csv (64 events vs 25), news_fade
+  and session_sweep_reclaim try to overlap on event days.
+  Concurrency=2 lets both fire and doubles risk on already-volatile
+  days; concurrency=1 forces a priority queue (news_fade wins,
+  sweep waits) and ends up SAFER and HIGHER EV. Counter-intuitive
+  but reproducible.
+- **Hidden plumbing bugs invalidate whole sweeps.**
+  `scripts/quick_eval.py` was silently dropping all
+  dynamic-risk-meta kwargs when constructing `RiskManager`. Every
+  ultimate_regime_meta variant produced identical numbers
+  regardless of what the YAML said. Caught only by checking that
+  v1/v2/v3 — which had visibly different YAMLs — produced
+  identical metrics. Lesson: when sweeping a config knob and
+  results don't move, BISECT the wiring before assuming the knob
+  is dead.
+- **M15 EMA bias is a lagging indicator at the entry bar.**
+  `asian_breakout` was the trend-day complement to
+  session_sweep_reclaim. Both gated variants lost across every
+  window. The root cause: by the time fast-EMA > slow-EMA on M15
+  ADX > 22, the trend's momentum has been spent or the price has
+  retraced into the Asian range. M15 trend confirmation works as
+  a FILTER on counter-trend strategies (skip the bad ones), not
+  as a TRIGGER for trend-following ones.
+- **A standalone-falsified strategy can still earn its place
+  inside an ensemble.** `news_fade_full` standalone has tournament
+  14d +3.0 % (down from rich-only +9.3 %); per binary rule it's
+  falsified. But inside `ensemble_ultimate_v2`, the same
+  full-calendar input lifts the FULL Jan-Apr from +44 % (v8 with
+  rich-only) to +80.5 % (v11 with full). The mid-impact events
+  fire in regimes where the high-impact-only sweep was idle, and
+  the regime-meta layer protects the bad ones. Lesson:
+  ensemble-level metrics are NOT the sum of standalone-component
+  metrics. Always re-test the full ensemble after a component
+  change.
+- **Per-month / interleaved stress catches survivor bias the
+  recent_only split misses.** Baseline ensemble_ultimate looks
+  great on the recent_only April tournament (+66.9 %) but earns
+  only +1.34 %/block on interleaved tournament (1/3 positive). v2
+  is +8.72 %/block (2/3 positive). The recent_only split rewards
+  April-friendly strategies; interleaved punishes them.
+
 ## Planning
 
 - **Separate user constraints from discoverable policy.** The first
