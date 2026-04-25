@@ -126,6 +126,21 @@ Conclusion: compression-breakout as implemented is another
 validation-positive / tournament-negative price-action family. Keep
 the code for future regime routing, but do not promote it.
 
+### Momentum-pullback attempt falsified
+
+Added `momentum_pullback` (displacement candle → fib-style
+pullback → rejection entry, TP1→BE). This was intended to emulate a
+human discretionary continuation setup. A 24-trial recent_only sweep
+was broadly negative:
+
+| best validation | verdict |
+|---|---|
+| best monthly score was still **−12.3 %** / PF 0.95 / DD −30 % / 490 trades | no tournament eval |
+
+Conclusion: the M1 displacement-pullback implementation overtrades
+and bleeds in the current March/April regime. It is not a candidate
+unless a much stricter MTF trend/session filter is added later.
+
 ## 2026-04-25 — news_fade is the first strategy to clear all 3 windows
 
 Iterated through the literature: built **London ORB** (Asian-range

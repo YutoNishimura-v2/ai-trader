@@ -268,6 +268,12 @@ progress entry for the full story.
   Compression alone creates too many false continuation entries
   under M1 costs; it needs stronger MTF/session context or should
   stay shelved.
+- **Naive impulse-pullback continuation is worse than expected.**
+  A direct discretionary-style impulse → fib pullback → rejection
+  strategy produced hundreds of M1 signals, but every validation cell
+  was negative (best still -12.3%). The user's intuition about
+  momentum pullbacks likely needs higher-timeframe trend/structure
+  context; a single-candle impulse trigger on M1 is just noise.
 
 - **The walk-forward ratchet actually catches overfitting.** First
   real sweep on 2024 XAUUSD: research PF 1.50 → validation PF 0.33
