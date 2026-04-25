@@ -110,8 +110,8 @@ def _preset_gold_hrhr_v1() -> list[dict[str, Any]]:
             "name": "session_sweep_reclaim_candidate",
             "config": "config/session_sweep_reclaim_aggressive.yaml",
             "grid": {
-                "sweep_session": ["london", "london_or_ny"],
-                "confirm_bars": [0, 1],
+                "trade_start_hour": [7, 12],
+                "trade_end_hour": [16],
                 "min_sweep_atr": [0.1, 0.2],
                 "risk.risk_per_trade_pct": [2.0, 3.0],
             },
