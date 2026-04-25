@@ -1,0 +1,27 @@
+extends: ../default.yaml
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+strategy:
+  __replace__: true
+  name: momentum_pullback
+  params:
+    __replace__: true
+    atr_period: 14
+    impulse_body_atr: 1.5
+    impulse_close_frac: 0.25
+    fib_min: 0.25
+    fib_max: 0.65
+    sl_atr_buffer: 0.3
+    max_sl_atr: 2.0
+    session: london_or_ny
+    cooldown_bars: 8
+    tp1_rr: 0.6
+    tp2_rr: 2.5
+    leg1_weight: 0.5

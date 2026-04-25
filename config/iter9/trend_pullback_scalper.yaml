@@ -1,0 +1,33 @@
+extends: ../default.yaml
+
+# iter9: minimal override — inherits the user's iter9 risk profile
+# (spread=8, risk=2.5%, lot_cap=1e-6, withdraw=false). Pure
+# re-evaluation of the existing M1 fib trend-pullback scalper at
+# the user's actual sizing.
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+strategy:
+  __replace__: true
+  name: trend_pullback_scalper
+  params:
+    __replace__: true
+    fast_ema: 20
+    slow_ema: 50
+    slope_bars: 5
+    slope_min_atr: 0.02
+    impulse_lookback: 60
+    fib_min: 0.382
+    fib_max: 0.618
+    atr_period: 14
+    sl_atr_mult: 0.5
+    tp1_rr: 1.0
+    tp2_rr: 3.0
+    leg1_weight: 0.5
+    cooldown_bars: 3
