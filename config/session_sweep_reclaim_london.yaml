@@ -1,0 +1,17 @@
+extends: session_sweep_reclaim_aggressive.yaml
+
+risk:
+  risk_per_trade_pct: 2.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000003
+
+strategy:
+  params:
+    trade_start_hour: 7
+    trade_end_hour: 12
+    min_sweep_atr: 0.1
+    tp1_rr: 0.6
+    tp2_rr: 2.5
+    leg1_weight: 0.5
