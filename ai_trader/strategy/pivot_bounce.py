@@ -140,6 +140,11 @@ class PivotBounce(BaseStrategy):
             buckets = idx.to_period("W-SUN").to_timestamp().tz_localize("UTC")
         elif period == "monthly":
             buckets = idx.to_period("M").to_timestamp().tz_localize("UTC")
+        elif period in ("4h", "h4", "H4"):
+            # iter28: 4-hour pivots — much faster, fires more often.
+            buckets = idx.floor("4h")
+        elif period in ("h1", "H1", "1h"):
+            buckets = idx.floor("1h")
         else:
             buckets = idx.normalize()
         agg = df_utc.groupby(buckets).agg(
