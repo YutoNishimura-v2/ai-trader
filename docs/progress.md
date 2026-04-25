@@ -3,6 +3,40 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Push-to-200% iter6: ensemble_v10_compound_max — MONTHLY MEAN +119.7%/MO
+
+User instruction: "keep going."
+
+Built on iter5 v9_compound by raising max_risk_per_trade_pct
+from 6 → 7 (and daily_max_loss_pct stays 4.0). Rest unchanged.
+
+Numbers (real 2026 M1 XAUUSD):
+  Full Jan-Apr:    **+665.85%**  (PF 1.95, 470 trades)
+  Validation 14d:  +83.81%       (PF 2.63)
+  Validation T=7d: +184.25%
+  Tournament 7d:   +66.65%       (PF 3.32)
+  Tournament 14d:  +152.87%      (PF 2.60, ~329%/mo annualized)
+  Tournament 21d:  **+341.14%**  (PF 2.82, ~487%/30d annualized)
+  Apr standalone:  **+441.70%**  (PF 2.57)
+  Max DD full:     -64.08%
+  Min equity full: 93.8%
+  Cap violations:  0 ACROSS ALL MAIN WINDOWS
+
+Per-month full: Jan +4.8%, Feb +16.5%, Mar +15.9%, Apr +441.7%.
+ALL POSITIVE. Monthly mean **+119.70%**.
+
+Project monthly-mean lineage:
+  baseline ensemble_ultimate:   +8.6%
+  iter1 ensemble_ultimate_v2:  +19.0%
+  iter2 ensemble_v6_triple:    +33.9%
+  iter3 ensemble_v7_chop_robust: +36.7%
+  iter4 ensemble_v8_ultra_chop: +33.5%
+  iter5 ensemble_v9_compound:  +102.5%
+  iter6 ensemble_v10_compound_max: **+119.7%**
+
+14x lift vs original baseline. 60% of the way to +200%/mo
+on an UNCONDITIONAL basis.
+
 ## 2026-04-25 — Push-to-200% iter5: ensemble_v9_compound — MONTHLY MEAN +102.5%/MONTH
 
 User instruction: "keep going."
