@@ -79,6 +79,9 @@ class PivotBounce(BaseStrategy):
         htf: str | None = None,
         adx_period: int = 14,
         adx_max: float | None = None,
+        # "daily" (default) — pivots from prior UTC day OHLC.
+        # "weekly"          — pivots from prior calendar week OHLC.
+        pivot_period: str = "daily",
         min_history: int | None = None,
     ) -> None:
         super().__init__(
@@ -96,6 +99,7 @@ class PivotBounce(BaseStrategy):
             htf=htf,
             adx_period=adx_period,
             adx_max=adx_max,
+            pivot_period=pivot_period,
         )
         self.min_history = min_history or max(atr_period * 3, 60)
         self._atr_cache: pd.Series | None = None
@@ -113,31 +117,35 @@ class PivotBounce(BaseStrategy):
         p = self.params
         self._atr_cache = atr(df, period=p["atr_period"])
 
-        # Daily OHLC — using UTC calendar days. groupby on the
-        # tz-aware index then forward-fill the *previous* day's
-        # OHLC onto each bar.
+        # Pivot period: "daily" (prior UTC day) or "weekly" (prior cal week).
         idx = df.index
         if getattr(idx, "tz", None) is None:
             idx = idx.tz_localize("UTC")
         df_utc = df.copy()
         df_utc.index = idx
-        days = idx.normalize()
-        agg = df_utc.groupby(days).agg(
-            day_open=("open", "first"),
-            day_high=("high", "max"),
-            day_low=("low", "min"),
-            day_close=("close", "last"),
+
+        period = p.get("pivot_period", "daily")
+        if period == "weekly":
+            # Group by Mon-anchored ISO week (Mon..Sun)
+            buckets = idx.to_period("W-SUN").to_timestamp().tz_localize("UTC")
+        else:
+            buckets = idx.normalize()
+        agg = df_utc.groupby(buckets).agg(
+            bk_open=("open", "first"),
+            bk_high=("high", "max"),
+            bk_low=("low", "min"),
+            bk_close=("close", "last"),
         )
-        # Shift by one day so each row has the PRIOR day's OHLC
-        # (causal — no peek at today's close).
+        # Shift by one bucket so each row has the PRIOR bucket's OHLC
+        # (causal — no peek at current bucket's close).
         prev = agg.shift(1)
-        prev["P"] = (prev["day_high"] + prev["day_low"] + prev["day_close"]) / 3.0
-        prev["R1"] = 2 * prev["P"] - prev["day_low"]
-        prev["S1"] = 2 * prev["P"] - prev["day_high"]
-        prev["R2"] = prev["P"] + (prev["day_high"] - prev["day_low"])
-        prev["S2"] = prev["P"] - (prev["day_high"] - prev["day_low"])
-        # Map back onto each M1 bar via the bar's day-key.
-        per_bar = prev.loc[days, ["P", "R1", "S1", "R2", "S2"]].set_axis(idx)
+        prev["P"] = (prev["bk_high"] + prev["bk_low"] + prev["bk_close"]) / 3.0
+        prev["R1"] = 2 * prev["P"] - prev["bk_low"]
+        prev["S1"] = 2 * prev["P"] - prev["bk_high"]
+        prev["R2"] = prev["P"] + (prev["bk_high"] - prev["bk_low"])
+        prev["S2"] = prev["P"] - (prev["bk_high"] - prev["bk_low"])
+        # Map back onto each M1 bar via the bar's bucket-key.
+        per_bar = prev.loc[buckets, ["P", "R1", "S1", "R2", "S2"]].set_axis(idx)
         self._pivots = per_bar
 
         # Optional HTF ADX gate.

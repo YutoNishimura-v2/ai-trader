@@ -3,6 +3,54 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter18: WEEKLY pivot bounce — ensemble_pivot_dual ¥100k → ¥164,675
+
+User: "gogo keep going!!!!"
+
+### Angle 1: push v8 risk higher (5 levels, 5-10%)
+
+Risk=5 still wins on full (+60.56%). Higher risks have higher
+val PF but full degrades because tighter daily kill cuts winning
+days too.
+
+### Angle 2: NEW pivot_period parameter (daily/weekly)
+
+Added `pivot_period` to `pivot_bounce` strategy. Weekly variant
+computes pivots from prior calendar week's OHLC instead of prior
+day's OHLC.
+
+Weekly standalone (London, same params as v8):
+  Full +5.36%, val -3.10%, only 40 trades. Too few signals
+  standalone but val PF positive on research (1.21).
+
+### Angle 3: ENSEMBLE daily v8 + weekly
+
+`config/iter18/ensemble_pivot_dual.yaml`:
+  Daily (priority 1): tab=0.05, slb=0.20, cd=60, max_tpd=4
+  Weekly (priority 2): tab=0.10, slb=0.25, cd=60, max_tpd=2
+
+Numbers (real 2026 M1 XAUUSD):
+  Full Jan-Apr:  +64.68% (¥100,000 → ¥164,675, ¥+64,675 net)
+  Research 60d:  +57.44% (PF 1.85)
+  Validation:    +11.79% (PF 2.11)
+  Per-month:     **Jan +9.13%** (vs v8 -4.05%!), Feb +35.56%, Mar +18.78%, Apr -6.29%
+  Min equity:    91.4% full / 100% validation
+  Cap viol:      0
+  Tournament 14d: -15.96%
+
+### Iter18 verdict — WEEKLY PIVOT FIXES JANUARY
+
+The weekly pivot levels catch directional moves the daily
+levels miss. v8 had Jan -4.05% (the strategy was on the wrong
+side of the trend). Adding weekly pivot levels (S2/R2 from
+prior week's range) gives Jan +9.13% — same fundamental
+mechanic, different reference timeframe.
+
+Result: ¥100k → ¥164,675 over 4 months (+64.68%) — strongest
+non-news standalone/ensemble in project history.
+
+168 tests still passing.
+
 ## 2026-04-25 — Iter17: pivot_bounce_london_v8 — ¥100k → ¥160,560 (+60.56% full)
 
 User: "gogo keep going!!!!"

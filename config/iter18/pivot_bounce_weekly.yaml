@@ -1,0 +1,40 @@
+extends: ../default.yaml
+
+# iter18: pivot_bounce with WEEKLY pivots (vs daily).
+# Hypothesis: weekly pivots are bigger structural levels that
+# institutions reference for swing trades. Less frequent touches
+# but each is a higher-conviction zone.
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+risk:
+  risk_per_trade_pct: 5.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 3.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000005
+
+strategy:
+  __replace__: true
+  name: pivot_bounce
+  params:
+    __replace__: true
+    pivot_period: weekly
+    atr_period: 14
+    touch_atr_buf: 0.05
+    sl_atr_buf: 0.20
+    max_sl_atr: 2.0
+    tp1_rr: 1.0
+    tp2_rr: 1.5
+    leg1_weight: 0.5
+    cooldown_bars: 60
+    session: london
+    use_s2r2: true
+    max_trades_per_day: 4
