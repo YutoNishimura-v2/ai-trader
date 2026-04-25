@@ -141,6 +141,39 @@ Conclusion: the M1 displacement-pullback implementation overtrades
 and bleeds in the current March/April regime. It is not a candidate
 unless a much stricter MTF trend/session filter is added later.
 
+### Rich event calendar + session/news ensemble
+
+Expanded the USD event calendar in a pre-declared way
+(`xauusd_2026_rich.csv`: PPI, JOLTS, retail sales, ADP, consumer
+confidence, ISM manufacturing added where sourced) and re-ran the
+event strategies.
+
+| candidate | validation | 14d tournament |
+|---|---|---|
+| rich `news_fade` (`delay=10`, `trigger=2ATR`, `SL=0.5ATR`) | +10.5 %, PF 38.9, 6 trades | **+9.34 %, PF 4.32**, DD −2.5 %, 6 trades |
+| rich `news_breakout` best | +3.3 %, PF huge, 7 trades | **−2.24 %, PF 0.52** |
+
+Full Jan-Apr rich `news_fade`: **+24.7 %**, PF 2.41, DD −6.1 %,
+April **+19.6 %**, March −4.9 %, min equity 95.4 %. This is a
+major improvement over the original sparse news_fade and validates
+the richer-calendar thesis.
+
+Then stacked `session_sweep_reclaim_london` (risk=5%, TP1=1R) with
+rich `news_fade` in an ensemble. Results:
+
+| window | trades | PF | return | DD | min equity |
+|---|---:|---:|---:|---:|---:|
+| full Jan-Apr | 145 | 1.49 | **+46.5 %** | −30.2 % | 83.3 % |
+| April full | — | — | **+55.6 %** | — | — |
+| 14d tournament | 24 | **3.26** | **+42.4 %** | −21.3 % | 95.2 % |
+| 7d tournament | 10 | **4.51** | **+33.0 %** | −22.5 % | 98.8 % |
+
+This is the strongest result in the project so far: a GOLD-only
+stack that clears recent tournament, has April >50 %, and keeps the
+ruin guardrail intact. It still has Jan/Mar weakness and DD around
+20-30 %, so it remains HRHR/demo-candidate evidence rather than a
+live-money claim.
+
 ## 2026-04-25 — news_fade is the first strategy to clear all 3 windows
 
 Iterated through the literature: built **London ORB** (Asian-range

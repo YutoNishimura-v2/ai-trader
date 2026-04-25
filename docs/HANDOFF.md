@@ -18,23 +18,24 @@ We've built and falsified 10+ different scalping strategy families
 on real 2026 XAUUSD M1 data. Under the original conservative
 constraints, **`news_fade`** was the first positive walk-forward
 winner. After the user's 2026-04-25 GOLD-only high-risk revision,
-the strongest current held-out result is now
-**`session_sweep_reclaim`** — a London/NY false-breakout reclaim of
-the Asian range.
+the strongest current held-out result is now an aggressive
+**`session_sweep_reclaim + rich news_fade` ensemble** — London
+Asian-range false-breakout reclaim plus a richer USD-event fade
+calendar.
 
 The current best recent held-out signal is materially larger but
-still below the 200 %/month aspiration: `session_sweep_reclaim`
-with an aggressive 5 % risk / TP1=1R profile returned **+29.1 % over
-the latest 14-day tournament** and **+36.2 % over the latest 7-day
-tournament**, with no cap violations and min equity > 95 %. Its full
-Jan-April run is now positive (+6.1 %, April +14.9 %, March -0.7 %)
-but Jan/Feb are still weak, so latest-regime focus remains essential.
+still below the 200 %/month aspiration: the ensemble returned
+**+42.4 % over the latest 14-day tournament** and **+33.0 % over
+the latest 7-day tournament**, with no cap violations and min equity
+> 95 %. Its full Jan-April run is also strongly positive (+46.5 %,
+April +55.6 %, March -9.7 %), making it the first GOLD-only HRHR
+candidate to approach the user's 50 %/month "fantastic result" range
+on the recent month.
 
-The next concrete moves (in `docs/todo.md`): refine
-`session_sweep_reclaim` with M5/M15 confirmation and regime gating;
-keep `news_fade` as a low-frequency defensive component; and
-continue staged GOLD-only research batches without tuning against the
-held-out windows.
+The next concrete moves (in `docs/todo.md`): stress-test the ensemble
+with fresh data/demo, add a targeted session-sweep filter that does
+not destroy April edge, and keep staged GOLD-only research batches
+without tuning against the held-out windows.
 
 ## Project facts
 

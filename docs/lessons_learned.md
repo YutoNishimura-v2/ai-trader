@@ -251,9 +251,22 @@ progress entry for the full story.
   noise problem; ruin metrics must accompany every leaderboard.
 - **Post-news continuation did not fire enough with strict retest
   rules.** The new `news_breakout` strategy is coded and tested, but
-  the first batch produced zero validation trades. The continuation
-  thesis may need a looser "break/hold" trigger or M5 confirmation,
-  not the current strict range-retest trigger.
+  the first strict batch produced zero validation trades. After adding
+  a richer calendar, news_breakout did take trades but failed the
+  latest tournament (-2.2% / PF 0.52). The continuation thesis remains
+  weaker than news-fade on this sample.
+- **Richer predeclared events materially improve news-fade.** Adding
+  PPI, retail sales, ADP, JOLTS, consumer confidence and extra ISM
+  releases roughly tripled event opportunities. The best rich-calendar
+  news_fade config returned +24.7% full Jan-Apr and +9.3% on the
+  14-day tournament with only -2.5% DD. Calendar breadth is a real
+  edge multiplier when added pre-test, not selected event-by-event.
+- **Session sweep + rich news is the strongest GOLD-only stack so far.**
+  The ensemble of the 5% London sweep/reclaim and rich-calendar
+  news_fade returned +46.5% over Jan-Apr and +42.4% on the 14-day
+  tournament (min equity 95.2%). This is the first result in the
+  project that enters the lower end of the user's 50-100%/month
+  ambition on current-regime data while staying far from zero-cut.
 - **Naive ADX regime routing can remove the edge.** A first
   M15-ADX `regime_router` improved full Jan-April return (+19.1%,
   3/4 profitable months) by filtering older bad periods, but the
