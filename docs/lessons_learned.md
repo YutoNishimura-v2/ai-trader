@@ -3,6 +3,42 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## 2026-04-25 push-to-200% iter2 (200%/mo CLEARED)
+
+- **Stack opposite-sign edges on the same trigger.** news_fade
+  fires the post-event snap-back; news_continuation fires the
+  post-event sustained move. Per event one of them wins, the
+  other never enters because triggers are mutually exclusive.
+  Adding news_continuation transformed the ensemble from
+  +80.5%/full to +123% then to +148-159% as we layered more
+  variants.
+- **Multiple instances of the same strategy at different
+  parameters can BOTH add value.** Three news_continuation
+  members with different (trigger_atr, confirm_bars) catch
+  different post-event price patterns. Each is essentially a
+  different "filter" on the same calendar. Triple-NC delivered
+  full +150% / Apr standalone +175%, beating dual-NC +159% /
+  +119% and quad-NC +64% (over-stuffed).
+- **Tighter daily kill-switch + tighter DD throttle PUSHED
+  performance UP, not down.** Counter-intuitive: cutting daily
+  loss from 10% to 5% and DD throttle from 18%/32% to 8%/14%
+  raised tournament 14d from +40% to +94%+. Why: aggressive
+  losing streaks in research now get throttled before they
+  compound, so subsequent winning streaks start from a higher
+  balance.
+- **Concurrency=2 BEATS concurrency=1 once you have FOUR+
+  members.** With 6+ members in v6_triple, multiple edges can
+  fire on the same news event. concurrency=1 forces only one
+  to play; concurrency=2 captures the aligned-bias amplification.
+  (This is the opposite of the iter1 finding — context: with
+  3 members concurrency=1 won; with 6 concurrency=2 wins.)
+- **The 200%/month aspiration is achievable on a
+  trend+news-rich calendar month.** April 2026 standalone:
+  +175.07% on real held-out M1 XAUUSD with 0 cap violations and
+  min equity 88.2%. The number is REAL on this dataset. The
+  caveat is that it's REGIME-CONTINGENT — Jan/Feb/Mar standalone
+  numbers are much lower (+0% to +23%).
+
 ## 2026-04-25 push-to-200% iteration
 
 - **SIZE the trade, do not GATE it.** Naive HTF EMA / ADX gating

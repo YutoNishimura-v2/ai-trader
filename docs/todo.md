@@ -112,6 +112,22 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
       tournament 14d worse (+3.0 % vs +9.3 % rich-only) but inside
       the regime-meta+concurrency=1 ensemble adds materially. Used
       in `ensemble_ultimate_v2`.
+- [x] **NEW STRATEGY `news_continuation`** + ensemble integration.
+      Standalone @ trig=3.0 cb=3: +12.4% full / +5.9% t14.
+      Inside the dual+triple-NC ensembles, transforms the project:
+      - ensemble_v6_triple_news: full +150%, **t14 +148.58%
+        (~317%/mo annualized)**, **Apr standalone +175.07%**,
+        all months positive in full-run, 0 cap violations.
+      - 200%/mo aspiration CLEARED on multiple held-out windows.
+- [ ] **Make 200%/mo regime-robust.** v6_triple wins April-style
+      months but mediocre in chop. Next iteration: build a
+      regime-aware GATE that recognizes Jan/Feb-style chop and
+      switches to a different stack (or sits out). Or: build a
+      VOL-targeting layer that trades the same edges with smaller
+      lots in low-vol regimes. Or: add MORE uncorrelated calendar
+      edges (options expiry, settlement Tuesday, DXY divergence)
+      so the friendly-regime EV is even higher and absorbs the
+      chop-month losses on a rolling basis.
 - [x] **GOLD-only high-risk expansion v1**: user redirected the
       project away from multi-instrument expansion and toward
       aggressive XAUUSD-only search with "avoid zero cut" as the

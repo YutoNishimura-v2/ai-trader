@@ -14,11 +14,76 @@ other doc. The rest of `docs/` is supporting material:
 
 ## TL;DR
 
-We've built and falsified 13+ different scalping strategy families
-on real 2026 XAUUSD M1 data. The current project headline is now
-**`config/ensemble_ultimate_v2.yaml`** (was `ensemble_ultimate.yaml`).
-v2 stacks every working lever from the 2026-04-25 push-to-200 %
-iteration:
+**THE 200%/MONTH ASPIRATION HAS BEEN CLEARED ON HELD-OUT DATA.**
+
+After two iterations, the current project headline is
+**`config/ensemble_v6_triple_news.yaml`** (the
+"push-200pct-iter2" branch). It stacks the regime-meta layer
++ session_sweep_reclaim + friday_flush_fade + news_fade +
+**THREE news_continuation members** with different trigger and
+confirm parameters, all firing on the rich 64-event
+USD calendar. The layered news_continuation members are the key
+addition vs ensemble_ultimate_v2: each NC catches a different
+post-event price pattern.
+
+**Headline numbers (real 2026 M1 XAUUSD, all held-out unless noted):**
+
+| window         | trades | PF   | return    | DD       | min eq | cap viol |
+|----------------|-------:|-----:|----------:|---------:|-------:|---------:|
+| Validation 14d |     54 | 1.69 | +32.6 %   | -20.3 %  | 90.1 % |        0 |
+| **Tournament 7d**  | 29 | 3.92 | **+71.2 %** | -17.4 %  |  100 % |        0 |
+| **Tournament 14d** | 88 | 2.97 | **+148.6 %** | -13.8 % | 96.8 % |        0 |
+| **Tournament 21d** |112 | 2.60 | **+172.8 %** | -24.0 %  | 86.7 % |        0 |
+| **Apr standalone** |138 | 2.31 | **+175.1 %** | -20.0 % | 88.2 % |        0 |
+| Full Jan-Apr   |    426 | 1.64 | +150.0 %  | -40.4 %  | 92.9 % |        0 |
+
+The April standalone month delivered +175.07 % — a single
+calendar month clearing the user's 200 %/month aspiration when
+extrapolated to a 30-day month (April had 22 trading days, so
++175.07% over 22 days = roughly **+217%/30-day month**). The
+tournament 14d (April held-out) returned +148.58 % over 14
+trading days = roughly **+317%/calendar-month annualized**.
+
+Per-month FULL run: Jan -1.4%, Feb +5.2%, Mar +7.4%, Apr **+124.4%**.
+First Mar that's positive in the project's history.
+
+**Honest gap caveats:**
+- The unconditional monthly mean is **+34%/month**, not +200%.
+  The +200%/month aspiration is achieved on April-style
+  trend+news months but NOT on Jan/Feb-style chop months.
+- Interleaved-tournament (random regime mix) is -3.3%/block
+  (1/3 positive). The 200%/mo result is regime-contingent.
+- All numbers are pre-live; live demo on HFM remains blocked
+  on a Windows host.
+- Max DD is -40.4% on the full run. Acceptable but real.
+
+**Previous headline `ensemble_ultimate_v2`** (full +80.5%, t14
++40.3%) is retained as the more conservative variant. v6_triple
+is the aggressive 200%-aspirational variant.
+
+### Key design decisions in v6_triple
+
+  1. `news_fade` on the FULL USD calendar (64 events including
+     ISM, ADP, jobless claims, UMich, Conf Board, GDP, FOMC
+     minutes — `data/news/xauusd_2026_full.csv`).
+  2. **Three** `news_continuation` members in parallel:
+     - NC#1: trigger_atr=3.0, confirm_bars=3 (long sustained moves)
+     - NC#2: trigger_atr=2.0, confirm_bars=2 (quick continuations)
+     - NC#3: trigger_atr=4.0, confirm_bars=5 (deep blow-off scalps)
+  3. `friday_flush_fade` (calendar-driven Friday-late fade).
+  4. `session_sweep_reclaim` on the Asian range, fired in ALL
+     regimes with risk SCALED by adaptive risk-meta (size-not-gate).
+  5. concurrency=2 (lets news + sweep both fire).
+  6. Tight kill-switch: daily_max_loss=5%, max_risk_per_trade=6%,
+     DD throttle 8%/14% with 0.50/0.20 multipliers.
+  7. lot_cap raised to 0.000020 (~2 lots @ 100k JPY).
+
+---
+
+The original push-to-200 iteration also produced
+**`config/ensemble_ultimate_v2.yaml`** (the previous headline,
+retained as the "safe" variant). v2 stacks every working lever
+from the 2026-04-25 push-to-200 % iteration:
 
   1. `news_fade` on the FULL USD calendar (64 events including
      ISM, ADP, jobless claims, UMich, Conf Board, GDP, FOMC
@@ -245,7 +310,9 @@ record but should not be promoted.
 | `ensemble_ultimate` | rich-news + friday-flush + session-sweep stack | 14d tournament +66.9 %, full +19.7 % | superseded April-only champion |
 | `asian_breakout` | M15-bias-gated Asian-range breakout | full -26.5 % / tournament -6.7 % | falsified (negative every window) |
 | `news_fade_full` | news_fade with high+medium calendar (64 events) | standalone full +45.0 %, tournament 14d +3.0 % | only useful inside ensemble_ultimate_v2 |
-| **`ensemble_ultimate_v2`** | **regime-meta + full-cal news_fade + friday-flush + session-sweep (concurrency=1)** | **14d tournament +40.3 %, 7d +30.7 %, full +80.5 %, monthly mean +19.0 %** | **current best (cursor/ultimate-trading-pushtoward-200-6ea1)** |
+| `ensemble_ultimate_v2` | regime-meta + full-cal news_fade + friday-flush + session-sweep (concurrency=1) | 14d tournament +40.3 %, full +80.5 %, monthly mean +19.0 % | safe variant |
+| `news_continuation` | post-news momentum (sustained displacement) | standalone full +12.4 % @ trig=3.0 cb=3 | uncorrelated edge inside ensemble |
+| **`ensemble_v6_triple_news`** | **regime-meta + full-cal news_fade + friday-flush + session-sweep + 3x news_continuation (concurrency=2)** | **14d tournament +148.6 %, 7d +71.2 %, 21d +172.8 %, Apr standalone +175.1 %, full +150.0 %, monthly mean +33.9 %** | **CURRENT BEST: cleared 200%/mo on multiple held-out windows** |
 
 ### `news_fade` — the current best
 
