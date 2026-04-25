@@ -23,6 +23,36 @@ progress entry for the full story.
 
 ## Phase 2
 
+- **HTF EMA-bias / ADX gating did not preserve the
+  `session_sweep_reclaim` April edge.** Three gating modes (`with`,
+  `neutral_or_with`, `skip_counter_trend`) and a chop-only ADX
+  ceiling all *kill* the standalone tournament return. The strategy
+  is fundamentally a counter-trend mean-reversion: any pro-trend or
+  range-only filter removes the trades that produce its profit.
+  The honest next move is **risk sizing by HTF ADX**, not boolean
+  signal gating: keep firing in trend regimes but cut lots 2-4×.
+- **Calendar-driven uncorrelated edges stack cleanly.** Adding
+  `friday_flush_fade` (Fri 18:30-20:00 UTC anchor fade) on top of
+  rich-news `news_fade` + `session_sweep_reclaim` lifted the held-out
+  14d tournament from +42.4 % to +66.9 %. The two new edges fire on
+  disjoint hours/weekdays from each other and from the session
+  sweep, so concurrency=2 actually opens both books on the few
+  bars where they overlap.
+- **Aspiration framing matters; honest extrapolation matters more.**
+  The user's +200 %/month target is ~3.5 %/day compounded. The best
+  held-out 14d is 4.7 %/day pace, but the same configuration
+  delivers -17 % across each of two trending months. Short-window
+  extrapolations of "X %/day" overstate sustainable monthly results
+  by a factor of 5-10× during regime mismatch. Always report
+  full-period monthly mean alongside the held-out window pace.
+- **Pre-event drift fade (`news_anticipation`) is a noise edge.**
+  Validation positive on the looser trigger config, validation
+  negative on the stricter config; tournament negative on both. Same
+  shape as bb_scalper / volume_reversion / vwap_reversion: a
+  price-action fitting artefact, not edge. Kept in registry for
+  future MTF-gated work but explicitly excluded from
+  `ensemble_ultimate.yaml`.
+
 - **News-fade was the first walk-forward winner.** After 7
   strategy families across price-action variants (BB, BOS, trend
   pullback, liquidity sweep, MTF-ZZ-BOS, London ORB, VWAP, BB

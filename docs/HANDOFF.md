@@ -14,28 +14,38 @@ other doc. The rest of `docs/` is supporting material:
 
 ## TL;DR
 
-We've built and falsified 10+ different scalping strategy families
+We've built and falsified 12+ different scalping strategy families
 on real 2026 XAUUSD M1 data. Under the original conservative
 constraints, **`news_fade`** was the first positive walk-forward
 winner. After the user's 2026-04-25 GOLD-only high-risk revision,
-the strongest current held-out result is now an aggressive
-**`session_sweep_reclaim + rich news_fade` ensemble** — London
-Asian-range false-breakout reclaim plus a richer USD-event fade
-calendar.
+two more iterations stacked uncorrelated edges into the now-current
+best, **`config/ensemble_ultimate.yaml`**: rich-calendar `news_fade`
++ `friday_flush_fade` (new; Friday late-day liquidation fade) +
+`session_sweep_reclaim` (2 trades/day, trade window extended to
+14:00 UTC) at risk=5 %, concurrency=2.
 
-The current best recent held-out signal is materially larger but
-still below the 200 %/month aspiration: the ensemble returned
-**+42.4 % over the latest 14-day tournament** and **+33.0 % over
-the latest 7-day tournament**, with no cap violations and min equity
-> 95 %. Its full Jan-April run is also strongly positive (+46.5 %,
-April +55.6 %, March -9.7 %), making it the first GOLD-only HRHR
-candidate to approach the user's 50 %/month "fantastic result" range
-on the recent month.
+The current best recent held-out signal is the strongest in the
+project so far but still well short of the 200 %/month aspiration:
+the ensemble returned **+66.9 % over the latest 14-day tournament**
+and **+47.2 % over the latest 7-day tournament**, with no cap
+violations and tournament-window min equity 97 %. Validation
+returned +71.0 % over its 14-day window (PF 3.73, 38 trades).
 
-The next concrete moves (in `docs/todo.md`): stress-test the ensemble
-with fresh data/demo, add a targeted session-sweep filter that does
-not destroy April edge, and keep staged GOLD-only research batches
-without tuning against the held-out windows.
+Honest gap to aspiration: the latest tournament's +66.9 % over 14
+days extrapolates to a ~140 %/month pace if the regime persists,
+versus the user's 200 %/month aspiration. Full Jan-Apr is **+19.7 %**
+because Jan (-17.8 %) and March (-17.1 %) trend regimes drag the
+average — the held-out window happens to be the friendlier April
+regime. **No iteration has closed the +200 %/month gap; the bot is
+within reach of the +50-100 %/month "excellent" range during friendly
+regimes only.**
+
+The next concrete moves (in `docs/todo.md`): live-demo the ensemble
+on HFM (still blocked on Windows host), build a fresh-data tournament
+once May data is available, and consider a regime classifier that
+sizes down during Jan/Mar-style strong-trend regimes (HTF ADX-based;
+naive HTF EMA bias was tried in this iteration and falsified — see
+`config/session_sweep_reclaim_htf.yaml` for the negative record).
 
 ## Project facts
 
@@ -203,8 +213,11 @@ record but should not be promoted.
 | `vwap_reversion` | M1 VWAP fade | val PF 1.48 / tournament PF 0.93 (14d) | thin |
 | `london_orb` | session breakout | flat (~0.2 trades/day) | shelved |
 | **`news_fade`** | **calendar event fade** | **research PF 3.24 / val PF 10.6 / tournament PF 3.87** | **first conservative walk-forward winner** |
-| **`session_sweep_reclaim`** | **Asian-range sweep/reclaim** | **latest 14d tournament +7.9 %, PF 2.65, DD -5.9 %** | **current high-risk GOLD candidate** |
+| **`session_sweep_reclaim`** | **Asian-range sweep/reclaim** | **latest 14d tournament +9.14 % (2 trades/day, end_hour=14)** | **current high-risk GOLD candidate** |
+| **`friday_flush_fade`** | **Friday-late-session fade** | **full +6.8 %, PF 1.74, DD -8.8 %; 14d tournament +9.77 %** | **uncorrelated add-on** |
+| `news_anticipation` | pre-event drift fade | val -9.4 %, 14d tournament -5.9 % | falsified |
 | `ensemble` | wrapper | best as `news_fade + vwap_reversion` | tournament floor better than VWAP alone |
+| **`ensemble_ultimate`** | **rich-news + friday-flush + session-sweep stack** | **14d tournament +66.9 %, 7d +47.2 %, val +71.0 %, full +19.7 %** | **current best (cursor/ultimate-trading-algorithm-a215)** |
 
 ### `news_fade` — the current best
 
@@ -263,6 +276,49 @@ Best ensemble found so far is `news_fade + vwap_reversion`
 on the full 4-month run; **`news_fade` alone is the cleaner pick**
 right now.
 
+### `ensemble_ultimate` — current overall best (this branch)
+
+Stacks three strategies that each pass walk-forward independently:
+
+- **`news_fade`** with the rich USD event calendar
+  (`data/news/xauusd_2026_rich.csv`, 25 events) — calendar-driven
+  fade of post-event overshoot, anchor-based SL/TP.
+- **`friday_flush_fade`** (new in this branch) — fades the
+  late-Friday liquidation drive back to the 18:00 UTC anchor,
+  always flat by 20:00 UTC. Standalone full-period: +6.8 %, PF 1.74,
+  DD -8.8 %. Cannot collide with `news_fade` (events fire 12:30 /
+  15:00 / 18:00 weekdays; flush fires Fri 18:30-20:00).
+- **`session_sweep_reclaim`** with `max_trades_per_day=2` and
+  `trade_end_hour=14` — Asian-range false-breakout reclaim during
+  London + early NY. Both sweep directions can fire on the same
+  chop day.
+
+Risk: 5 % per trade, concurrency=2. Risk=8 % trips cap_violations
+on research and validation (kill-switch leak); risk=6 % trips one;
+risk=5 % is the verified ceiling. A `risk=8 %` config is kept as
+`config/ensemble_ultimate_max.yaml` for the negative record.
+
+**Numbers (real 2026 M1 XAUUSD, recent_only 60/14/14 split):**
+
+| window         | trades | PF   | return  | DD       | min eq | cap viol |
+|----------------|-------:|-----:|--------:|---------:|-------:|---------:|
+| Research 60d   |    160 | 0.82 | -20.6 % | -34.9 %  | 78.6 % |        0 |
+| Validation 14d |     38 | 3.73 | +71.0 % | -21.3 %  |  100 % |        0 |
+| **Tournament 14d** | 50 | **3.28** | **+66.9 %** | -20.0 % | 97.3 % |    0 |
+| **Tournament 7d**  | 24 | **4.11** | **+47.2 %** | -22.3 % |  100 % |    0 |
+| Full Jan-Apr   |    319 | 1.12 | +19.7 % | -55.4 %  | 73.6 % |        0 |
+
+Monthly map (full period): Jan -17.8 %, Feb +10.3 %, Mar -17.1 %,
+**April +59.1 %**. The full-period DD is dominated by the Jan and
+March strong-trend regimes, where the counter-trend session-sweep
+reclaim bleeds; the held-out April regime favours all three members
+simultaneously.
+
+This is the strongest result in the project so far and the first
+configuration to deliver >+60 % over a held-out 14-day window with
+zero cap violations and acceptable min equity. **It is not a 200 %/
+month proof** — see `docs/HANDOFF.md` TL;DR for honest gap analysis.
+
 ## Key gotchas (real bugs we hit; don't re-hit them)
 
 1. **Default-off feature flags rot.** `bb_scalper.use_two_legs`
@@ -312,38 +368,47 @@ right now.
 - BB / BOS / VWAP / MTF-ZZ-BOS all show validation-positive
   edges that the tournament didn't confirm. They might be real
   and just need more data; they might be fitting noise.
-- The +200 %/month aspiration is **far out of reach** with
-  current strategies. Honest gap: ~333× from current
-  `news_fade`-only floor. No iteration has closed it.
+- The +200 %/month aspiration is **still out of reach**. The
+  ensemble_ultimate's held-out 14-day return is +66.9 %; if that
+  rate persisted for a calendar month it implies ~140 %/month.
+  But the full-period monthly map shows Jan/Mar regimes deliver
+  -17 %, so the un-conditional monthly mean is +8.6 %. Honest read:
+  the bot can hit +50-100 %/month during friendly regimes and is
+  flat-to-negative during strong-trend regimes. **No iteration
+  has cleared 200 %/month over a full quarter.**
 - Live demo has not yet run — we lack a Windows host with HFM
   MT5 access. The whole "Phase 3" demo run from the original
   plan is blocked on that.
 
 ## Where to look next (recommended order)
 
-1. **Multi-instrument `news_fade`.** Same pattern likely works
+1. **Live demo on HFM.** The held-out 14d +66.9 % from
+   `ensemble_ultimate` is the strongest evidence the bot has
+   produced; the next discriminating data is a 2-4 week paper-demo
+   run on a Windows host with HFM MT5. Still blocked on host
+   provisioning.
+2. **Regime sizing, not regime gating.** The Jan/Mar drag is real;
+   naive HTF EMA bias / ADX gating *removes* the April edge along
+   with the bad regime trades (verified in this branch — see
+   `config/session_sweep_reclaim_htf.yaml` and
+   `config/session_sweep_reclaim_chop.yaml` for the negative
+   record). The promising next attempt is *risk* sizing by HTF
+   ADX: keep firing in trend regimes but cut lot size 2-4x.
+3. **Multi-instrument `news_fade`.** Same pattern likely works
    on EURUSD/GBPUSD around the same USD events, but the user has
    explicitly rejected multi-symbol expansion for now. Do not pursue
    unless the user reverses that direction.
-2. **Refine `session_sweep_reclaim`.** Add M5/M15 confirmation,
-   session-specific filters, and BE/runner variants. It is the best
-   latest-tournament GOLD-only result so far.
-3. **Regime router.** Add `vwap_reversion` and friends only in
-   chop regimes (ADX < 25 or realized vol below median). The
-   hypothesis is they validate but die in trend; gating by
-   regime should recover their validated edge.
-4. **Richer event calendar.** Current `data/news/xauusd_2026.csv`
-   is hand-curated 14 events for 4 months. A complete calendar
-   (ISM, retail sales, PPI, ADP, jobless claims) doubles trade
-   count.
-5. **Live demo on HFM.** Either you provision a Windows host /
-   VPS, or get HFM's free VPS approved (last we checked, it
-   typically requires a funded live account; demo accounts
-   often don't qualify).
-5. **Then go after the gap.** With `news_fade` proven on demo,
-   stack uncorrelated edges (instrument breadth, calendar
-   breadth, regime-routed price-action) until the floor is
-   meaningfully above the current ~0.6 %/month.
+4. **Even richer event calendar.** Current `xauusd_2026_rich.csv`
+   is 25 events; adding mid-impact events (jobless claims, ADP
+   pre-prints, FOMC speakers) could push event-driven trade count
+   from ~22 to ~50 over Jan-Apr.
+5. **Then go after the gap.** With `ensemble_ultimate` validated
+   on a forward demo, the remaining lever is more uncorrelated
+   edges. Plausible candidates not yet tried: (a) options-expiry
+   day fade (3rd Fri monthly), (b) mid-month "settlement Tuesday"
+   pattern, (c) DXY-divergence overlay (gold should track inverse
+   USD; mismatches mean-revert). Each adds another small +5-10 %
+   per month if real.
 
 ## The user's stated direction (most-recent-wins)
 

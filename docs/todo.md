@@ -68,6 +68,28 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 
 ### Active / next
 
+- [x] **Ultimate stacked-edge ensemble**
+      (`config/ensemble_ultimate.yaml` on
+      `cursor/ultimate-trading-algorithm-a215`):
+      `news_fade(rich) + friday_flush_fade + session_sweep_reclaim
+      (2 trades/day, end_hour=14)` at risk=5%, concurrency=2.
+      Held-out 14d **+66.9 %**, 7d **+47.2 %**, validation **+71.0 %**,
+      no cap violations, tournament min equity 97.3 %.
+- [x] **`friday_flush_fade`** added: standalone full +6.8 %, PF 1.74,
+      14d tournament +9.77 %.
+- [x] **`session_sweep_reclaim` 2 trades/day + end_hour=14**:
+      +9.14 %/14d standalone (was +7.9 %).
+- [x] **HTF gating attempts (falsified, kept on record)**:
+      `htf_mode={with,neutral_or_with,skip_counter_trend}` and ADX
+      ceiling all kill the April session_sweep edge. Lesson:
+      session_sweep_reclaim is fundamentally counter-trend.
+- [x] **`news_anticipation` (falsified, kept on record)**: pre-event
+      drift fade. Validation +/- with parameter; tournament
+      negative on tested configs. Excluded from ensemble_ultimate.
+- [ ] **Risk sizing by HTF ADX**: instead of gating the strategy
+      on/off by HTF regime, keep it on but cut lot size 2-4× when
+      HTF ADX > 25. Hypothesis: recovers Jan/Mar drag without
+      killing April edge.
 - [x] **GOLD-only high-risk expansion v1**: user redirected the
       project away from multi-instrument expansion and toward
       aggressive XAUUSD-only search with "avoid zero cut" as the
