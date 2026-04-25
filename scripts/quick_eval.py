@@ -83,6 +83,37 @@ def _fmt(m: dict) -> str:
     return " ".join(f"{k}={m.get(k)}" for k in _FIELDS)
 
 
+def _fmt_jpy(m: dict, starting_balance: float) -> str:
+    """Account-currency-native one-liner. Account is JPY at HFM Katana.
+
+    Returns final balance, net P&L, daily P&L extremes, and per-month
+    P&L deltas in ¥. Useful when the user wants to see absolute money,
+    not just percentages.
+    """
+    net = float(m.get("net_profit", 0.0))
+    final = float(m.get("final_balance", 0.0)) + float(m.get("withdrawn_total", 0.0))
+    bd_pct = float(m.get("best_day_pct", 0.0))
+    wd_pct = float(m.get("worst_day_pct", 0.0))
+    # Per-month JPY deltas: turn the % series into ¥ on a fresh-balance basis
+    # (close to compound from starting_balance month by month).
+    monthly = m.get("monthly_returns") or {}
+    bal = starting_balance
+    parts = []
+    for k in sorted(monthly.keys()):
+        pct = float(monthly[k])
+        delta_yen = bal * (pct / 100.0)
+        parts.append(f"{k}={pct:+.2f}%/¥{int(round(delta_yen)):+,}")
+        bal *= (1.0 + pct / 100.0)
+    monthly_str = " ".join(parts)
+    return (
+        f"start=¥{starting_balance:,.0f} -> final=¥{final:,.0f} "
+        f"(net=¥{net:+,.0f}) "
+        f"best_day≈¥{starting_balance * bd_pct/100:+,.0f} "
+        f"worst_day≈¥{starting_balance * wd_pct/100:+,.0f}\n"
+        f"  monthly: {monthly_str}"
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True, type=Path)
@@ -97,11 +128,15 @@ def main() -> int:
 
     df = load_ohlcv_csv(args.csv)
     cfg = load_config(args.config)
+    sb = float(cfg["account"]["starting_balance"])
+    ccy = cfg["account"].get("currency", "USD")
+
+    print(f"# Account: {ccy}, starting balance = {sb:,.0f}\n")
 
     full = _run(df, cfg)
     print("== FULL ==")
     print(_fmt(full))
-    print("monthly:", full["monthly_returns"])
+    print(_fmt_jpy(full, sb))
 
     if args.full_only:
         if args.json:
@@ -120,10 +155,13 @@ def main() -> int:
     tm = _run(split.tournament, cfg)
     print(f"\n== RESEARCH ({len(split.research)} bars) ==")
     print(_fmt(rm))
+    print(_fmt_jpy(rm, sb))
     print(f"\n== VALIDATION ({len(split.validation)} bars) ==")
     print(_fmt(vm))
+    print(_fmt_jpy(vm, sb))
     print(f"\n== TOURNAMENT 14d ({len(split.tournament)} bars, HELD OUT) ==")
     print(_fmt(tm))
+    print(_fmt_jpy(tm, sb))
 
     if args.also_7d:
         split7 = load_recent_only_held_out(
@@ -136,6 +174,7 @@ def main() -> int:
         tm7 = _run(split7.tournament, cfg)
         print(f"\n== TOURNAMENT 7d ({len(split7.tournament)} bars) ==")
         print(_fmt(tm7))
+        print(_fmt_jpy(tm7, sb))
 
     if args.json:
         print(json.dumps({

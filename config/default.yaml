@@ -22,18 +22,32 @@ instrument:
   is_24_7: false
 
 execution:
-  # HFM Katana: $0.08 spread = 8 points. We pessimise ×1.5 for backtests.
-  spread_points: 12
+  # HFM Katana real spread: $0.08 = 8 points (per user 2026-04-25).
+  # Earlier configs used ×1.5 pessimistic = 12; we now run on real spread.
+  spread_points: 8
   slippage_points: 2
   commission_per_lot: 0.0
 
 risk:
-  risk_per_trade_pct: 0.5      # seed value; discovered in iteration
+  # Iter9 (2026-04-25 user revision): the user's discretionary recipe
+  # is 0.05 lot baseline / 0.1 lot confident at 100k JPY, with $3 SL
+  # typical ($5 wide). At 100k JPY:
+  #   0.05 lot × $3 SL = $15 loss = ¥2,250 ≈ 2.25%/trade
+  #   0.10 lot × $3 SL = $30 loss = ¥4,500 ≈ 4.50%/trade
+  # We default to 2.5% per trade (a hair above the baseline so the
+  # sizing isn't artificially constrained when the strategy uses a
+  # slightly wider SL than $3).
+  risk_per_trade_pct: 2.5
   daily_profit_target_pct: 30.0
   daily_max_loss_pct: 10.0
-  withdraw_half_of_daily_profit: true
+  # Withdrawal disabled per user 2026-04-25 ("if you can build a
+  # truly robust algorithm, I'm willing to trust the compounding").
+  # Live deployment may re-enable per plan §A.9.
+  withdraw_half_of_daily_profit: false
   max_concurrent_positions: 1   # per-decision (multi-leg is one decision)
   # Plan v3 §A.2: lots <= 0.1 * balance_JPY / 100_000  → 1.0e-6 per JPY.
+  # At 100k JPY this caps lot at 0.1, matching the user's "confident"
+  # tier. Default still respects 1:100 leverage cap separately.
   lot_cap_per_unit_balance: 0.000001
 
 news:
