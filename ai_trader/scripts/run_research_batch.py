@@ -54,6 +54,18 @@ def _preset_gold_hrhr_v1() -> list[dict[str, Any]]:
             "min_validation_trades": 1,
         },
         {
+            "name": "news_breakout_timing",
+            "config": "config/news_breakout_aggressive.yaml",
+            "grid": {
+                "delay_min": [5, 10],
+                "initial_range_min": [3, 5],
+                "break_atr": [0.3, 0.6],
+                "max_sl_atr": [1.5, 2.5],
+                "risk.risk_per_trade_pct": [2.0, 3.0],
+            },
+            "min_validation_trades": 1,
+        },
+        {
             "name": "vwap_chop_candidate",
             "config": "config/vwap_reversion_aggressive.yaml",
             "grid": {

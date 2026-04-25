@@ -1,0 +1,43 @@
+extends: default.yaml
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+execution:
+  spread_points: 12
+  slippage_points: 2
+  commission_per_lot: 0.0
+
+risk:
+  risk_per_trade_pct: 3.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: true
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000003
+
+strategy:
+  __replace__: true
+  name: news_breakout
+  params:
+    __replace__: true
+    news_csv: data/news/xauusd_2026.csv
+    impact_filter: ["high"]
+    symbol: XAUUSD
+    delay_min: 5
+    initial_range_min: 5
+    window_min: 90
+    break_atr: 0.5
+    retest_tolerance_atr: 0.5
+    sl_atr_buffer: 0.35
+    max_sl_atr: 2.0
+    atr_period: 14
+    cooldown_bars: 5
+    tp1_rr: 0.6
+    tp2_rr: 2.5
+    leg1_weight: 0.5
