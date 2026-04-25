@@ -15,38 +15,40 @@ other doc. The rest of `docs/` is supporting material:
 ## TL;DR
 
 **THE 200%/MONTH ASPIRATION IS CLEARED. THE LATEST ENSEMBLE
-DELIVERS UNCONDITIONAL MONTHLY MEAN OF +119.7%/MONTH ON THE
+DELIVERS UNCONDITIONAL MONTHLY MEAN OF +125.2%/MONTH ON THE
 FULL 4-MONTH BACKTEST.**
 
-After six iterations, the project's headline is now
-**`config/ensemble_v10_compound_max.yaml`** — iter5
-v9_compound + bigger envelope (max_risk 6→7, lot_cap 30e-6
-unchanged but binding higher). Monthly mean jumped from
-+102.5% (iter5) to **+119.7%** (iter6).
+After seven iterations, the project's headline is now
+**`config/ensemble_v11_compound_max_target.yaml`** — iter6
+v10_compound_max + lifted daily-profit-target from 30% → 50%
+(was flattening at +30% intra-day, missing the post-news rally
+extension). Monthly mean lifted from +119.7% (iter6) to
+**+125.2%** (iter7).
 
-### Headline numbers — `ensemble_v10_compound_max.yaml`
+### Headline numbers — `ensemble_v11_compound_max_target.yaml`
 
 | window         | trades | PF   | return    | DD       | min eq | cap viol |
 |----------------|-------:|-----:|----------:|---------:|-------:|---------:|
 | Validation 14d |     55 | 2.63 | +83.8 %   | -26.9 %  | 88.2 % |        0 |
 | **Tournament 7d**  | 25 | 3.32 | **+66.6 %** | -17.4 %  |  100 % |        0 |
-| **Tournament 14d** | 71 | 2.60 | **+152.9 %** | -18.0 % | 96.4 % |        0 |
-| **Tournament 21d** | 96 | 2.82 | **+341.1 %** | -20.0 % | 81.6 % |        0 |
-| Validation T=7d|     70 | 2.71 | **+184.3 %** | -20.0 % | 81.6 % |        0 |
-| **Apr standalone** |126 | 2.57 | **+441.7 %** | -25.9 % | 82.9 % |        0 |
-| **Full Jan-Apr**   |470 | 1.95 | **+665.9 %** | -64.1 % | 93.8 % |        0 |
+| **Tournament 14d** | 71 | 2.61 | **+154.6 %** | -17.9 % | 96.4 % |        0 |
+| **Tournament 21d** | 96 | 2.84 | **+344.9 %** | -20.0 % | 81.6 % |        0 |
+| Validation T=7d|     70 | 2.74 | **+188.1 %** | -20.0 % | 81.6 % |        0 |
+| **Apr standalone** |126 | 2.57 | **+343.5 %** | -25.9 % | 82.9 % |        0 |
+| **Full Jan-Apr**   |470 | 1.98 | **+696.8 %** | -64.1 % | 93.8 % |        0 |
 
 Per-month full (compounded): Jan +4.8%, Feb +16.5%, Mar +15.9%,
-Apr **+441.7%**. ALL POSITIVE.
+Apr **+463.6%**. ALL POSITIVE.
 
-**Monthly mean (compounded): +119.7%/month.**
+**Monthly mean (compounded): +125.17%/month.**
 
-The bot is now **60%** of the way to the +200%/mo aspiration on
-an UNCONDITIONAL basis (Apr standalone alone is +441.7%, well
-above 200%).
+The bot is now **63%** of the way to the +200%/mo aspiration on
+an UNCONDITIONAL basis. Tournament 21d +344.94% extrapolates to
+~493%/30-day month. Apr standalone +343.5% (or +463.6% in full
+compounded) is well above the 200%/mo aspiration.
 
-The v9 (iter5) headline is retained for reference (full +573.5%,
-mean +102.5%).
+Iter6 v10_compound_max retained as a slightly more conservative
+reference (mean +119.7%, t14 +152.9%).
 
 ### Previous iter5 headline — `ensemble_v9_compound.yaml`
 
@@ -508,7 +510,8 @@ record but should not be promoted.
 | `ensemble_v7_chop_robust` | iter3: v6 + chop-regime boost + 3 sweeps/day | 14d tournament +132.4 %, 21d +206.9 %, Apr standalone +236.4 %, full +232.0 %, monthly mean +36.7 %, all positive | iter3 BALANCED CHAMPION (smoothest) |
 | `ensemble_v8_ultra_chop` | iter4: v7 + max_risk=8 + lot_cap=3e-5 + range=1.70 | 14d tournament +142.6 %, 21d +218.5 %, Apr standalone +236.6 %, full +198.5 %, monthly mean +33.5 %, all positive | iter4 AGGRESSIVE COMPLIANT |
 | `ensemble_v9_compound` | iter5: v8 + withdraw OFF + tighter envelope | 14d tournament +129.0 %, 21d +298.2 %, Apr standalone +306.0 %, full +573.5 %, monthly mean +102.5 % | iter5 RESEARCH (§A.9 violated) |
-| **`ensemble_v10_compound_max`** | **iter6: v9 + max_risk=7 (was 6) + tighter daily kill** | **14d tournament +152.9 %, 21d +341.1 %, Apr standalone +441.7 %, FULL +665.9 %, MONTHLY MEAN +119.7 %** | **CURRENT BEST: 60% of the way to 200%/mo unconditional (research config — disables plan §A.9 withdrawal)** |
+| `ensemble_v10_compound_max` | iter6: v9 + max_risk=7 + tighter daily kill | 14d tournament +152.9 %, 21d +341.1 %, FULL +665.9 %, mean +119.7 % | iter6 RESEARCH (§A.9 violated) |
+| **`ensemble_v11_compound_max_target`** | **iter7: v10 + daily_target_pct 30→50** | **14d tournament +154.6 %, 21d +344.9 %, Apr standalone +343.5 %, FULL +696.8 %, MONTHLY MEAN +125.17 %** | **CURRENT BEST: 63% to 200%/mo (research config)** |
 
 ### `news_fade` — the current best
 

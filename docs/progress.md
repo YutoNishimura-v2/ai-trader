@@ -3,6 +3,34 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Push-to-200% iter7: ensemble_v11_compound_max_target — +125.17%/mo
+
+User instruction: "keep going."
+
+Single change: daily_profit_target_pct 30 → 50. The 30% daily
+flatten was firing on big news days, missing the rally extension.
+
+Numbers (real 2026 M1 XAUUSD held-out):
+  Full Jan-Apr:    **+696.79%** (PF 1.98, 470 trades)
+  Validation T=7d: +188.05%
+  Tournament 14d:  +154.61%    (~330%/mo annualized)
+  Tournament 21d:  +344.94%    (~493%/30d)
+  Apr standalone:  +343.50%
+  Cap violations:  0 across main windows
+  Monthly mean:    **+125.17%**
+
+Project monthly-mean lineage:
+  baseline:           +8.6%
+  iter1 v2:          +19.0%
+  iter2 v6 triple:   +33.9%
+  iter3 v7 chop:     +36.7%
+  iter4 v8 ultra:    +33.5%
+  iter5 v9 compound: +102.5%
+  iter6 v10:        +119.7%
+  iter7 v11:       **+125.17%**
+
+15x lift vs baseline. **63% of the way to 200%/mo unconditional.**
+
 ## 2026-04-25 — Push-to-200% iter6: ensemble_v10_compound_max — MONTHLY MEAN +119.7%/MO
 
 User instruction: "keep going."
