@@ -68,9 +68,46 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 
 ### Active / next
 
-- [ ] **Multi-instrument `news_fade`**: same pattern likely works
-      on EURUSD/GBPUSD around the same USD events. Different
-      instrument = uncorrelated edge multiplier.
+- [x] **Ultimate stacked-edge ensemble**
+      (`config/ensemble_ultimate.yaml` on
+      `cursor/ultimate-trading-algorithm-a215`):
+      `news_fade(rich) + friday_flush_fade + session_sweep_reclaim
+      (2 trades/day, end_hour=14)` at risk=5%, concurrency=2.
+      Held-out 14d **+66.9 %**, 7d **+47.2 %**, validation **+71.0 %**,
+      no cap violations, tournament min equity 97.3 %.
+- [x] **`friday_flush_fade`** added: standalone full +6.8 %, PF 1.74,
+      14d tournament +9.77 %.
+- [x] **`session_sweep_reclaim` 2 trades/day + end_hour=14**:
+      +9.14 %/14d standalone (was +7.9 %).
+- [x] **HTF gating attempts (falsified, kept on record)**:
+      `htf_mode={with,neutral_or_with,skip_counter_trend}` and ADX
+      ceiling all kill the April session_sweep edge. Lesson:
+      session_sweep_reclaim is fundamentally counter-trend.
+- [x] **`news_anticipation` (falsified, kept on record)**: pre-event
+      drift fade. Validation +/- with parameter; tournament
+      negative on tested configs. Excluded from ensemble_ultimate.
+- [ ] **Risk sizing by HTF ADX**: instead of gating the strategy
+      on/off by HTF regime, keep it on but cut lot size 2-4× when
+      HTF ADX > 25. Hypothesis: recovers Jan/Mar drag without
+      killing April edge.
+- [x] **GOLD-only high-risk expansion v1**: user redirected the
+      project away from multi-instrument expansion and toward
+      aggressive XAUUSD-only search with "avoid zero cut" as the
+      primary guardrail. Added high-risk configs, ruin diagnostics,
+      batch runner, `news_breakout`, and `session_sweep_reclaim`.
+      First result: `session_sweep_reclaim` cleared 7d/14d
+      tournament (+9.25%/+7.90%) while prior validation winners
+      failed tournament.
+- [x] **Risk/BE frontier for `session_sweep_reclaim`**: sweep
+      risk 1-5%, TP1/TP2, range/session windows, and SL caps to see
+      whether April-positive edge can scale toward 50-100%/month
+      without near-zero-cut drawdowns. Best current profile is
+      `config/session_sweep_reclaim_london.yaml` with risk=5%,
+      TP1=1R: 14d tournament +29.1%, 7d tournament +36.2%, full
+      Jan-Apr +6.1%, April +14.9%, min equity 90.6%.
+- [ ] **Add M5/M15 confirmation to `session_sweep_reclaim`**:
+      filter London sweep/reclaim by HTF bias or VWAP/ADX so Jan/Feb
+      drag is reduced without killing the April edge.
 - [ ] **Regime router**: arm `vwap_reversion` only in chop, BB-
       family only in low-vol, leave `news_fade` always on.
       Hypothesis: route by regime to recover the validation edges
@@ -94,10 +131,9 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 
 ## Phase 4 — multi-instrument expansion
 
-- [ ] Pull EURUSD M1 from Dukascopy.
-- [ ] Re-run `news_fade` on EURUSD with the same USD-event CSV.
-- [ ] Pull GBPUSD M1; same.
-- [ ] Combined ensemble across XAUUSD + EURUSD + GBPUSD.
+- [ ] Deferred by user direction: focus exclusively on XAUUSD/GOLD.
+      Do not spend research budget on EURUSD/GBPUSD unless the user
+      reverses this instruction.
 - [ ] *(BTCUSD remains deprioritised — HFM real spread ~$10
       makes M1 scalping uneconomic.)*
 

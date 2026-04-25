@@ -74,6 +74,10 @@ def main() -> int:
     ap.add_argument("--split-mode", default="recent",
                     choices=["recent", "recent_only"])
     ap.add_argument("--param", action="append", default=[])
+    ap.add_argument("--trades-out", type=Path, default=None,
+                    help="optional CSV path for closed trades")
+    ap.add_argument("--equity-out", type=Path, default=None,
+                    help="optional CSV path for the total-account equity curve")
     args = ap.parse_args()
 
     log = get_logger("ai_trader.tournament")
@@ -171,8 +175,30 @@ def main() -> int:
     }
     out_path.write_text(json.dumps(payload, indent=2, default=str))
     log.info("wrote %s", out_path)
+    if args.trades_out:
+        args.trades_out.parent.mkdir(parents=True, exist_ok=True)
+        _write_trades_csv(result.trades, args.trades_out)
+        log.info("wrote %s", args.trades_out)
+    if args.equity_out:
+        args.equity_out.parent.mkdir(parents=True, exist_ok=True)
+        result.equity_curve.rename("equity").to_frame().to_csv(args.equity_out, index_label="time")
+        log.info("wrote %s", args.equity_out)
     print(json.dumps(metrics, indent=2, default=str))
     return 0
+
+
+def _write_trades_csv(trades: list, path: Path) -> None:
+    import csv
+
+    fields = [
+        "open_time", "close_time", "side", "lots", "entry", "exit",
+        "pnl", "reason", "group_id", "leg_index",
+    ]
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fields)
+        writer.writeheader()
+        for t in trades:
+            writer.writerow({k: getattr(t, k) for k in fields})
 
 
 if __name__ == "__main__":

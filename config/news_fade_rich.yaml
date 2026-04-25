@@ -1,0 +1,9 @@
+extends: news_fade_aggressive.yaml
+
+strategy:
+  params:
+    news_csv: data/news/xauusd_2026_rich.csv
+    delay_min: 10
+    window_min: 30
+    trigger_atr: 2.0
+    sl_atr_mult: 0.5

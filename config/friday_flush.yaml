@@ -1,0 +1,41 @@
+extends: default.yaml
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+execution:
+  spread_points: 12
+  slippage_points: 2
+  commission_per_lot: 0.0
+
+risk:
+  risk_per_trade_pct: 2.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: true
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000003
+
+strategy:
+  __replace__: true
+  name: friday_flush_fade
+  params:
+    __replace__: true
+    anchor_hour: 18
+    delay_min: 30
+    fri_close_hour: 20
+    trigger_atr: 1.5
+    sl_atr_mult: 0.6
+    tp_to_anchor: true
+    tp_rr: 1.5
+    atr_period: 14
+    cooldown_bars: 5
+    use_two_legs: true
+    tp1_rr: 0.6
+    leg1_weight: 0.5
+    max_trades_per_day: 1

@@ -1,0 +1,8 @@
+extends: regime_gold_router.yaml
+
+risk:
+  risk_per_trade_pct: 5.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000005

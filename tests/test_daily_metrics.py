@@ -90,6 +90,11 @@ def test_compute_metrics_includes_daily_and_monthly_fields():
     assert m["worst_day_pct"] < 0
     assert m["daily_target_hits"] == 0    # neither day hit 30%
     assert m["daily_max_loss_hits"] == 0  # neither day hit -10%
+    assert m["min_equity_pct"] == pytest.approx(104.0)
+    assert m["max_equity_pct"] == pytest.approx(105.0)
+    assert m["ruin_flag"] is False
+    assert "monthly_returns" in m
+    assert m["monthly_returns"]["2026-04"] == pytest.approx(4.0)
 
 
 def test_no_cap_violations_on_normal_trace():
@@ -110,3 +115,16 @@ def test_hitting_the_cap_is_counted():
     ])
     m = compute_metrics(result, starting_balance=100_000.0)
     assert m["daily_max_loss_hits"] == 1
+
+
+def test_recent_return_and_ruin_metrics():
+    result = _mk_result([
+        ("2026-04-01T10:00:00Z", 10_000.0),
+        ("2026-04-20T10:00:00Z", -85_000.0),
+        ("2026-04-25T10:00:00Z", 5_000.0),
+    ])
+    m = compute_metrics(result, starting_balance=100_000.0)
+    assert m["min_equity_pct"] == pytest.approx(25.0)
+    assert m["ruin_flag"] is True
+    assert m["recent_14d_return_pct"] == pytest.approx(-80_000.0 / 110_000.0 * 100.0)
+    assert m["recent_30d_return_pct"] == pytest.approx(-70.0)

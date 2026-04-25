@@ -38,6 +38,10 @@ def _parse_args() -> argparse.Namespace:
     ap.add_argument("--days", type=int, default=180, help="synthetic: days of history")
     ap.add_argument("--seed", type=int, default=7, help="synthetic: RNG seed")
     ap.add_argument("--no-report", action="store_true", help="do not append to docs/progress.md")
+    ap.add_argument("--trades-out", type=Path, default=None,
+                    help="optional CSV path for closed trades")
+    ap.add_argument("--equity-out", type=Path, default=None,
+                    help="optional CSV path for the total-account equity curve")
     return ap.parse_args()
 
 
@@ -137,6 +141,14 @@ def main() -> int:
         )
     )
     log.info("wrote %s", out_path)
+    if args.trades_out:
+        args.trades_out.parent.mkdir(parents=True, exist_ok=True)
+        _write_trades_csv(result.trades, args.trades_out)
+        log.info("wrote %s", args.trades_out)
+    if args.equity_out:
+        args.equity_out.parent.mkdir(parents=True, exist_ok=True)
+        result.equity_curve.rename("equity").to_frame().to_csv(args.equity_out, index_label="time")
+        log.info("wrote %s", args.equity_out)
     print(json.dumps(metrics, indent=2, default=_json_default))
 
     if not args.no_report:
@@ -163,6 +175,20 @@ def _json_default(o: Any) -> Any:
     if isinstance(o, float) and (o == float("inf") or o != o):
         return str(o)
     return str(o)
+
+
+def _write_trades_csv(trades: list, path: Path) -> None:
+    import csv
+
+    fields = [
+        "open_time", "close_time", "side", "lots", "entry", "exit",
+        "pnl", "reason", "group_id", "leg_index",
+    ]
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fields)
+        writer.writeheader()
+        for t in trades:
+            writer.writerow({k: getattr(t, k) for k in fields})
 
 
 if __name__ == "__main__":

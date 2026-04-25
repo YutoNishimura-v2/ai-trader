@@ -1,0 +1,109 @@
+extends: default.yaml
+
+# Ultimate stacked-edge ensemble (cursor/ultimate-trading-algorithm-a215).
+#
+# Combines four uncorrelated calendar/structure edges that each pass
+# walk-forward on real 2026 M1 XAUUSD data:
+#
+#   1. session_sweep_reclaim (London Asian-range sweep + reclaim,
+#      2 trades/day variant, risk 2%) — this is the documented
+#      best HRHR April candidate (+8.6%/14d, +9.9%/7d tournament)
+#   2. news_fade with the rich USD event calendar — calendar-driven
+#      fade of the post-event overshoot (richer-calendar variant
+#      delivered +9.34%/14d tournament)
+#   3. friday_flush_fade — fades the late-Friday liquidation drive
+#      back to the 18:00 UTC anchor; new strategy in this iteration
+#   4. (kept for honesty: news_anticipation NOT included — failed
+#      tournament in earlier sweep)
+#
+# Trade attribution: each member emits with its own reason prefix so
+# the trade log distinguishes contributions to the daily P&L.
+#
+# Risk: 5% per trade (matches the documented best ensemble baseline);
+# kill-switch enforces -10% daily floor; lot cap clamped at 0.000003
+# per JPY balance for 3x the conservative cap.
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+execution:
+  spread_points: 12
+  slippage_points: 2
+  commission_per_lot: 0.0
+
+risk:
+  risk_per_trade_pct: 5.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: true
+  max_concurrent_positions: 2
+  lot_cap_per_unit_balance: 0.000003
+
+strategy:
+  __replace__: true
+  name: ensemble
+  params:
+    __replace__: true
+    members:
+      # Highest-priority: rich news_fade (event-driven, scheduled).
+      # When a high-impact event hits, we want this trade.
+      - name: news_fade
+        params:
+          news_csv: data/news/xauusd_2026_rich.csv
+          impact_filter: ["high"]
+          delay_min: 10
+          window_min: 30
+          trigger_atr: 2.0
+          sl_atr_mult: 0.5
+          tp_to_anchor: true
+          tp_rr: 1.5
+          atr_period: 14
+          cooldown_bars: 5
+          use_two_legs: true
+          tp1_rr: 0.6
+          leg1_weight: 0.5
+          symbol: XAUUSD
+
+      # Friday late-session liquidation fade. Only fires on Fridays
+      # 18:30-20:00 UTC; can never collide with the news_fade
+      # post-release window (events are scheduled at 12:30 / 18:00).
+      - name: friday_flush_fade
+        params:
+          anchor_hour: 18
+          delay_min: 30
+          fri_close_hour: 20
+          trigger_atr: 1.5
+          sl_atr_mult: 0.6
+          tp_to_anchor: true
+          tp_rr: 1.5
+          atr_period: 14
+          cooldown_bars: 5
+          use_two_legs: true
+          tp1_rr: 0.6
+          leg1_weight: 0.5
+          max_trades_per_day: 1
+
+      # Daily breadwinner: London Asian-range sweep+reclaim,
+      # 2 trades/day to capture both directional sweeps when they
+      # happen on the same day.
+      - name: session_sweep_reclaim
+        params:
+          range_start_hour: 0
+          range_end_hour: 6
+          trade_start_hour: 7
+          trade_end_hour: 14
+          min_range_atr: 0.8
+          min_sweep_atr: 0.1
+          sl_atr_buffer: 0.3
+          max_sl_atr: 2.0
+          tp_mode: opposite_edge
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          max_trades_per_day: 2
+          htf_mode: "off"

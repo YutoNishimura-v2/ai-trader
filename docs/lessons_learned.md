@@ -23,6 +23,36 @@ progress entry for the full story.
 
 ## Phase 2
 
+- **HTF EMA-bias / ADX gating did not preserve the
+  `session_sweep_reclaim` April edge.** Three gating modes (`with`,
+  `neutral_or_with`, `skip_counter_trend`) and a chop-only ADX
+  ceiling all *kill* the standalone tournament return. The strategy
+  is fundamentally a counter-trend mean-reversion: any pro-trend or
+  range-only filter removes the trades that produce its profit.
+  The honest next move is **risk sizing by HTF ADX**, not boolean
+  signal gating: keep firing in trend regimes but cut lots 2-4×.
+- **Calendar-driven uncorrelated edges stack cleanly.** Adding
+  `friday_flush_fade` (Fri 18:30-20:00 UTC anchor fade) on top of
+  rich-news `news_fade` + `session_sweep_reclaim` lifted the held-out
+  14d tournament from +42.4 % to +66.9 %. The two new edges fire on
+  disjoint hours/weekdays from each other and from the session
+  sweep, so concurrency=2 actually opens both books on the few
+  bars where they overlap.
+- **Aspiration framing matters; honest extrapolation matters more.**
+  The user's +200 %/month target is ~3.5 %/day compounded. The best
+  held-out 14d is 4.7 %/day pace, but the same configuration
+  delivers -17 % across each of two trending months. Short-window
+  extrapolations of "X %/day" overstate sustainable monthly results
+  by a factor of 5-10× during regime mismatch. Always report
+  full-period monthly mean alongside the held-out window pace.
+- **Pre-event drift fade (`news_anticipation`) is a noise edge.**
+  Validation positive on the looser trigger config, validation
+  negative on the stricter config; tournament negative on both. Same
+  shape as bb_scalper / volume_reversion / vwap_reversion: a
+  price-action fitting artefact, not edge. Kept in registry for
+  future MTF-gated work but explicitly excluded from
+  `ensemble_ultimate.yaml`.
+
 - **News-fade was the first walk-forward winner.** After 7
   strategy families across price-action variants (BB, BOS, trend
   pullback, liquidity sweep, MTF-ZZ-BOS, London ORB, VWAP, BB
@@ -235,6 +265,58 @@ progress entry for the full story.
   "min validation trades" before it's trustworthy as the sort key.
 
 ## Phase 2
+
+- **GOLD-only sweep-and-reclaim is the best new recent-period edge.**
+  After the user narrowed scope back to XAUUSD and allowed higher
+  risk, a London-session sweep/reclaim strategy (Asian range stop
+  hunt → close back inside → continuation to opposite edge) cleared
+  the held-out recent tournament: +7.9% over 14 days / PF 2.65 /
+  DD -5.9%, and +9.25% over the last 7 days / PF 5.52 / DD -5.8%.
+  This is not 200%/month, but it is materially stronger recent
+  tournament performance than the previous news-only floor.
+- **Validation winners still routinely fail the freshest window.**
+  In the first high-risk GOLD batch, VWAP (+29% validation) and BOS
+  (+21% validation) both collapsed on the 14-day tournament (-19%
+  and -20%). Higher risk amplifies the familiar validation→tournament
+  noise problem; ruin metrics must accompany every leaderboard.
+- **Post-news continuation did not fire enough with strict retest
+  rules.** The new `news_breakout` strategy is coded and tested, but
+  the first strict batch produced zero validation trades. After adding
+  a richer calendar, news_breakout did take trades but failed the
+  latest tournament (-2.2% / PF 0.52). The continuation thesis remains
+  weaker than news-fade on this sample.
+- **Richer predeclared events materially improve news-fade.** Adding
+  PPI, retail sales, ADP, JOLTS, consumer confidence and extra ISM
+  releases roughly tripled event opportunities. The best rich-calendar
+  news_fade config returned +24.7% full Jan-Apr and +9.3% on the
+  14-day tournament with only -2.5% DD. Calendar breadth is a real
+  edge multiplier when added pre-test, not selected event-by-event.
+- **Session sweep + rich news is the strongest GOLD-only stack so far.**
+  The ensemble of the 5% London sweep/reclaim and rich-calendar
+  news_fade returned +46.5% over Jan-Apr and +42.4% on the 14-day
+  tournament (min equity 95.2%). This is the first result in the
+  project that enters the lower end of the user's 50-100%/month
+  ambition on current-regime data while staying far from zero-cut.
+- **Naive ADX regime routing can remove the edge.** A first
+  M15-ADX `regime_router` improved full Jan-April return (+19.1%,
+  3/4 profitable months) by filtering older bad periods, but the
+  same router failed the latest 14-day tournament (-6% to -10%).
+  Lesson: for current-regime optimization, do not accept a router
+  just because it improves full-history smoothness; it must preserve
+  the latest held-out edge.
+- **Squeeze breakouts are not enough on M1 GOLD.** A Bollinger/
+  Keltner compression-release strategy was added and swept. Most
+  research and validation cells were negative; the best validation
+  candidate (+3.3%) failed the 14-day tournament at -16% / PF 0.54.
+  Compression alone creates too many false continuation entries
+  under M1 costs; it needs stronger MTF/session context or should
+  stay shelved.
+- **Naive impulse-pullback continuation is worse than expected.**
+  A direct discretionary-style impulse → fib pullback → rejection
+  strategy produced hundreds of M1 signals, but every validation cell
+  was negative (best still -12.3%). The user's intuition about
+  momentum pullbacks likely needs higher-timeframe trend/structure
+  context; a single-candle impulse trigger on M1 is just noise.
 
 - **The walk-forward ratchet actually catches overfitting.** First
   real sweep on 2024 XAUUSD: research PF 1.50 → validation PF 0.33
