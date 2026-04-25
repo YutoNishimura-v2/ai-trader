@@ -3,6 +3,79 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter14: pivot_bounce_london_v4 — ¥100,000 → ¥153,899 (+53.9% full)
+
+User: "dont stop. keep going"
+
+Three angles tested.
+
+### Angle 1: London-mode test of all other strategies
+
+| strategy @ London | full | val | val PF | trades |
+|---|---:|---:|---:|---:|
+| session_sweep_reclaim | -9.66 | +3.78 | **1.83** | 99 |
+| keltner_mean_reversion | -0.38 | +0.21 | 1.06 | 118 |
+| bos_retest_scalper | -40.17 | -3.58 | 0.80 | 202 |
+| bb_squeeze_reversal | -15.43 | -3.48 | 0.83 | 540 |
+| mtf_zigzag_bos | -24.75 | -4.19 | 0.48 | 43 |
+| vwap_reversion | -35.64 | -5.05 | 0.00 | 153 |
+
+Only sweep_reclaim has positive London-only val edge. Others
+don't transfer.
+
+### Angle 2: pivot_bounce_london risk sweep
+
+iter13 v3 had min_equity 97.6% (lots of headroom) and DD only -10.7%.
+Pushed risk:
+
+| risk | full | val | val PF | DD | cap |
+|---|---:|---:|---:|---:|---:|
+| 2.5 (v3 baseline) | +29.88 | +5.61 | 4.69 | -10.71 | 0 |
+| 3.0 | +30.90 | +4.64 | 2.53 | -12.66 | 0 |
+| 4.0 | +32.57 | +8.58 | 3.26 | -15.74 | 0 |
+| **5.0** | **+53.90** | **+9.49** | 2.79 | -20.56 | 0 |
+| 7.0 | +65.85 | +12.36 | 3.03 | -27.34 | 1 ❌ |
+
+risk=5.0 is the sweet spot — cap-clean, full +53.90%, val PF 2.79.
+
+### Angle 3: risk × kill grid
+
+risk=6.0/kill=5.0 also tested: full +43.18%, val PF 2.77.
+v4 (risk=5.0/kill=5.0) WINS the comparison.
+
+### Iter14 winner: pivot_bounce_london_v4
+
+Promoted as `config/iter14/pivot_bounce_london_v4.yaml`.
+
+  Full Jan-Apr:  +53.90% (¥100,000 → ¥153,899, ¥+53,899 net)
+  Research 60d:  +55.92% (PF 1.90)
+  Validation:    +9.49%  (PF 2.79)
+  Per-month:     Jan +0.99%, Feb +25.74%, Mar **+37.12%**, Apr -11.61%
+  Min equity:    95.3%
+  Max DD:        -20.6%
+  Cap viol:      0
+  106 trades = ~1.3/day
+
+  March alone: ¥+47,135 (single best month standalone in project).
+
+  Tournament 14d: -18.18%, 7d: -15.13% (April hostile, amplified
+  by higher risk).
+
+### Iter14 verdict
+
+**pivot_bounce_london_v4 PROMOTED** as new strongest non-news
+standalone. Doubles iter13 v3's full Jan-Apr (+53.9% vs +30.1%)
+through honest risk amplification on the same proven edge. Val
+PF stays > 2.5 (still strong). 0 cap violations.
+
+The April tournament hostility is amplified too (-18.18% vs
+-8.75% in v3) — same regime problem at higher leverage. This
+remains the unsolved single-edge ceiling.
+
+iter9 v4_router still wins tournament (+5.41%/14d).
+
+168 tests still passing.
+
 ## 2026-04-25 — Iter13: pivot_bounce_london_v3 — best val PF (4.69) in project history
 
 User: "keep going"
