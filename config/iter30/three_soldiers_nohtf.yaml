@@ -1,0 +1,23 @@
+extends: ../default.yaml
+instrument: {symbol: XAUUSD, timeframe: M1, contract_size: 100, tick_size: 0.01, tick_value: 1.0, quote_currency: USD}
+risk:
+  risk_per_trade_pct: 2.5
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000020
+strategy:
+  __replace__: true
+  name: three_soldiers
+  params:
+    bar_min_body_atr: 0.30
+    sl_buffer_dollar: 0.50
+    max_sl_dollar: 8.0
+    tp1_rr: 1.0
+    tp2_rr: 2.0
+    leg1_weight: 0.5
+    cooldown_m15_bars: 4
+    session: london_or_ny
+    htf: null
+    htf_ema_fast: 50
+    htf_ema_slow: 200

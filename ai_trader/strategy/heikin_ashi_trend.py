@@ -64,7 +64,7 @@ class HeikinAshiTrend(BaseStrategy):
 
     def __init__(
         self,
-        ema_period: int = 200,
+        ema_period: int | None = 200,  # None disables the EMA trend filter
         atr_period: int = 14,
         sl_buffer_dollar: float = 1.0,
         max_sl_dollar: float = 8.0,
@@ -88,7 +88,7 @@ class HeikinAshiTrend(BaseStrategy):
             max_trades_per_day=max_trades_per_day,
             confirm_ha_bars=confirm_ha_bars,
         )
-        self.min_history = min_history or (ema_period + 20) * 15
+        self.min_history = min_history or ((ema_period or 50) + 20) * 15
         self._mtf = None
         self._ha_o = self._ha_h = self._ha_l = self._ha_c = None
         self._ema = None
@@ -102,7 +102,11 @@ class HeikinAshiTrend(BaseStrategy):
         self._mtf = MTFContext(base=df, timeframes=["M15"])
         m15 = self._mtf.frame("M15")
         self._ha_o, self._ha_h, self._ha_l, self._ha_c = _heikin_ashi(m15)
-        self._ema = _ema(m15["close"].to_numpy(dtype=float), int(self.params["ema_period"]))
+        ep = self.params.get("ema_period")
+        if ep is None:
+            self._ema = None
+        else:
+            self._ema = _ema(m15["close"].to_numpy(dtype=float), int(ep))
         self._m15_low = m15["low"].to_numpy(dtype=float, copy=True)
         self._m15_high = m15["high"].to_numpy(dtype=float, copy=True)
 
@@ -127,7 +131,7 @@ class HeikinAshiTrend(BaseStrategy):
     def on_bar(self, history):
         p = self.params
         n = len(history)
-        if n < self.min_history or self._mtf is None or self._ema is None:
+        if n < self.min_history or self._mtf is None:
             return None
         ts = history.index[-1]
         ts_dt = ts.to_pydatetime() if hasattr(ts, "to_pydatetime") else ts
@@ -144,7 +148,8 @@ class HeikinAshiTrend(BaseStrategy):
         if self._day_trades >= int(p["max_trades_per_day"]):
             return None
         idx = self._mtf.last_closed_idx("M15", ts_utc)
-        if idx is None or idx < int(p["ema_period"]) + 5:
+        min_idx = int(p["ema_period"]) + 5 if p.get("ema_period") else 5
+        if idx is None or idx < min_idx:
             return None
         if idx == self._handled_idx:
             return None
@@ -153,26 +158,30 @@ class HeikinAshiTrend(BaseStrategy):
 
         # Color flip detection
         cb = int(p["confirm_ha_bars"])
-        # current HA color
-        cur_green = self._ha_c[idx] > self._ha_o[idx]
-        cur_red = self._ha_c[idx] < self._ha_o[idx]
-        # prior HA opposite color (for flip), and N confirms same color (latest only ≥ 1)
-        flip_green = cur_green and (self._ha_c[idx-1] <= self._ha_o[idx-1])
-        flip_red = cur_red and (self._ha_c[idx-1] >= self._ha_o[idx-1])
-        # N-bar confirm: all of last cb candles same color (when cb>1)
-        if cb > 1:
-            cols = (self._ha_c[idx-cb+1:idx+1] - self._ha_o[idx-cb+1:idx+1])
-            same_green = bool(np.all(cols > 0))
-            same_red   = bool(np.all(cols < 0))
-            flip_green = flip_green and same_green
-            flip_red = flip_red and same_red
-
-        ema_v = self._ema[idx]
-        m15_close = float(self._mtf.frame("M15")["close"].iloc[idx])
-        if not np.isfinite(ema_v):
+        # cb=1: enter on the FIRST green after a red (classic flip).
+        # cb=N>1: require N consecutive same-color bars AND the bar
+        # that started the run flipped from opposite color (i.e.,
+        # the (idx-N) bar is opposite color and bars idx-N+1..idx
+        # are all same color).
+        cur_green_run = bool(np.all(self._ha_c[idx-cb+1:idx+1] > self._ha_o[idx-cb+1:idx+1]))
+        cur_red_run = bool(np.all(self._ha_c[idx-cb+1:idx+1] < self._ha_o[idx-cb+1:idx+1]))
+        prior_idx = idx - cb
+        if prior_idx < 0:
             return None
-        long_trend = m15_close > ema_v
-        short_trend = m15_close < ema_v
+        prior_green = self._ha_c[prior_idx] > self._ha_o[prior_idx]
+        prior_red = self._ha_c[prior_idx] < self._ha_o[prior_idx]
+        flip_green = cur_green_run and prior_red
+        flip_red = cur_red_run and prior_green
+
+        m15_close = float(self._mtf.frame("M15")["close"].iloc[idx])
+        if self._ema is not None:
+            ema_v = self._ema[idx]
+            if not np.isfinite(ema_v):
+                return None
+            long_trend = m15_close > ema_v
+            short_trend = m15_close < ema_v
+        else:
+            long_trend = short_trend = True
 
         entry = float(history["close"].iloc[-1])
         sb = 8
@@ -195,7 +204,7 @@ class HeikinAshiTrend(BaseStrategy):
             self._day_trades += 1
             self._last_signal_idx = idx
             return self._build_signal(SignalSide.BUY, entry, sl, risk,
-                                      reason=f"HA flip green M15 ema200={ema_v:.2f}")
+                                      reason=f"HA flip green M15")
         if flip_red and short_trend:
             structural = swing_high + sl_buf
             cap = entry + max_sl
@@ -205,5 +214,5 @@ class HeikinAshiTrend(BaseStrategy):
             self._day_trades += 1
             self._last_signal_idx = idx
             return self._build_signal(SignalSide.SELL, entry, sl, risk,
-                                      reason=f"HA flip red M15 ema200={ema_v:.2f}")
+                                      reason=f"HA flip red M15")
         return None
