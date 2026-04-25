@@ -3,6 +3,39 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter26: M5 base TF (FAILED) + concurrency=2 single-TP (WIN)
+
+User: "go go go!"
+
+### Angle 1: M5 pivot_bounce 12-pt grid — FALSIFIED
+Best M5 config: full -27%, val PF 1.24. M5 has fewer signals
+AND lower edge than M1. M1 noise wasn't the problem.
+
+### Angle 2: v4 with concurrency=2/3
+  cn=2 r=7: full +114.09%, val +20.09% PF 2.29 (val PF best!)
+  cn=2 r=10: full +101.29% (HURTS at high risk)
+  cn=3: identical to cn=2 (no third member fires same bar)
+
+### Angle 3: single_tp + cn=2 + r=7 — WINNER
+
+`iter26/triple_single_tp_v2`:
+  Full Jan-Apr:  +103.17% (¥100,000 → ¥203,175)
+  Research 60d:  +71.36% (PF 1.67)
+  Validation:    +19.09% (PF 2.27)  ← strongest val PF on single-TP
+  Per-month:     Jan +16.25, Feb +56.88, Mar +19.53, Apr -6.80
+  DD:            -27.76% (improved from iter25 -33.5%)
+  Cap viol:      0
+  Tournament 14d: -14.02% (BEST tourn of any pivot variant)
+  Tournament 7d:  -8.20%
+
+Iter26 verdict: single_tp + cn=2 + r=7 is the strongest
+balanced ensemble. Lower risk + higher concurrency captures
+more setups while keeping per-trade exposure manageable.
+
+iter24 v4 (cn=1, r=10, two-leg) still wins on raw growth.
+
+168 tests still passing.
+
 ## 2026-04-25 — Iter25: BOLD exploration — 3 new strategies + single-TP simplification
 
 User: "Why splitting it into TP1 and TP2? TP1 alone would be enough.
