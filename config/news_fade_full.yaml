@@ -1,0 +1,17 @@
+extends: news_fade_rich.yaml
+
+# news_fade with the FULL calendar (high + medium impact USD events).
+# 64 events vs 25 in xauusd_2026_rich.csv. The hypothesis: structurally
+# similar overshoot mechanics around mid-impact events, so adding them
+# should multiply trade count without diluting per-trade edge.
+# If the per-trade EV holds, this turns into a ~2.5x volume on the
+# already-best news_fade strategy.
+
+strategy:
+  params:
+    news_csv: data/news/xauusd_2026_full.csv
+    impact_filter: ["high", "medium"]
+    delay_min: 10
+    window_min: 30
+    trigger_atr: 2.0
+    sl_atr_mult: 0.5

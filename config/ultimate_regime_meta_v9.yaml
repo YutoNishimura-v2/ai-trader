@@ -1,0 +1,140 @@
+extends: default.yaml
+
+# ultimate_regime_meta v5: sizing-not-gating.
+# Diagnostic finding: April tournament is ~41% trend / ~35% range
+# / ~25% transition by M15 ADX. The regime gate barring
+# session_sweep_reclaim from trend was throwing away 40% of
+# trades. v5 lets sweep_reclaim fire in ALL regimes but cuts its
+# risk multiplier to 0.50 in trend regimes. This is the original
+# intent of the meta layer: SIZE the trade, do not GATE it.
+# v1 fixed Jan/Mar drag (full +40.3% vs +19.7%) but the DD throttle
+# choked the tournament: after the in-window 24% drawdown the
+# multiplier dropped to 0.45x and we missed April's recovery.
+# v2: push DD soft/hard limits out and de-emphasize the haircut so
+# the strategy remains armed during a volatile recovery month.
+#
+# Iteration goal: recover ensemble_ultimate's April edge while
+# preserving the v0 (2-member) drawdown improvement (-55% -> -18%
+# full Jan-Apr) and Jan/Mar drag fix (Jan +0.3% vs -17.8%,
+# Mar -6.7% vs -17.1%).
+#
+# Differences vs ultimate_regime_meta.yaml:
+#   - adds friday_flush_fade as 3rd member (always-on, calendar-driven)
+#   - matches ensemble_ultimate's concurrency=2 (was 1)
+#   - matches ensemble_ultimate's risk_per_trade_pct=5% base (was 3%)
+#   - widens session_sweep_reclaim trade window 7-14h (was 7-12h, matches ensemble_ultimate)
+#   - allows session_sweep_reclaim 2 trades/day (was 1, matches ensemble_ultimate)
+#   - keeps the regime gate: session_sweep only in range/transition
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+execution:
+  spread_points: 12
+  slippage_points: 2
+  commission_per_lot: 0.0
+
+risk:
+  risk_per_trade_pct: 5.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: true
+  max_concurrent_positions: 2
+  lot_cap_per_unit_balance: 0.000003
+  dynamic_risk_enabled: true
+  min_risk_per_trade_pct: 1.0
+  max_risk_per_trade_pct: 5.0
+  confidence_risk_floor: 0.7
+  confidence_risk_ceiling: 1.6
+  drawdown_soft_limit_pct: 18.0
+  drawdown_hard_limit_pct: 32.0
+  drawdown_soft_multiplier: 0.85
+  drawdown_hard_multiplier: 0.60
+
+strategy:
+  __replace__: true
+  name: regime_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 20.0
+    trend_adx_min: 26.0
+    regime_risk_multipliers:
+      range: 1.30
+      transition: 1.00
+      trend: 0.70
+    member_risk_multipliers:
+      session_sweep_reclaim: 1.00
+      news_fade: 1.30
+      friday_flush_fade: 1.15
+    regime_confidence:
+      range: 0.65
+      transition: 0.45
+      trend: 0.55
+    adx_confidence_weight: 0.50
+    members:
+      # Highest-priority: rich news_fade (event-driven, scheduled).
+      - name: news_fade
+        regimes: ["all"]
+        params:
+          news_csv: data/news/xauusd_2026_full.csv
+          impact_filter: ["high", "medium"]
+          delay_min: 10
+          window_min: 30
+          trigger_atr: 2.0
+          sl_atr_mult: 0.5
+          tp_to_anchor: true
+          tp_rr: 1.5
+          atr_period: 14
+          cooldown_bars: 5
+          use_two_legs: true
+          tp1_rr: 0.6
+          leg1_weight: 0.5
+          symbol: XAUUSD
+
+      # Friday flush is calendar-driven (Fri 18:30-20:00 UTC),
+      # always-on across regimes.
+      - name: friday_flush_fade
+        regimes: ["all"]
+        params:
+          anchor_hour: 18
+          delay_min: 30
+          fri_close_hour: 20
+          trigger_atr: 1.5
+          sl_atr_mult: 0.6
+          tp_to_anchor: true
+          tp_rr: 1.5
+          atr_period: 14
+          cooldown_bars: 5
+          use_two_legs: true
+          tp1_rr: 0.6
+          leg1_weight: 0.5
+          max_trades_per_day: 1
+
+      # session_sweep_reclaim fires in ALL regimes; the meta
+      # layer scales its risk DOWN by 0.5x in trend regimes.
+      # This recovers April (which is ~41% trend by M15 ADX)
+      # without paying full freight in Jan/Mar trend bleeds.
+      - name: session_sweep_reclaim
+        regimes: ["all"]
+        params:
+          range_start_hour: 0
+          range_end_hour: 6
+          trade_start_hour: 7
+          trade_end_hour: 14
+          atr_period: 14
+          min_range_atr: 0.8
+          min_sweep_atr: 0.1
+          sl_atr_buffer: 0.3
+          max_sl_atr: 2.0
+          tp_mode: opposite_edge
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          max_trades_per_day: 2
