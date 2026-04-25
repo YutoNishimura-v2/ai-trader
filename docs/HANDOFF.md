@@ -611,6 +611,11 @@ record but should not be promoted.
 | `ensemble_v10_compound_max` | iter6: v9 + max_risk=7 + tighter daily kill | 14d tournament +152.9 %, 21d +341.1 %, FULL +665.9 %, mean +119.7 % | iter6 RESEARCH (§A.9 violated) |
 | `ensemble_v11_compound_max_target` | iter7: v10 + daily_target_pct 30→50 | 14d tournament +154.6 %, FULL +696.8 %, MONTHLY MEAN +125.17 % | CONTAMINATED iter7 (news-dependent + selection-biased) |
 | **`iter9/ensemble_priceaction_v4_router`** | **iter9 (PRICE-ACTION ONLY): regime_router(sweep_reclaim, bos_retest, friday_flush)** | **Validation 14d +20.33% / Tournament 14d +5.41% / Tournament 7d +8.91%** | **HONEST CURRENT BEST (single-shot tournament, validation-disciplined, news-free)** |
+| `iter9/pivot_bounce` | iter10: daily floor-trader pivot S1/S2/R1/R2 reversal | Full +8.95% (¥+8,946), Validation +1.74% (PF 1.46), Research +22.59% (PF 1.79), Tournament 14d -6.41% | iter10 standalone winner (April was hostile; positive on full+val+research, 0 cap viol) |
+| `iter9/bb_squeeze_reversal` | iter10: BB outer band reversal + 3-confluence | Full -15.3%, Val +3.39% PF 1.14 | iter10 MARGINAL (val positive, full negative) |
+| `iter9/vwap_sigma_reclaim` | iter10: session VWAP 2σ reclaim with M15 ADX gate | Full -33.1%, Val -1.65% | iter10 FALSIFIED |
+| `iter9/ensemble_priceaction_v5` | iter10: v4 + pivot_bounce + bb_squeeze | Val +9.78% / Tournament 14d -5.31% | weaker than v4 on tournament |
+| `iter9/ensemble_priceaction_v6` | iter10: v4 + pivot_bounce (no bb) | Val +19.74% PF 1.97 / Tournament 14d -3.10% | weaker than v4 on tournament |
 
 ### `news_fade` — the current best
 

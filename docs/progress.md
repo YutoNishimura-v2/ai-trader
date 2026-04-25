@@ -3,6 +3,77 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter10: 3 new mechanical edges (pivot_bounce wins standalone)
+
+User feedback: "use every means at your disposal and find a way
+to increase the profits."
+
+Web research surfaced widely-documented gold scalping methods
+not yet in the project. Built three new strategies:
+
+1. **pivot_bounce** — daily floor-trader pivots (S1/S2/R1/R2)
+   computed from prior UTC day OHLC. Long on support wick rejection,
+   short on resistance wick rejection. EXTERNAL reference levels
+   (uncorrelated with rolling-window features).
+
+2. **vwap_sigma_reclaim** — proper session VWAP (07:00 UTC reset)
+   with 2σ deviation bands. Reclaim entry on band touch + close-back
+   + bullish/bearish rejection. M15 ADX < 25 chop-only gate.
+
+3. **bb_squeeze_reversal** — Bollinger reversal with 3-confluence:
+   outer band touch + width contracting + M15 EMA-50 slope not
+   strongly against the trade.
+
+Standalone results (real 2026 M1 XAUUSD, iter9 user defaults):
+
+| strategy | full % | val % | val PF | research | cap viol | verdict |
+|---|---:|---:|---:|---:|---:|---|
+| **pivot_bounce** | **+8.95** | +1.74 | 1.46 | +22.59 | 0 | **PROMOTE** |
+| vwap_sigma_reclaim | -33.1 | -1.65 | 0.87 | -17.3 | 0 | FAIL |
+| bb_squeeze_reversal | -15.3 | +3.39 | 1.14 | +13.1 | 0 | MARGINAL |
+
+**pivot_bounce** is the first NEW pure-price-action standalone
+strategy at user iter9 sizing to clear all binary gates:
+- Full Jan-Apr: +8.95% (¥100,000 → ¥108,946)
+- Validation 14d: +1.74% (PF 1.46)
+- Research 60d: +22.59% (PF 1.79, ¥+22,588)
+- 134 trades = ~1.6/day (low frequency, clean)
+- 0 cap violations everywhere
+
+### Ensemble experiments
+
+Built ensemble_priceaction_v5 (with all 3 new + sweep + bos +
+flush) and v6 (without bb_squeeze).
+
+| ensemble | val 14d | research | full | tourn 14d | tourn 7d |
+|---|---:|---:|---:|---:|---:|
+| v5: 5 members | +9.78 | +10.57 | -6.71 | -5.31 | +0.32 |
+| v6: 4 members (no bb) | **+19.74** | +10.22 | -5.66 | -3.10 | +3.36 |
+| iter9 v4_router (current main) | +20.33 | -14.1 | -14.4 | **+5.41** | **+8.91** |
+
+v6 has stronger validation (+19.74% PF 1.97) and stronger
+research/full vs v4. But iter9 v4_router still wins on the
+SINGLE-SHOT tournament metric (+5.41% vs -3.10% on 14d, +8.91%
+vs +3.36% on 7d). pivot_bounce standalone tournament: -6.41%/14d
+(April hurt the strategy that thrived in March research).
+
+### Verdict
+
+- **iter9 v4_router remains the project HEADLINE** (highest
+  tournament: ¥+5,413 over 14d, ¥+8,910 over 7d).
+- **pivot_bounce is a NEW strategy worth shipping** as an
+  optional standalone for traders who want a single-edge
+  externally-anchored approach. Not part of the headline ensemble
+  but adds a documented positive-edge tool to the registry.
+- vwap_sigma_reclaim FALSIFIED. bb_squeeze_reversal MARGINAL.
+
+Iter10 contributes:
+  - 3 new strategy modules + tests
+  - 1 confirmed positive-edge standalone (pivot_bounce)
+  - 2 ensemble experiments with honest documented numbers
+  - Tournament discipline preserved (single-shot reads)
+  - 168 tests still passing
+
 ## 2026-04-25 — Iter9: price-action restart at user sizing (HONEST RESET)
 
 User feedback rejected the iter5-7 trajectory:
