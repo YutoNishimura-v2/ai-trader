@@ -1,0 +1,36 @@
+extends: ../default.yaml
+
+# iter11: pivot_bounce v2 — tighter touch buffer (0.05) and tighter
+# SL buffer (0.20). Validation-disciplined parameter sweep on the
+# baseline iter9 config produced this as the standout from a 12-point
+# (tab × slbuf) grid:
+#
+#   tab=0.05 slbuf=0.20: full +27.21%, val +4.23% PF 2.18, 140 trades, 0 cap
+#   tab=0.10 slbuf=0.30: full  +8.95%, val +1.74% PF 1.46, 134 trades, 0 cap (baseline)
+#
+# Rest of params unchanged.
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+strategy:
+  __replace__: true
+  name: pivot_bounce
+  params:
+    __replace__: true
+    atr_period: 14
+    touch_atr_buf: 0.05
+    sl_atr_buf: 0.20
+    max_sl_atr: 2.0
+    tp1_rr: 0.8
+    tp2_rr: 2.0
+    leg1_weight: 0.5
+    cooldown_bars: 30
+    session: london_or_ny
+    use_s2r2: true
+    max_trades_per_day: 4

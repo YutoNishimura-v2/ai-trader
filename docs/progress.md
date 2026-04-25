@@ -3,6 +3,63 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter11: news strategies PERMANENTLY PROHIBITED + pivot_bounce_v2 wins
+
+User 2026-04-25 directive (controller turn): "stop using the news.
+That's just a hack. Let's make it a prohibited item from now on."
+
+`docs/plan.md` updated with the permanent ban: news_fade,
+news_continuation, news_breakout, news_anticipation are kept on disk
+as falsified/retired implementations but **MUST NOT be promoted,
+included in any new ensemble, or referenced in any new headline**.
+All `ensemble_v3..v11_*` configs (iter5-7) that depend on them are
+permanently deprecated.
+
+### Iter11 work (no news, validation-disciplined)
+
+Built `momentum_continuation` strategy (M1 strong-bar continuation
+with M15 trend gate). Standalone:
+  Full -45.8%, val -11.6%, 1 cap violation. FALSIFIED.
+
+Tested 6 ensemble combinations of {pivot_bounce, sweep_reclaim,
+bos_retest, friday_flush, bb_squeeze}. Every variant degrades the
+iter9 v4_router tournament number (+5.41%/14d, +8.91%/7d).
+Adding more members crowds out v4_router's tournament-friendly
+behavior. iter9 v4_router REMAINS the project tournament headline.
+
+### Iter11 winner: pivot_bounce_v2 (parameter sweep)
+
+Validation-disciplined parameter grid on `pivot_bounce`
+(touch_atr_buf × sl_atr_buf, 12 points scored on validation only).
+Winner: tab=0.05, slbuf=0.20.
+
+| version | full | research | val | val PF | tourn 14d | cap viol |
+|---|---:|---:|---:|---:|---:|---:|
+| iter10 baseline (tab=0.10/slb=0.30) | +8.95 | +22.59 | +1.74 | 1.46 | -6.41 | 0 |
+| **iter11 v2 (tab=0.05/slb=0.20)** | **+27.21** | **+39.97** | **+4.23** | **2.18** | -9.38 | 0 |
+
+JPY: full Jan-Apr ¥100,000 → **¥127,210** (¥+27,210 net).
+Research: ¥100,000 → ¥139,973. Validation: ¥104,233.
+
+Per-month full: Jan -2.7%, Feb +12.6%, Mar +23.8%, Apr -6.2%.
+Tournament 14d: -9.38% (¥-9,375). April was hostile — the same
+strategy that thrived in March research couldn't make money in
+April tournament.
+
+This is the **strongest non-news standalone strategy in the
+project's history** on full+research+validation, but the April
+tournament window remains adverse.
+
+### Iter11 verdict
+
+- pivot_bounce_v2 PROMOTED as the new strongest standalone non-
+  news strategy.
+- iter9 v4_router REMAINS the project tournament headline (+5.41%/14d).
+- Two valid headlines (different objectives):
+  * Best full Jan-Apr: pivot_bounce_v2 (+27.21%, val PF 2.18)
+  * Best tournament: iter9 v4_router (+5.41%/14d, +8.91%/7d)
+- 168 tests still passing. Tournament discipline preserved.
+
 ## 2026-04-25 — Iter10: 3 new mechanical edges (pivot_bounce wins standalone)
 
 User feedback: "use every means at your disposal and find a way

@@ -39,6 +39,24 @@ return. Targets are high-risk / high-reward:
 > signal quality or by sizing constraints. No martingale, no blind
 > averaging down, and no lookahead remain prohibited.
 
+> **Update (2026-04-25, news strategies PERMANENTLY PROHIBITED):**
+> The user has explicitly banned all news/economic-calendar based
+> strategies as of iter11. This includes:
+>
+>   - `news_fade` — fade post-news overshoot
+>   - `news_continuation` — trade post-news momentum
+>   - `news_breakout` — trade the initial release
+>   - `news_anticipation` — pre-event positioning
+>
+> These remain in the registry as kept-on-record falsified/retired
+> implementations but **MUST NOT be promoted, included in any new
+> ensemble, or referenced in any new headline.** All ensemble configs
+> (`ensemble_v3..v11_*`) that depend on them are CONTAMINATED iter5-7
+> artifacts and must not be promoted.
+>
+> Rationale (user 2026-04-25): "Reliance on indicators is fragile and
+> non-sustainable. That's just a hack."
+
 Real-money promotion is **out of scope** until separately approved.
 
 ## Two categories, made explicit
