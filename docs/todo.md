@@ -90,6 +90,14 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
       on/off by HTF regime, keep it on but cut lot size 2-4× when
       HTF ADX > 25. Hypothesis: recovers Jan/Mar drag without
       killing April edge.
+- [x] **Adaptive risk-meta infrastructure landed**
+      (`config/ultimate_regime_meta.yaml`, dynamic_risk_enabled,
+      regime_router meta emission). Default-off; existing configs
+      bit-identical. **Open follow-up**: walk-forward
+      `ultimate_regime_meta` (research / validation / 14d & 7d
+      tournament + full Jan-Apr) to see whether dynamic risk sizing
+      actually recovers the Jan/Mar drag that naive HTF gating
+      could not.
 - [x] **GOLD-only high-risk expansion v1**: user redirected the
       project away from multi-instrument expansion and toward
       aggressive XAUUSD-only search with "avoid zero cut" as the

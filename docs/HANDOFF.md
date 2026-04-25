@@ -319,6 +319,46 @@ configuration to deliver >+60 % over a held-out 14-day window with
 zero cap violations and acceptable min equity. **It is not a 200 %/
 month proof** — see `docs/HANDOFF.md` TL;DR for honest gap analysis.
 
+### Adaptive risk-meta layer (`config/ultimate_regime_meta.yaml`)
+
+Optional infrastructure (off by default; gated behind
+`risk.dynamic_risk_enabled: true`). Layers a per-signal sizing
+engine on top of the existing `RiskManager`:
+
+- Strategies / routers can attach a `risk_multiplier` and a
+  `confidence` (0..1) to `Signal.meta`. The risk manager scales
+  the base `risk_per_trade_pct` by `risk_multiplier`, then by a
+  linear interpolation of `confidence` between
+  `confidence_risk_floor` and `confidence_risk_ceiling`.
+- A drawdown throttle reduces effective risk after the equity
+  curve has slipped a configurable amount from its peak
+  (`drawdown_soft_limit_pct` → `drawdown_soft_multiplier`,
+  `drawdown_hard_limit_pct` → `drawdown_hard_multiplier`).
+- Effective risk is then bounded by
+  `[min_risk_per_trade_pct, max_risk_per_trade_pct]`.
+
+`regime_router` was extended in the same iteration: every signal
+it forwards now carries `risk_multiplier`, `confidence`, `regime`,
+`router_member`, and the source `regime_adx` value, derived from
+`regime_risk_multipliers` × `member_risk_multipliers` and a blend
+of `regime_confidence` with the normalized HTF ADX
+(`adx_confidence_weight`).
+
+`config/ultimate_regime_meta.yaml` wires `news_fade` (all regimes)
+and `session_sweep_reclaim` (range / transition only) under a
+regime_router, with risk multipliers that size up in chop and back
+off in trend — directly attacking the documented Jan/Mar drag in
+`ensemble_ultimate` without removing trades the way naive HTF
+gating did. Backed by `tests/test_risk.py` (confidence /
+multiplier / DD throttle) and `tests/test_regime_router_meta.py`
+(router emits the meta correctly).
+
+**Status: infrastructure only.** No walk-forward proof has been
+attached to this config yet — the headline `ensemble_ultimate`
+numbers above remain the project's state-of-truth scoreboard.
+Treat `ultimate_regime_meta` as the most promising next-iteration
+research direction for closing the Jan/Mar drag.
+
 ## Key gotchas (real bugs we hit; don't re-hit them)
 
 1. **Default-off feature flags rot.** `bb_scalper.use_two_legs`

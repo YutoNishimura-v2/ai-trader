@@ -3,6 +3,69 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Branch consolidation onto `main`
+
+Four cursor research branches were collapsed into a single merge
+to `main`:
+
+- **`cursor/ultimate-trading-algorithm-a215`** (chosen winner) —
+  merged in full as a non-fast-forward merge commit. Brings the
+  rich-news ensemble, `ensemble_ultimate`, `friday_flush_fade`,
+  `news_anticipation` (kept-as-falsified), HTF-gate research on
+  `session_sweep_reclaim`, `regime_router` scaffolding, the
+  rich USD news calendar, and the `quick_eval` research helper.
+- **`cursor/ultimate-trading-algo-35e9`** — its single substantive
+  commit (`b4b5e5f`, "Add adaptive regime-meta risk engine and
+  ultimate config") was cherry-picked. This adds:
+  * `RiskManager` dynamic sizing — `signal.meta["risk_multiplier"]`
+    and `signal.meta["confidence"]` scale per-trade risk; a
+    drawdown throttle (soft/hard limits) cuts risk after losing
+    streaks. Default `dynamic_risk_enabled=False` keeps every
+    existing config bit-identical.
+  * `regime_router` enriches each emitted `Signal.meta` with
+    `risk_multiplier`, `confidence`, `regime`, `router_member`,
+    and `regime_adx`.
+  * `config/ultimate_regime_meta.yaml` — example wiring the new
+    knobs onto a `news_fade + session_sweep_reclaim` router with
+    range/trend/transition risk multipliers.
+  * `tests/test_risk.py` (+5) and `tests/test_regime_router_meta.py`
+    (+3 cases) cover the new code paths.
+  * Why this matters: a215's documented Jan/Mar drag comes from
+    `session_sweep_reclaim` bleeding in strong-trend regimes.
+    Naive HTF gating removed the April edge along with the bad
+    trades (a215 falsified those configs). The risk-meta layer
+    lets the router *size down* in trend regimes instead of
+    gating the trade away — a directly orthogonal lever to attack
+    the same problem. **No walk-forward proof attached yet; this
+    is infrastructure, not a tuned strategy.**
+- **`cursor/ultimate-trading-algo-0d41`** — superseded. Its HTF
+  EMA+ADX confirmation on `session_sweep_reclaim` overlaps and is
+  dominated by a215's more thorough HTF gating exploration, and
+  0d41's own docs marked it "do not promote". For the historical
+  negative-result record, the 0d41 full-window comparison was:
+
+  | config | trades | PF | return | DD | recent 14d |
+  |---|---:|---:|---:|---:|---:|
+  | `ensemble_session_news_rich` (a215 baseline) | 141 | 1.60 | **+53.0 %** | −30.2 % | **+49.1 %** |
+  | `ensemble_session_news_htf` (0d41 variant)   |  92 | 1.21 | +14.0 % | −25.4 % |  +2.6 % |
+
+  HTF gating gained Jan/Feb stability (min equity 83.3 % → 92.4 %)
+  but cut April edge by ~47 percentage points. **Not adopted.**
+- **`cursor/gold-trading-bot-scaffold-bb88`** — fully contained
+  in a215. Nothing additional to merge.
+
+Post-merge state:
+- Test suite: **155 passed** (was 152 on a215; +3 from the
+  cherry-picked `tests/test_risk.py` additions and
+  `tests/test_regime_router_meta.py`).
+- Total registered strategies: 19.
+- The four cursor branches will be deleted on `origin` after
+  this PR lands.
+
+No new sweeps, no tournament evaluations, no held-out window
+tuning. The headline `ensemble_ultimate` numbers from a215
+remain the project state-of-truth scoreboard.
+
 > **Reading note (2026-04-25):** This log is append-only and
 > chronological-newest-first. Some early entries (e.g. "BB scalper
 > +12.1 % tournament" or "ensemble +42 %/month validation") were
