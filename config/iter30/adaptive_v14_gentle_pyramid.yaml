@@ -1,0 +1,24 @@
+extends: adaptive_v8_extend_tp.yaml
+
+# v14: gentle pyramid. Base 8% per trade. After a win, the next
+# trade is at 10% (capped). After a loss, drops to 4%. After 2
+# consecutive losses, drop to probe (3%). This keeps the worst-case
+# day under the kill-switch even on a win-then-loss-then-loss
+# sequence: 10% (win) -> 5% (loss) -> 2.5% (loss) -> probe = ~3.6%
+# total loss in worst case from a 1-then-3 sequence.
+
+risk:
+  risk_per_trade_pct: 8.0
+  daily_max_loss_pct: 5.0
+  max_concurrent_positions: 1
+  min_risk_per_trade_pct: 0.5
+  max_risk_per_trade_pct: 10.0
+
+strategy:
+  params:
+    intra_day_pyramid_enabled: true
+    intra_day_win_scalar: 1.25
+    intra_day_loss_scalar: 0.5
+    intra_day_max_scalar: 1.25
+    intra_day_min_scalar: 0.3
+    intra_day_loss_streak_pause: 2

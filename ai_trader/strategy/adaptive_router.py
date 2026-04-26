@@ -115,6 +115,21 @@ class _MemberSlot:
     samples: deque = field(default_factory=lambda: deque(maxlen=64))
 
 
+@dataclass
+class _DayTracker:
+    """Tracks daily realised P&L for intra-day pyramiding.
+
+    The router uses today's realised return (as a fraction of
+    starting equity) to scale per-trade risk. Tracker resets at UTC
+    day rollover. State updates only via :meth:`on_trade_closed`
+    so it is causal w.r.t. the current bar's ``on_bar`` decision.
+    """
+
+    day: str | None = None
+    realized_pnl_pct: float = 0.0
+    consecutive_losses: int = 0
+
+
 def _decayed_expectancy(samples: list[float], halflife: float) -> float:
     """Decayed mean of a list of R-multiples, newest sample weighted 1.0.
 
@@ -173,6 +188,23 @@ class AdaptiveRouterStrategy(BaseStrategy):
         # closer to the iter29 ensemble priority semantics that the
         # member roster was tuned around.
         priority_mode: str = "expectancy",
+        # Intra-day pyramiding: scale per-trade risk by today's
+        # realised P&L. Disabled by default (multiplier stays at 1.0).
+        # When enabled, after a trade closes profitably the next
+        # trade's risk_multiplier is multiplied by
+        # ``intra_day_win_scalar`` up to ``intra_day_max_scalar``;
+        # after a losing trade it's multiplied by
+        # ``intra_day_loss_scalar`` down to ``intra_day_min_scalar``.
+        # State resets at UTC day rollover.
+        intra_day_pyramid_enabled: bool = False,
+        intra_day_win_scalar: float = 1.0,
+        intra_day_loss_scalar: float = 1.0,
+        intra_day_max_scalar: float = 1.0,
+        intra_day_min_scalar: float = 1.0,
+        # Loss-streak pause: after this many consecutive losing
+        # closes within the same UTC day, drop to probe-level risk
+        # for the rest of the day. 0 disables.
+        intra_day_loss_streak_pause: int = 0,
     ) -> None:
         super().__init__(
             members=members or [],
@@ -192,6 +224,12 @@ class AdaptiveRouterStrategy(BaseStrategy):
             regime_confidence=regime_confidence or {},
             adx_confidence_weight=adx_confidence_weight,
             priority_mode=priority_mode,
+            intra_day_pyramid_enabled=intra_day_pyramid_enabled,
+            intra_day_win_scalar=intra_day_win_scalar,
+            intra_day_loss_scalar=intra_day_loss_scalar,
+            intra_day_max_scalar=intra_day_max_scalar,
+            intra_day_min_scalar=intra_day_min_scalar,
+            intra_day_loss_streak_pause=intra_day_loss_streak_pause,
         )
         if not members:
             raise ValueError("AdaptiveRouterStrategy needs a non-empty 'members' list")
@@ -244,6 +282,9 @@ class AdaptiveRouterStrategy(BaseStrategy):
         self._mtf: MTFContext | None = None
         self._adx_arr: np.ndarray | None = None
         self._last_adx: float | None = None
+        self._day = _DayTracker()
+        # Intra-day pyramid scalar persisted across trades within a day.
+        self._intra_day_scalar: float = 1.0
 
     # ------------------------------------------------------------------
     def prepare(self, df: pd.DataFrame) -> None:
@@ -304,16 +345,23 @@ class AdaptiveRouterStrategy(BaseStrategy):
         # multipliers, so a protector member never gets unintended
         # full risk just because the router said "active".
         member_base = float(slot.member_base_risk_multiplier)
-        if slot.state == "probe":
+        # Loss-streak pause overrides everything: clamp to probe.
+        pause_streak = int(p.get("intra_day_loss_streak_pause", 0) or 0)
+        if pause_streak > 0 and self._day.consecutive_losses >= pause_streak:
             return float(p["probe_risk_multiplier"]) * member_base
-        # Active: scale by decayed expectancy in [floor, cap].
-        exp = max(0.0, self._decayed_expectancy(slot))
-        # Map expectancy 0 → floor, expectancy 0.5R → cap, linear.
-        floor = float(p["active_risk_multiplier_floor"])
-        cap = float(p["active_risk_multiplier_cap"])
-        ref = 0.5
-        scaled = floor + (cap - floor) * min(exp / ref, 1.0)
-        return float(min(cap, max(floor, scaled))) * member_base
+        if slot.state == "probe":
+            base = float(p["probe_risk_multiplier"])
+        else:
+            # Active: scale by decayed expectancy in [floor, cap].
+            exp = max(0.0, self._decayed_expectancy(slot))
+            floor = float(p["active_risk_multiplier_floor"])
+            cap = float(p["active_risk_multiplier_cap"])
+            ref = 0.5
+            scaled = floor + (cap - floor) * min(exp / ref, 1.0)
+            base = float(min(cap, max(floor, scaled)))
+        # Intra-day pyramid scalar applies multiplicatively to both
+        # probe and active branches, AFTER the member base.
+        return base * member_base * float(self._intra_day_scalar)
 
     # ------------------------------------------------------------------
     def on_bar(self, history: pd.DataFrame) -> Signal | None:
@@ -372,6 +420,36 @@ class AdaptiveRouterStrategy(BaseStrategy):
 
     # ------------------------------------------------------------------
     def on_trade_closed(self, ctx: ClosedTradeContext) -> None:
+        # Day rollover for intra-day state.
+        close_dt = ctx.close_time
+        if close_dt is not None:
+            close_iso_day = pd.Timestamp(close_dt).tz_convert("UTC").date().isoformat() if pd.Timestamp(close_dt).tz is not None else pd.Timestamp(close_dt, tz="UTC").date().isoformat()
+            if self._day.day != close_iso_day:
+                self._day = _DayTracker(day=close_iso_day)
+                self._intra_day_scalar = 1.0
+
+        # Update intra-day P&L tracker (for diagnostics; the kill-
+        # switch is enforced by RiskManager separately).
+        self._day.realized_pnl_pct += float(ctx.pnl)
+        if ctx.pnl > 0:
+            self._day.consecutive_losses = 0
+        elif ctx.pnl < 0:
+            self._day.consecutive_losses += 1
+
+        # Apply intra-day pyramid scalar update.
+        p = self.params
+        if bool(p.get("intra_day_pyramid_enabled", False)):
+            if ctx.pnl > 0:
+                new_scalar = self._intra_day_scalar * float(p.get("intra_day_win_scalar", 1.0))
+                self._intra_day_scalar = min(
+                    new_scalar, float(p.get("intra_day_max_scalar", 1.0))
+                )
+            elif ctx.pnl < 0:
+                new_scalar = self._intra_day_scalar * float(p.get("intra_day_loss_scalar", 1.0))
+                self._intra_day_scalar = max(
+                    new_scalar, float(p.get("intra_day_min_scalar", 1.0))
+                )
+
         # Find the originating slot. ctx.member_name was set at signal
         # time to slot.member_id, so we look up by that.
         member_id = ctx.member_name

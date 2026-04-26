@@ -1,0 +1,14 @@
+extends: adaptive_v6_iter28core.yaml
+
+# v20: max_concurrent=2 lets two pivot members fire simultaneously
+# (e.g., daily long + weekly short on the same day). At risk=6%,
+# worst-case 2 losing trades = 12% > kill-switch 5% so one gets
+# killed early. Keeping risk lower than v6's 10% to control daily
+# downside. Tighter daily kill = 5%.
+
+risk:
+  risk_per_trade_pct: 6.0
+  max_risk_per_trade_pct: 8.0
+  min_risk_per_trade_pct: 1.0
+  daily_max_loss_pct: 5.0
+  max_concurrent_positions: 2
