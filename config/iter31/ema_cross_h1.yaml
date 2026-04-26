@@ -1,0 +1,31 @@
+extends: ../default.yaml
+instrument: {symbol: XAUUSD, timeframe: M1, contract_size: 100, tick_size: 0.01, tick_value: 1.0, quote_currency: USD}
+risk:
+  risk_per_trade_pct: 2.5
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000020
+strategy:
+  __replace__: true
+  name: ema_cross_pullback
+  params:
+    ema_fast: 9
+    ema_slow: 21
+    rsi_period: 14
+    rsi_long_min: 50.0
+    rsi_short_max: 50.0
+    confirm_bars: 2
+    touch_dollar: 0.50
+    sl_buffer_dollar: 1.0
+    tp_buffer_dollar: 0.5
+    swing_lookback_bars: 12
+    max_sl_dollar: 6.0
+    tp1_rr: 1.0
+    tp2_rr: 2.5
+    leg1_weight: 0.5
+    cooldown_m5_bars: 6
+    session: london_or_ny
+    max_trades_per_day: 6
+    htf: H1
+    htf_ema_period: 200

@@ -1,0 +1,34 @@
+extends: ../default.yaml
+instrument: {symbol: XAUUSD, timeframe: M1, contract_size: 100, tick_size: 0.01, tick_value: 1.0, quote_currency: USD}
+risk:
+  risk_per_trade_pct: 6.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 3.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 2
+  lot_cap_per_unit_balance: 0.000020
+  dynamic_risk_enabled: true
+  min_risk_per_trade_pct: 1.0
+  max_risk_per_trade_pct: 6.0
+  drawdown_soft_limit_pct: 12.0
+  drawdown_hard_limit_pct: 22.0
+  drawdown_soft_multiplier: 0.7
+  drawdown_hard_multiplier: 0.4
+strategy:
+  __replace__: true
+  name: ensemble
+  params:
+    __replace__: true
+    members:
+      - name: pivot_bounce
+        params: {pivot_period: daily, atr_period: 14, touch_atr_buf: 0.05, sl_atr_buf: 0.30, max_sl_atr: 2.0, tp1_rr: 1.0, tp2_rr: 1.5, leg1_weight: 0.5, cooldown_bars: 60, session: london_or_ny, use_s2r2: true, max_trades_per_day: 4, weekdays: [0, 1, 2, 3]}
+      - name: pivot_bounce
+        params: {pivot_period: weekly, atr_period: 14, touch_atr_buf: 0.10, sl_atr_buf: 0.28, max_sl_atr: 2.0, tp1_rr: 1.0, tp2_rr: 2.5, leg1_weight: 0.5, cooldown_bars: 60, session: london_or_ny, use_s2r2: true, max_trades_per_day: 2, weekdays: [0, 1, 2, 3]}
+      - name: pivot_bounce
+        params: {pivot_period: monthly, atr_period: 14, touch_atr_buf: 0.15, sl_atr_buf: 0.30, max_sl_atr: 3.0, tp1_rr: 1.2, tp2_rr: 2.5, leg1_weight: 0.5, cooldown_bars: 120, session: london, use_s2r2: true, max_trades_per_day: 1, weekdays: [0, 1, 2, 3]}
+      - name: ema20_pullback_m15
+        params: {ema_period: 20, confirm_bars: 2, touch_dollar: 0.80, sl_buffer_dollar: 1.0, tp_buffer_dollar: 1.0, swing_lookback_bars: 8, max_sl_dollar: 6.0, tp1_rr: 1.0, leg1_weight: 0.5, cooldown_m15_bars: 4, session: london, max_trades_per_day: 4, htf: H4, htf_ema_period: 20}
+      - name: london_ny_orb
+        params: {open_hour: 7, open_minute: 0, range_minutes: 30, trade_window_hours: 4, confirm_minutes: 5, min_range_atr: 0.5, sl_pct_of_range: 0.3, tp_mult_of_range: 2.0, tp1_rr: 1.0, leg1_weight: 0.5}
+      - name: engulfing_reversal
+        params: {atr_period: 14, min_body_atr: 0.8, require_oversold: true, oversold_lookback: 12, sl_buffer_dollar: 0.5, max_sl_dollar: 8.0, tp1_rr: 1.0, tp2_rr: 2.5, leg1_weight: 0.5, cooldown_m15_bars: 4, session: london, max_trades_per_day: 3}

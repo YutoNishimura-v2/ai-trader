@@ -55,6 +55,8 @@ def get_strategy(name: str, **params) -> BaseStrategy:
     from . import london_ny_orb  # noqa: F401
     from . import heikin_ashi_trend  # noqa: F401
     from . import three_soldiers  # noqa: F401
+    from . import engulfing_reversal  # noqa: F401
+    from . import ema_cross_pullback  # noqa: F401
     if name not in _REGISTRY:
         raise KeyError(f"Unknown strategy: {name}. Known: {sorted(_REGISTRY)}")
     return _REGISTRY[name](**params)
@@ -96,4 +98,6 @@ def list_strategies() -> list[str]:
     from . import london_ny_orb  # noqa: F401
     from . import heikin_ashi_trend  # noqa: F401
     from . import three_soldiers  # noqa: F401
+    from . import engulfing_reversal  # noqa: F401
+    from . import ema_cross_pullback  # noqa: F401
     return sorted(_REGISTRY)
