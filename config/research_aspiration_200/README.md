@@ -24,3 +24,20 @@ this family.
 in-sample by a lone high-risk `pivot_bounce` with long TP2; the same recipe
 still has bad months, cap hits, and is not walk-forward safe. Treat as a
 ceiling probe, not a live candidate.
+
+## Cap-clean frontier (same family, Jan–Apr 2026 M1)
+
+Scripted grid (`scripts/iter35_moonshot_cap_frontier.py`): with **no HTF
+gate**, **no** `(risk%, tp2_rr)` pair in the default scan both hit
+**cap_violations=0** and **best_month ≥ 200%** on this CSV. The best
+cap-clean single-month observed in that scan was **~+83.5%** at **5% / TP2
+9.5** — saved as `moonshot_pivot_daily_r5_tp95_capclean.yaml`.
+
+**Sweep with M15 `adx_max` on the hot r15–18 / tp2 6–9 grid:** still **zero**
+`cap_violations==0` rows — gating chop does not rescue the daily moonshot
+from cap days at those risk levels on this sample.
+
+Saved cap-clean picks from `iter35_moonshot_cap_frontier.py`:
+
+- `moonshot_pivot_daily_r45_tp95_capclean.yaml` — **~+90.3%** best month.
+- `moonshot_pivot_daily_r5_tp95_capclean.yaml` — **~+83.5%** best month, **~+204%** full.
