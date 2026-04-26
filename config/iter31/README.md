@@ -34,3 +34,6 @@ python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv \
   config/iter30/adaptive_v55_v43b_dml5.yaml \
   config/iter31/adaptive_v55_expectancy_sizing_b.yaml
 ```
+
+**Iter33 (Apr uplift on static ensemble):** see [`config/iter33/README.md`](../iter33/README.md)
+and `protector_conc1_dw_m15_adx30.yaml` (M15 ADX gate on daily+weekly only).
