@@ -44,6 +44,7 @@ class ClosedTradeRecord:
     exit: float
     pnl: float
     reason: str
+    comment: str = ""
     group_id: int | None = None
     leg_index: int | None = None
 
@@ -119,6 +120,7 @@ class BacktestEngine:
                         exit=closed.close_price,
                         pnl=pnl_account,
                         reason=closed.reason,
+                        comment=closed.position.comment,
                         group_id=closed.position.group_id,
                         leg_index=closed.position.leg_index,
                     )
@@ -172,6 +174,7 @@ class BacktestEngine:
                             exit=c2.close_price,
                             pnl=pnl_account,
                             reason=c2.reason,
+                            comment=c2.position.comment,
                             group_id=c2.position.group_id,
                             leg_index=c2.position.leg_index,
                         )
@@ -199,6 +202,7 @@ class BacktestEngine:
                             exit=closed.close_price,
                             pnl=pnl_account,
                             reason=closed.reason,
+                            comment=closed.position.comment,
                             group_id=closed.position.group_id,
                             leg_index=closed.position.leg_index,
                         )
@@ -241,6 +245,7 @@ class BacktestEngine:
                     exit=closed.close_price,
                     pnl=pnl_account,
                     reason=closed.reason,
+                    comment=closed.position.comment,
                     group_id=closed.position.group_id,
                     leg_index=closed.position.leg_index,
                 )
