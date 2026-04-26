@@ -106,6 +106,12 @@ class _MemberSlot:
     regimes: frozenset[str]
     config_priority: int
     state: str = "probe"   # "probe" | "active"
+    # Optional per-member intrinsic sizing scalar applied AFTER the
+    # router's probe/active multiplier. A "protector" member can be
+    # configured with risk_multiplier=0.35 here so that the router
+    # never inflates its size beyond what the offline tuning judged
+    # safe, regardless of the active/probe state.
+    member_base_risk_multiplier: float = 1.0
     samples: deque = field(default_factory=lambda: deque(maxlen=64))
 
 
@@ -150,9 +156,23 @@ class AdaptiveRouterStrategy(BaseStrategy):
         probe_risk_multiplier: float = 0.20,
         active_risk_multiplier_floor: float = 0.20,
         active_risk_multiplier_cap: float = 1.00,
+        # Initial state: "probe" (default) starts every member at
+        # probe_risk_multiplier and waits for evidence before scaling.
+        # "active" trusts the prior research and starts every member
+        # at full active sizing, demoting only on loss evidence. The
+        # latter is closer to a live "warm-handoff" deployment where
+        # we trust the offline-validated config until proven wrong.
+        initial_state: str = "probe",
         # Confidence.
         regime_confidence: dict[str, float] | None = None,
         adx_confidence_weight: float = 0.5,
+        # Priority mode: "expectancy" sorts active members by decayed
+        # expectancy desc each bar (the original adaptive design);
+        # "config" preserves the YAML order, treating expectancy
+        # only as a sizing knob, never a tie-breaker. The latter is
+        # closer to the iter29 ensemble priority semantics that the
+        # member roster was tuned around.
+        priority_mode: str = "expectancy",
     ) -> None:
         super().__init__(
             members=members or [],
@@ -168,8 +188,10 @@ class AdaptiveRouterStrategy(BaseStrategy):
             probe_risk_multiplier=probe_risk_multiplier,
             active_risk_multiplier_floor=active_risk_multiplier_floor,
             active_risk_multiplier_cap=active_risk_multiplier_cap,
+            initial_state=initial_state,
             regime_confidence=regime_confidence or {},
             adx_confidence_weight=adx_confidence_weight,
+            priority_mode=priority_mode,
         )
         if not members:
             raise ValueError("AdaptiveRouterStrategy needs a non-empty 'members' list")
@@ -177,6 +199,14 @@ class AdaptiveRouterStrategy(BaseStrategy):
             raise ValueError(
                 "eligibility_off_threshold must be strictly less than "
                 "eligibility_on_threshold (hysteresis requirement)"
+            )
+        if initial_state not in ("probe", "active"):
+            raise ValueError(
+                f"initial_state must be 'probe' or 'active', got {initial_state!r}"
+            )
+        if priority_mode not in ("expectancy", "config"):
+            raise ValueError(
+                f"priority_mode must be 'expectancy' or 'config', got {priority_mode!r}"
             )
 
         self._members: list[_MemberSlot] = []
@@ -196,6 +226,7 @@ class AdaptiveRouterStrategy(BaseStrategy):
             if mid in seen_ids:
                 raise ValueError(f"duplicate member id: {mid}")
             seen_ids.add(mid)
+            base_mult = float(m.get("risk_multiplier", 1.0))
             self._members.append(
                 _MemberSlot(
                     name=nm,
@@ -203,6 +234,8 @@ class AdaptiveRouterStrategy(BaseStrategy):
                     strategy=get_strategy(nm, **params),
                     regimes=regimes,
                     config_priority=idx,
+                    state=initial_state,
+                    member_base_risk_multiplier=base_mult,
                     samples=deque(maxlen=int(expectancy_window)),
                 )
             )
@@ -265,8 +298,14 @@ class AdaptiveRouterStrategy(BaseStrategy):
 
     def _risk_multiplier(self, slot: _MemberSlot) -> float:
         p = self.params
+        # Members may declare an intrinsic risk_multiplier in their
+        # config (e.g., a "protector" member sized at 0.35x). This
+        # base scalar is multiplied into both the probe and active
+        # multipliers, so a protector member never gets unintended
+        # full risk just because the router said "active".
+        member_base = float(slot.member_base_risk_multiplier)
         if slot.state == "probe":
-            return float(p["probe_risk_multiplier"])
+            return float(p["probe_risk_multiplier"]) * member_base
         # Active: scale by decayed expectancy in [floor, cap].
         exp = max(0.0, self._decayed_expectancy(slot))
         # Map expectancy 0 → floor, expectancy 0.5R → cap, linear.
@@ -274,7 +313,7 @@ class AdaptiveRouterStrategy(BaseStrategy):
         cap = float(p["active_risk_multiplier_cap"])
         ref = 0.5
         scaled = floor + (cap - floor) * min(exp / ref, 1.0)
-        return float(min(cap, max(floor, scaled)))
+        return float(min(cap, max(floor, scaled))) * member_base
 
     # ------------------------------------------------------------------
     def on_bar(self, history: pd.DataFrame) -> Signal | None:
@@ -292,14 +331,18 @@ class AdaptiveRouterStrategy(BaseStrategy):
         if not eligible:
             return None
 
-        # Adaptive priority: active members first (sorted by expectancy
-        # desc), then probe members (config order). This implements
-        # the "active outranks probe" rule.
+        # Adaptive priority: active members first, then probe members
+        # (the "active outranks probe" rule). Within each group, sort
+        # by expectancy desc OR by config order, depending on
+        # priority_mode.
         active_slots = [s for s in eligible if s.state == "active"]
         probe_slots = [s for s in eligible if s.state == "probe"]
-        active_slots.sort(
-            key=lambda s: (-self._decayed_expectancy(s), s.config_priority)
-        )
+        if self.params.get("priority_mode", "expectancy") == "expectancy":
+            active_slots.sort(
+                key=lambda s: (-self._decayed_expectancy(s), s.config_priority)
+            )
+        else:
+            active_slots.sort(key=lambda s: s.config_priority)
         probe_slots.sort(key=lambda s: s.config_priority)
         ordered = active_slots + probe_slots
 

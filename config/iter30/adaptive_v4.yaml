@@ -1,0 +1,121 @@
+extends: ../default.yaml
+
+# Iter30 adaptive router v4. Reproduces iter29 protector_conc1's
+# member sizing exactly under the router so we can isolate the
+# router's added value (regime gating + adaptive expectancy
+# weighting) versus the static iter29 baseline.
+
+instrument: {symbol: XAUUSD, timeframe: M1, contract_size: 100, tick_size: 0.01, tick_value: 1.0, quote_currency: USD}
+
+risk:
+  risk_per_trade_pct: 10.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 3.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000020
+  dynamic_risk_enabled: true
+  min_risk_per_trade_pct: 1.0
+  max_risk_per_trade_pct: 10.0
+  confidence_risk_floor: 1.0
+  confidence_risk_ceiling: 1.0
+  drawdown_soft_limit_pct: 12.0
+  drawdown_hard_limit_pct: 22.0
+  drawdown_soft_multiplier: 0.7
+  drawdown_hard_multiplier: 0.4
+
+strategy:
+  __replace__: true
+  name: adaptive_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 20.0
+    trend_adx_min: 25.0
+    expectancy_window: 30
+    expectancy_decay_halflife: 10.0
+    eligibility_on_threshold: 0.05
+    eligibility_off_threshold: -0.10
+    probe_risk_multiplier: 0.50
+    active_risk_multiplier_floor: 1.00
+    active_risk_multiplier_cap: 1.00
+    initial_state: active
+    priority_mode: config
+    members:
+      - name: pivot_bounce
+        id: pivot_daily
+        regimes: [all]
+        risk_multiplier: 1.0
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 4
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_weekly
+        regimes: [all]
+        risk_multiplier: 1.0
+        params:
+          pivot_period: weekly
+          atr_period: 14
+          touch_atr_buf: 0.10
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 2
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_monthly
+        regimes: [all]
+        risk_multiplier: 1.0
+        params:
+          pivot_period: monthly
+          atr_period: 14
+          touch_atr_buf: 0.15
+          sl_atr_buf: 0.30
+          max_sl_atr: 3.0
+          tp1_rr: 1.2
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 120
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 1
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_4h
+        regimes: [all]
+        risk_multiplier: 0.35
+        params:
+          pivot_period: 4h
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          cooldown_bars: 90
+          session: london
+          use_s2r2: false
+          levels: [S1, R1]
+          max_trades_per_day: 2
+          emit_context_meta: true
