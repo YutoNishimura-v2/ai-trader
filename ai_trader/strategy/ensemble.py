@@ -60,6 +60,9 @@ class EnsembleStrategy(BaseStrategy):
             raise ValueError("EnsembleStrategy needs a non-empty 'members' list")
         self._members: list[BaseStrategy] = []
         self._member_names: list[str] = []
+        # iter31: per-member risk_multiplier — applied via Signal.meta
+        # so RiskManager can scale lots accordingly. 1.0 = no change.
+        self._member_risk_multipliers: list[float] = []
         for m in members:
             nm = m.get("name")
             if not nm:
@@ -67,6 +70,7 @@ class EnsembleStrategy(BaseStrategy):
             params = m.get("params", {}) or {}
             self._members.append(get_strategy(nm, **params))
             self._member_names.append(nm)
+            self._member_risk_multipliers.append(float(m.get("risk_multiplier", 1.0)))
         # min_history = max across members so every member is warmed.
         self.min_history = max(getattr(m, "min_history", 0) for m in self._members)
 
@@ -78,12 +82,18 @@ class EnsembleStrategy(BaseStrategy):
         n = len(history)
         if n < self.min_history:
             return None
-        for name, member in zip(self._member_names, self._members):
+        for name, member, rmult in zip(self._member_names, self._members, self._member_risk_multipliers):
             sig = member.on_bar(history)
             if sig is not None:
                 # Tag the reason with the winning member for attribution.
                 tagged_reason = f"[{name}] {sig.reason}"
                 # Signal is frozen; rebuild with tagged reason.
                 object.__setattr__(sig, "reason", tagged_reason)
+                # Stamp per-member risk_multiplier into meta so the
+                # RiskManager can scale this signal's lots.
+                if rmult != 1.0:
+                    new_meta = dict(sig.meta or {})
+                    new_meta["risk_multiplier"] = rmult * float(new_meta.get("risk_multiplier", 1.0))
+                    object.__setattr__(sig, "meta", new_meta)
                 return sig
         return None
