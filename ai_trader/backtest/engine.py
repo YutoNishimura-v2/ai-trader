@@ -31,7 +31,7 @@ from ..broker.base import Order
 from ..broker.paper import PaperBroker
 from ..news.calendar import NewsCalendar, NoNewsCalendar
 from ..risk.manager import RiskManager
-from ..strategy.base import BaseStrategy, Signal, SignalSide
+from ..strategy.base import BaseStrategy, ClosedTradeContext, Signal, SignalSide
 
 
 @dataclass
@@ -109,22 +109,7 @@ class BacktestEngine:
             ))
             for closed in bar_closes:
                 pnl_account = _to_account(self.risk, closed.pnl)
-                self.risk.on_trade_closed(pnl_account, when=now, reason=closed.reason)
-                trades.append(
-                    ClosedTradeRecord(
-                        open_time=closed.position.open_time,
-                        close_time=closed.close_time,
-                        side=closed.position.side.value,
-                        lots=closed.position.lots,
-                        entry=closed.position.entry_price,
-                        exit=closed.close_price,
-                        pnl=pnl_account,
-                        reason=closed.reason,
-                        comment=closed.position.comment,
-                        group_id=closed.position.group_id,
-                        leg_index=closed.position.leg_index,
-                    )
-                )
+                self._book_close(closed, pnl_account=pnl_account, now=now, trades=trades)
 
                 # Break-even: if this leg had a sibling-SL-move instruction
                 # and it closed on TP, move siblings' SL to the requested
@@ -163,22 +148,7 @@ class BacktestEngine:
                         reason="kill-switch",
                     )
                     pnl_account = _to_account(self.risk, c2.pnl)
-                    self.risk.on_trade_closed(pnl_account, when=now, reason=c2.reason)
-                    trades.append(
-                        ClosedTradeRecord(
-                            open_time=c2.position.open_time,
-                            close_time=c2.close_time,
-                            side=c2.position.side.value,
-                            lots=c2.position.lots,
-                            entry=c2.position.entry_price,
-                            exit=c2.close_price,
-                            pnl=pnl_account,
-                            reason=c2.reason,
-                            comment=c2.position.comment,
-                            group_id=c2.position.group_id,
-                            leg_index=c2.position.leg_index,
-                        )
-                    )
+                    self._book_close(c2, pnl_account=pnl_account, now=now, trades=trades)
 
             # 3) kill-switch: if the day is done, flatten and skip strat.
             ledger = self.risk._ensure_day(now)
@@ -191,22 +161,7 @@ class BacktestEngine:
                         reason="kill-switch",
                     )
                     pnl_account = _to_account(self.risk, closed.pnl)
-                    self.risk.on_trade_closed(pnl_account, when=now, reason=closed.reason)
-                    trades.append(
-                        ClosedTradeRecord(
-                            open_time=closed.position.open_time,
-                            close_time=closed.close_time,
-                            side=closed.position.side.value,
-                            lots=closed.position.lots,
-                            entry=closed.position.entry_price,
-                            exit=closed.close_price,
-                            pnl=pnl_account,
-                            reason=closed.reason,
-                            comment=closed.position.comment,
-                            group_id=closed.position.group_id,
-                            leg_index=closed.position.leg_index,
-                        )
-                    )
+                    self._book_close(closed, pnl_account=pnl_account, now=now, trades=trades)
                 equity_times.append(ts)
                 equity_values.append(self.risk.balance + self.risk.withdrawn_total)
                 continue
@@ -234,22 +189,7 @@ class BacktestEngine:
         for pos in list(self.broker.open_positions()):
             closed = self.broker.close(pos.id, price=last_close, now=last_ts, reason="eod")
             pnl_account = _to_account(self.risk, closed.pnl)
-            self.risk.on_trade_closed(pnl_account, when=last_ts, reason=closed.reason)
-            trades.append(
-                ClosedTradeRecord(
-                    open_time=closed.position.open_time,
-                    close_time=closed.close_time,
-                    side=closed.position.side.value,
-                    lots=closed.position.lots,
-                    entry=closed.position.entry_price,
-                    exit=closed.close_price,
-                    pnl=pnl_account,
-                    reason=closed.reason,
-                    comment=closed.position.comment,
-                    group_id=closed.position.group_id,
-                    leg_index=closed.position.leg_index,
-                )
-            )
+            self._book_close(closed, pnl_account=pnl_account, now=last_ts, trades=trades)
 
         equity_curve = pd.Series(
             equity_values, index=pd.DatetimeIndex(equity_times), name="equity"
@@ -260,6 +200,81 @@ class BacktestEngine:
             final_balance=self.risk.balance,
             withdrawn_total=self.risk.withdrawn_total,
         )
+
+    # ------------------------------------------------------------------
+    def _book_close(
+        self,
+        closed,
+        *,
+        pnl_account: float,
+        now: datetime,
+        trades: list[ClosedTradeRecord],
+    ) -> None:
+        """Centralized close-event handler.
+
+        Books the close in the risk manager, appends the trade record,
+        and fires :meth:`BaseStrategy.on_trade_closed` so adaptive
+        strategies (e.g. ``adaptive_router``) can update their causal
+        state. The same call site fires in
+        :class:`ai_trader.live.runner.LiveRunner` to keep simulation
+        and live behaviorally identical.
+        """
+        self.risk.on_trade_closed(pnl_account, when=now, reason=closed.reason)
+        trades.append(
+            ClosedTradeRecord(
+                open_time=closed.position.open_time,
+                close_time=closed.close_time,
+                side=closed.position.side.value,
+                lots=closed.position.lots,
+                entry=closed.position.entry_price,
+                exit=closed.close_price,
+                pnl=pnl_account,
+                reason=closed.reason,
+                comment=closed.position.comment,
+                group_id=closed.position.group_id,
+                leg_index=closed.position.leg_index,
+            )
+        )
+        meta = dict(closed.position.meta) if closed.position.meta else None
+        member_name = (meta or {}).get("member_name") or _member_name_from_reason(
+            closed.position.comment
+        )
+        entry_risk_price = (meta or {}).get("entry_risk_price")
+        # FX factor used by the engine for this account.
+        if (
+            self.risk.instrument.quote_currency != self.risk.account_currency
+            and self.risk.fx is not None
+        ):
+            fx_factor = self.risk.fx.convert(
+                1.0,
+                self.risk.instrument.quote_currency,
+                self.risk.account_currency,
+            )
+        else:
+            fx_factor = 1.0
+        r_mult = _r_multiple(
+            pnl=pnl_account,
+            lots=float(closed.position.lots),
+            contract_size=float(self.broker.instrument.contract_size),
+            entry_risk_price=(
+                float(entry_risk_price) if entry_risk_price is not None else None
+            ),
+            fx_to_account=float(fx_factor),
+        )
+        ctx = ClosedTradeContext(
+            member_name=member_name,
+            pnl=float(pnl_account),
+            r_multiple=r_mult,
+            entry_time=closed.position.open_time,
+            close_time=closed.close_time,
+            reason=closed.reason,
+            comment=closed.position.comment,
+            meta=meta,
+        )
+        try:
+            self.strategy.on_trade_closed(ctx)
+        except Exception as exc:  # pragma: no cover -- defensive
+            self._log(f"strategy.on_trade_closed raised: {exc!r}")
 
     # ------------------------------------------------------------------
     def _submit_signal(self, sig: Signal, *, bar_open: float, now: datetime, ts: pd.Timestamp) -> None:
@@ -319,6 +334,19 @@ class BacktestEngine:
         for idx, (leg, lots) in enumerate(zip(sig.legs, rounded)):
             if lots < min_lot:
                 continue
+            # Attach a copy of the originating Signal.meta to the
+            # broker order so close events can be attributed back.
+            # Also enrich with the per-leg risk price distance so
+            # adaptive routers can compute R-multiples on close.
+            order_meta: dict[str, Any] = dict(sig.meta) if sig.meta else {}
+            if "entry_risk_price" not in order_meta:
+                order_meta["entry_risk_price"] = abs(bar_open - sig.stop_loss)
+            order_meta.setdefault("strategy_reason", sig.reason)
+            # _member_name follows the EnsembleStrategy / RegimeRouter
+            # convention of prefixing the reason with ``[name] ...``.
+            mn = _member_name_from_reason(sig.reason)
+            if mn is not None:
+                order_meta.setdefault("member_name", mn)
             order = Order(
                 side=sig.side,
                 lots=lots,
@@ -328,6 +356,7 @@ class BacktestEngine:
                 group_id=group_id,
                 leg_index=idx,
                 move_siblings_sl_to_on_fill=leg.move_sl_to_on_fill,
+                meta=order_meta,
             )
             res = self.broker.submit(order, ref_price=bar_open, now=now)
             if not res.ok:
@@ -363,3 +392,46 @@ def _to_account(risk: RiskManager, amount_quote: float) -> float:
     return risk.fx.convert(
         amount_quote, risk.instrument.quote_currency, risk.account_currency
     )
+
+
+def _member_name_from_reason(reason: str) -> str | None:
+    """Extract the member name from an EnsembleStrategy-tagged reason.
+
+    Both :class:`EnsembleStrategy` and :class:`RegimeRouterStrategy`
+    prefix the Signal.reason with ``[<name>]`` (regime router uses
+    ``[<name>|<regime>]``). Anything before a ``|`` inside the
+    leading bracket is the member name.
+    """
+    if not reason or not reason.startswith("["):
+        return None
+    end = reason.find("]")
+    if end < 0:
+        return None
+    inside = reason[1:end]
+    if "|" in inside:
+        inside = inside.split("|", 1)[0]
+    return inside.strip() or None
+
+
+def _r_multiple(
+    *,
+    pnl: float,
+    lots: float,
+    contract_size: float,
+    entry_risk_price: float | None,
+    fx_to_account: float,
+) -> float | None:
+    """Convert a closed P&L into an R-multiple, or None if unknown.
+
+    The denominator is ``lots × contract_size × entry_risk_price``
+    (the risk in quote currency at entry), converted to account
+    currency via the same FX factor the engine used for ``pnl``.
+    """
+    if entry_risk_price is None or entry_risk_price <= 0:
+        return None
+    if lots <= 0 or contract_size <= 0:
+        return None
+    risk_account = lots * contract_size * entry_risk_price * fx_to_account
+    if risk_account <= 0:
+        return None
+    return float(pnl) / float(risk_account)
