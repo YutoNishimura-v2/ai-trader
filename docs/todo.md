@@ -141,9 +141,12 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 - [x] **Iter27: project-record validation PF 4.57.**
       `config/iter27/v4_plus_sweep_r4.yaml` — triple pivot +
       session_sweep_reclaim, val PF 4.57 (record), full +39.18%.
-- [ ] **Iter29 candidates**: 4h pivot member is the only
+- [x] **Iter29 candidates**: 4h pivot member is the only
       standalone with positive tournament (+6.69%/PF 1.20) —
-      worth a deep-dive iteration.
+      deep-dive completed. `h4_specialist_s1r1` is stress-positive
+      but low growth; `v4_plus_h4_protector_conc1` is the new growth
+      record (+832.42% full, +13.85% known 14d tournament, 0 cap full)
+      but validation still has 1 cap violation.
 - [x] **Iter29 adaptive-system prototype**: added adaptive simulator,
       trade-attribution diagnostics, pivot context metadata/level filters,
       and candidate configs. Best new causal adaptive policy so far:
@@ -152,6 +155,12 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
       candidate: `config/iter29/v4_plus_h4_protector.yaml` full +455.54%
       and known April tournament +13.85%, but validation has 1 cap violation
       so it is a research clue, not a promotion candidate.
+- [ ] **Fix iter29 protector validation cap violation** without losing the
+      full-period/tournament breakthrough. Current best record config is
+      `config/iter29/v4_plus_h4_protector_conc1.yaml`: full +832.42%,
+      all months positive, known 14d tournament +13.85%, but recent-only
+      validation cap=1. Next angle: identify the specific validation cap day
+      and apply a causal risk/skip rule.
 - [x] **Iter9: price-action restart at user sizing.**
       `config/iter9/ensemble_priceaction_v4_router.yaml` is the
       new HONEST headline: validation +20.33% (PF 2.33),

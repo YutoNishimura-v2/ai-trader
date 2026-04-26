@@ -5,6 +5,17 @@ progress entry for the full story.
 
 ## 2026-04-26 iter29 — adaptive simulation
 
+- **H4 protector validates the adaptive thesis.** A full-risk static
+  growth stack still wins raw Jan-Apr return, but adding a low-risk
+  H4 S1/R1 protector with concurrency=1 produced +832% full and
+  +13.85% on the local 14d stress window, versus iter28's +497% /
+  -4.32%. The market-state answer is not "one strategy"; it's
+  specialist participation with careful exposure control.
+- **Validation cap violations are the new blocker.** The best H4
+  protector variant is excellent on full and recent stress but trips
+  one validation cap violation. Loosening daily max loss raises full
+  return but worsens cap/stress. Next work should address the
+  specific validation loss day, not blindly change global risk.
 - **Adaptivity is useful, but naive trailing-winner selection is not
   enough.** Rolling 5-day winner switching collapses to +47% full
   vs static growth +498%, with 33 switches. It reacts to noise and

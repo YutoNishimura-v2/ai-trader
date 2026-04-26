@@ -9,6 +9,44 @@ User challenged the core assumption that one static strategy should
 work in all periods. Implemented the first simulation of a live-demo
 style adaptive loop plus causal context controls for pivot strategies.
 
+### Follow-up: expanded adaptive policies + cleaner protector
+
+Added more creative causal policies beyond the user's first-week example:
+stability rotation, equity-curve filter, loss-streak pause, and monthly
+risk-budget. Also added `--start-day/--end-day` so policies can be judged
+on a recent slice while still using prior history for causal lookbacks.
+
+Recent-window check from 2026-04-10 (13 trading days):
+
+| policy/expert | return | PF | DD | cap |
+|---|---:|---:|---:|---:|
+| static_growth | +2.72% | 1.10 | -19.21% | 0 |
+| static_h4 | +17.03% | 1.60 | -10.91% | 0 |
+| static_defensive | +6.26% | 1.89 | -3.48% | 0 |
+| expectancy_rotation | +5.11% | 1.19 | -16.42% | 0 |
+| regime_map | +5.78% | 1.32 | -10.91% | 0 |
+| oracle_hindsight | +82.31% | inf | 0.00% | 0 |
+
+Key read: the causal adaptive selectors are not yet good enough on the
+freshest slice; static H4 wins. But the oracle gap remains large, proving
+there is exploitable value in choosing the right expert if selector quality
+improves.
+
+Protector follow-up variants:
+
+| config | Full | Validation | Tournament 14d | Stress notes |
+|---|---:|---:|---:|---|
+| `v4_plus_h4_protector` | +455.54% | -0.26% cap1 | +13.85% cap0 | original protector |
+| `v4_plus_h4_protector_conc1` | **+832.42%** | -0.26% cap1 | +13.85% cap0 | full cap-clean; stress all months positive |
+| `v4_plus_h4_protector_r25` | +666.98% | +0.33% cap1 | -1.09% cap1 | cap risk persists |
+| `v4_plus_h4_protector_r20` | +580.33% | -0.75% cap1 | +0.91% cap0 | safer tournament, still val cap |
+
+`v4_plus_h4_protector_conc1` is the best growth/stress candidate so far:
+full +832.42%, all standalone months positive (Jan +115.75%, Feb +64.92%,
+Mar +57.60%, Apr +20.32%), 0 full cap violations, 14d tournament +13.85%.
+However the recent-only validation window still has one cap violation, so
+it remains a research headline, not promotable.
+
 ### New tooling
 
 - `scripts/iter29_adaptive_sim.py`: runs static experts and causal
