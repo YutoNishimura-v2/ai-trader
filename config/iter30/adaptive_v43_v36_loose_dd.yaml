@@ -1,0 +1,12 @@
+extends: adaptive_v36_v31_4h_s2r2.yaml
+
+# v43: v36 with looser DD throttle. The default iter29 throttle
+# kicks in at 12% DD. By raising soft to 20% and hard to 30%, the
+# engine doesn't dial back size during normal volatility - which
+# may be what's clipping Jan upside.
+
+risk:
+  drawdown_soft_limit_pct: 17.0
+  drawdown_hard_limit_pct: 28.0
+  drawdown_soft_multiplier: 0.85
+  drawdown_hard_multiplier: 0.55

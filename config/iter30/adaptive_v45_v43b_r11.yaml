@@ -1,0 +1,15 @@
+extends: adaptive_v43_v36_loose_dd.yaml
+
+# v45: v43b + risk_per_trade 10 -> 11 + dml = 2.5%. With single
+# losing trade at -11% > kill at -10.5%, but dml=2.5 cuts the day
+# at -2.5% so the second SL hit fires kill. Worst day theoretically
+# ~-2.5% intra-day + 1 SL bar = ~-13%? That's too risky.
+# Actually with daily_max_loss=2.5, the cap fires AFTER one losing
+# trade has booked to -11%, and the engine flattens at -11% on the
+# SAME bar. So worst day is one trade = -11%. > -10.5% cap.
+# Reverting to dml=4 to give the engine room to recover.
+
+risk:
+  risk_per_trade_pct: 11.0
+  max_risk_per_trade_pct: 11.0
+  daily_max_loss_pct: 4.0

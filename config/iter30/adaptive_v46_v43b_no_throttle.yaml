@@ -1,0 +1,12 @@
+extends: adaptive_v43_v36_loose_dd.yaml
+
+# v46: v43b with NO DD throttle. Hypothesis: v43b's Jan +158 was
+# clipped by the soft-DD-throttle kicking in mid-month; with the
+# throttle off, the engine runs at full size through the whole
+# month.
+
+risk:
+  drawdown_soft_limit_pct: 99.0
+  drawdown_hard_limit_pct: 99.0
+  drawdown_soft_multiplier: 1.0
+  drawdown_hard_multiplier: 1.0
