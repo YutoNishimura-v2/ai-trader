@@ -29,3 +29,9 @@ python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv \
 
 Broader scripted sweep: `python3 scripts/iter33_mar_apr_sweep.py` (writes
 `artifacts/iter33_sweep_stdout.jsonl`).
+
+## Combination tried (falsified)
+
+**Same dw M15 adx30 + iter30 v55 DD throttle** (`daily_max_loss_pct: 5`,
+soft/hard DD 10/15 with 0.60/0.30 multipliers): full ~108%, Apr ~24%,
+rolling **1/4** — worse than dw-only on this slice; not pursued.
