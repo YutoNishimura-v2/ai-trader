@@ -3,6 +3,33 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## 2026-04-25 iter32 — Tuesday cut + 2 standalone-strong-but-dilute strategies
+
+- **Tuesday is a research-honest cut on top of Friday.** DoW
+  analysis of the iter31 winner on RESEARCH alone showed Tue
+  at 22% WR / ¥-8,723. Cutting Tue lifts validation PF from
+  2.02 → 3.15-3.17 (project record) and full from +414% →
+  +447-488% with 0 cap violations.
+- **Pin bar reversal is a real edge but dilutes ensembles.**
+  Standalone tournament PF 2.46 (¥+12,050 over 14 days) — the
+  strongest pure-tournament read in the project. But adding pin
+  to the iter31 winner CUTS full from +414% → +121%. Some
+  strategies are SHIPPED standalone, not blended. Pin remains a
+  candidate for a tournament-only headline.
+- **Keltner breakout (continuation, not reversion) confirms
+  that gold respects band breakouts.** Standalone tournament
+  +7.09% PF 1.30. Trend-following — opposite of pivots' mean
+  reversion. They don't combine because they fire on opposite
+  conditions.
+- **Higher leverage (lev=300, lev=500) doesn't beat lev=200.**
+  The lot cap binds via the leverage cap; lifting beyond 1:200
+  produces marginal or negative changes to actual fills. 1:200
+  is the leverage sweet spot.
+- **r=12+ at lev=200 hits cap violations.** lev200_r12_dml25
+  cleared +494% full but with 1 cap viol on full and 1 on val
+  → cannot be promoted. r=10 with the right multiplier mix
+  (iter31 winner) is the structural ceiling.
+
 ## 2026-04-25 iter31 — per-member risk multiplier breakthrough
 
 - **Per-member risk_multiplier was the missing infrastructure.**

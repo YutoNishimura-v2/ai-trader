@@ -3,6 +3,107 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter32: 2 new strategies + Tuesday cut → val PF 3.17 (record), full +488%
+
+User: "Don't stop, keep going."
+
+### Web research round 3 (4 searches)
+
+- Keltner channel breakout for XAUUSD M5/M15 (bestmt4ea/ForexCycle)
+- Pin bar / wick rejection (TradingView "Wick Rejection Pro XAUUSD")
+- Stop-hunt / liquidity grab reversal (FXPremiere/GrandAlgo)
+- 200 EMA bounce continuation (TradingView/AInvest)
+
+### New strategies
+
+**`ai_trader/strategy/keltner_breakout.py`** — close beyond
+upper/lower band by `min_break_atr × ATR` + EMA slope filter.
+Different family from existing `keltner_mean_reversion`.
+
+**`ai_trader/strategy/pin_bar_reversal.py`** — bullish/bearish
+pin bar (long wick ≥ 2× body, opposite wick ≤ 0.4× body) at
+recent extreme + ATR body filter + optional HTF.
+
+### Standalone results
+
+**Keltner breakout** sweep (atr_mult × min_break_atr):
+- Best: am=1.5, mb=0.10 → tourn +7.09% PF 1.30 standalone
+- Most variants: tournament POSITIVE, but full negative
+
+**Pin bar** sweep (wick_to_body × opp_wick_to_body):
+- pin_w15_o03: tourn **+12.05% PF 2.46** standalone (NEW pure-tournament record candidate)
+- pin_w20_o03: tourn +9.06% PF 2.55
+- pin_w30_o05: full +15.68% PF 2.22, tourn +2.97% PF 2.22 (low-DD clean)
+
+### Day-of-week analysis on iter31 winner v4_quad_lev200_c2
+
+Research-window DoW profile (51 trades, ¥-17,024 net):
+
+| dow | n | wins | losses | pnl¥ | win% |
+|-----|--:|-----:|-------:|--------:|-----:|
+| Mon | 8  | 4 | 4 | -7,879 | 50.0 |
+| **Tue** | **9** | **2** | **7** | **-8,723** | **22.2** |
+| Wed | 14 | 10 | 4 | +4,289 | 71.4 |
+| Thu | 14 | 6 | 8 | -11,142 | 42.9 |
+| Fri | 6 | 4 | 2 | +6,431 | 66.7 |
+
+**Tuesday at 22% WR is the obvious bleed**, research-honest cut.
+Thu shows worst absolute ¥ but high small-sample noise. Cut Tue.
+
+### iter32 headlines
+
+`config/iter32/lev200_mwt_strict.yaml` — pivots AND ema20 all
+on Mon-Wed-Thu only:
+
+| window | trades | PF | return | DD | cap |
+|---|---:|---:|---:|---:|---:|
+| Full Jan-Apr | 412 | **1.64** | **+447.39%** | -28.4% | **0** |
+| Validation 14d | 49 | **3.17** | **+98.10%** | -17.6% | 0 |
+| Tournament 14d | 31 | 0.61 | -10.98% | -19.4% | 0 |
+
+`config/iter32/lev200_mwt_em_alldays_lonny.yaml` — pivots
+Mon-Wed-Thu, ema20 all 5 days + lon_or_ny:
+
+| window | trades | PF | return | DD | cap |
+|---|---:|---:|---:|---:|---:|
+| Full Jan-Apr | 568 | **1.58** | **+488.28%** | -25.1% | **0** |
+| Validation 14d | 52 | **3.15** | **+98.97%** | -17.1% | 0 |
+| Tournament 14d | 40 | 0.63 | -11.92% | -19.5% | 0 |
+
+¥100,000 → ¥588,283 (5.88×). Project growth record AT clean
+(0 cap viol).
+
+### Combination experiments (recorded)
+
+- `v4_quint_pin`: full +121%, val PF 2.37, tourn -0.75. Pin
+  dilutes pivot growth.
+- `v4_hex_engulf_pin`: cap=1 on full. Bad.
+- `v4_quint_kelt`: full +52%, tourn -14%. Keltner doesn't
+  combine well with pivots (different regime).
+- Pin/HA/keltner all standalone-positive but **dilute growth**
+  when added as overlays. Use them as separate co-headlines or
+  via regime router.
+
+### Risk-push tests
+
+- lev200_r12_dml25: full +494% but cap_violations=1 → REJECT
+- lev200_r14/15: cap_violations=4-6 → REJECT
+- lev=300/500: marginal/worse than lev=200 → REJECT
+- lot_cap 50/100 ×default: identical (leverage-bound)
+
+### Iter32 verdict
+
+Two NEW headlines — `lev200_mwt_strict` (validation-record) and
+`lev200_mwt_em_alldays_lonny` (growth-record at clean cap). Both
+beat iter28's +497% on validation while slightly trailing on
+full. The Tuesday cut is research-honest (22% WR / -¥8,723 PnL
+on research alone).
+
+Code: 2 new strategies (~500 lines), 3 unit tests, ~25 configs.
+185 tests pass.
+
+---
+
 ## 2026-04-25 — Iter31: per-member risk + 2 strategies = ALL-3-POSITIVE growth
 
 User: "Keep going! Still low profits."

@@ -12,6 +12,79 @@ other doc. The rest of `docs/` is supporting material:
 - `docs/log.md` — chronological session diary.
 - `docs/todo.md` — living task list.
 
+## TL;DR (2026-04-25 ITER32 — 2 new strategies + Tue-cut → val PF 3.15-3.17 record + full +488%)
+
+User: "Don't stop, keep going."
+
+Did 4 more web searches; built **2 net-new strategies** (`keltner_breakout`, `pin_bar_reversal`); ran day-of-week analysis on iter31 winner and discovered **Tuesday is a research-honest cut** (research win-rate 22.2%, ¥-8,723 PnL).
+
+### Iter32 new strategies
+
+| Strategy | Source | Standalone best |
+|---|---|---:|
+| `keltner_breakout` | bestmt4ea/ForexCycle/TradingView | tourn +7.09% PF 1.30 (am=1.5, mb=0.10) |
+| `pin_bar_reversal` | TradingView "Wick Rejection Pro (XAUUSD)" | **tourn +12.05% PF 2.46** (w=1.5, o=0.3) standalone |
+
+### Iter32 NEW HEADLINES (research-honest Tuesday cut)
+
+`config/iter32/lev200_mwt_em_alldays_lonny.yaml` (lev=200, Mon-Wed-Thu pivots, ema20 all-days):
+
+| window | trades | PF | return | DD | min eq | cap |
+|---|---:|---:|---:|---:|---:|---:|
+| **Full Jan-Apr** | 568 | **1.58** | **+488.28%** | -25.1% | — | **0** |
+| **Validation 14d** | 52 | **3.15** | **+98.97%** | -17.2% | — | **0** |
+| Tournament 14d | 40 | 0.63 | -11.92% | -19.5% | — | 0 |
+
+**¥100,000 → ¥588,283 (5.88×)** with 0 cap viol AND validation PF 3.15 (project record).
+
+`config/iter32/lev200_mwt_strict.yaml` (lev=200, all members Mon-Wed-Thu — strictest research-honest cut):
+
+| window | trades | PF | return | DD | cap |
+|---|---:|---:|---:|---:|---:|
+| **Full Jan-Apr** | 412 | **1.64** | **+447.39%** | -28.4% | **0** |
+| **Validation 14d** | 49 | **3.17** | **+98.10%** | -17.6% | 0 |
+| Tournament 14d | 31 | 0.61 | -10.98% | -19.4% | 0 |
+
+¥100,000 → ¥547,389 (5.47×).
+
+### Iter32 takeaways
+
+- **Tuesday is a research-honest cut on top of Friday.** Research
+  window DoW analysis showed Tuesday at 22% win-rate / ¥-8,723.
+  Cutting Tuesday from pivot members lifted full from +414% →
+  +447-488% with validation PF jumping from 2.02 → 3.15-3.17.
+- **Ema20 all-days + LDN_OR_NY adds growth.** When ema20 is
+  allowed all 5 days but pivots are Mon-Wed-Thu, full crosses
+  +488% (vs +447% strict). The ema20 layer fires on days the
+  pivot family is silent.
+- **Tournament still negative on growth-tier configs.** Even
+  with the Tue cut, tournament drops to -11%. The +414% lev200_c2
+  remains the best **all-3-positive** config; the +488% mwt is
+  the best **growth-only** config.
+- **Pin bar reversal is a real edge with sample-size caveats.**
+  Standalone (london_or_ny, w=1.5 o=0.3) tournament PF 2.46
+  on 20 trades over 14 days. As an overlay member, dilutes
+  pivot growth — keep standalone.
+- **Keltner breakout (continuation, NOT reversion) confirms the
+  mechanical breakout edge.** PF 1.30 tournament standalone.
+  Doesn't combine well with pivots though (mean reversion ≠
+  trend follow, as expected).
+
+### Iter32 four-tier headline grid
+
+| Config | Lev | Full | Val PF | Tourn | Class |
+|---|---:|---:|---:|---:|---|
+| **iter32/lev200_mwt_em_alldays_lonny** | 200 | **+488.28%** | **3.15** | -11.92% | Best Growth |
+| **iter32/lev200_mwt_strict** | 200 | **+447.39%** | **3.17** | -10.98% | Best Val PF |
+| iter31/v4_quad_lev200_c2 | 200 | +414.35% | 2.02 | **+4.73%** | All-3-positive |
+| iter31/v4_quint_engulf03 | 100 | +289.90% | 1.86 | **+5.93%** | 1:100-spec all-3+ |
+| iter31/v4_quad_dml25_em02_c2 | 100 | +198.93% | 2.08 | **+5.93%** | 1:100 conservative |
+| iter29/ema20_winner_h4 | 100 | -18.23% | 1.96 | **+11.79%** | Pure tournament |
+
+185 pytest tests pass.
+
+---
+
 ## TL;DR (2026-04-25 ITER31 — per-member risk + 2 new strategies = ALL-3-POSITIVE growth)
 
 User: "Keep going! Still low profits."

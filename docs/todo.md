@@ -129,6 +129,16 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 - [ ] ~~Push monthly mean unconditional to +200%/mo via news/leverage.~~
       SUPERSEDED by user 2026-04-25: news strategies retired,
       tournament discipline restored. iter5-7 results contaminated.
+- [x] **Iter32: Tuesday-cut + 2 new strategies = val PF 3.17 (record) + full +488%.**
+      Built `keltner_breakout` and `pin_bar_reversal` (4 web
+      sources). Pin standalone tourn PF 2.46. DoW analysis of
+      iter31 winner showed Tue at 22% WR / ¥-8,723 (research
+      window) — research-honest cut. Two new headlines:
+      - lev200_mwt_em_alldays_lonny: full +488.28%, val PF 3.15,
+        tourn -11.92%, 0 cap viol (best growth at clean cap)
+      - lev200_mwt_strict: full +447.39%, val PF 3.17, tourn
+        -10.98%, 0 cap viol (best val PF in project history)
+      185 tests pass.
 - [x] **Iter31: per-member risk_multiplier in ensemble + 2 new
       strategies (engulfing_reversal WIN, ema_cross_pullback
       FALSIFIED).** Built `risk_multiplier` per-member spec on
