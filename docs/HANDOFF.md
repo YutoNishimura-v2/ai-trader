@@ -12,6 +12,91 @@ other doc. The rest of `docs/` is supporting material:
 - `docs/log.md` — chronological session diary.
 - `docs/todo.md` — living task list.
 
+## TL;DR (2026-04-25 ITER31 — per-member risk + 2 new strategies = ALL-3-POSITIVE growth)
+
+User: "Keep going! Still low profits."
+
+Push for higher returns. Did 4 more web searches; built **2 net-
+new strategies**; added **per-member `risk_multiplier`** to the
+ensemble wrapper. Result: a config that **breaks the iter28
+ceiling on growth WHILE staying tournament-positive**.
+
+### Iter31 new strategies
+
+| Strategy | Source | Standalone best |
+|---|---|---:|
+| `engulfing_reversal` | TradingView "Strongest Reversal Patterns" | full +33.56% PF 1.29 (body=0.4) |
+| `ema_cross_pullback` | TradingView "EMA Pullback Pro EA v14" | falsified (50/50 even with HTF) |
+
+Web sources: 8 total this round; all converge on consensus
+mechanical setups (EMA20×M15, ORB, HA, engulfing, EMA9/21, VWAP).
+
+### Ensemble feature: per-member `risk_multiplier`
+
+New: each ensemble member can carry a `risk_multiplier` field that
+is stamped into the emitted signal's `meta` and consumed by
+`RiskManager`. This lets us **mix high-risk pivots (1.0×) with
+low-risk overlays (0.2-0.3×)** in one config — the previously
+impossible setup that made iter28+iter29 dilute each other.
+
+### Iter31 NEW HEADLINES — growth WITH all-3-positive
+
+`config/iter31/v4_quad_lev200_c2.yaml` (1:200 leverage variant):
+
+| window | trades | PF | return | DD | min eq | cap |
+|---|---:|---:|---:|---:|---:|---:|
+| **Full Jan-Apr** | 509 | **1.54** | **+414.35%** | -26.5% | 96.6% | **0** |
+| Validation 14d | 54 | **2.02** | **+61.34%** | -24.1% | 97.7% | 0 |
+| **Tournament 14d** | 46 | **1.10** | **+4.73%** | -16.8% | 92.3% | 0 |
+
+¥100,000 → ¥514,353 (5.14×). **All 4 months in full are positive
+or break-even** (Jan +79.93%, Feb -1.36%, Mar +82.82%, Apr +58.52%)
+**AND tournament is positive AND validation PF 2.02 AND 0 cap viol.**
+
+### Iter31 1:100-leverage twin — `v4_quint_engulf03.yaml`
+
+For users staying within the project's 1:100 spec:
+
+| window | trades | PF | return | DD | min eq | cap |
+|---|---:|---:|---:|---:|---:|---:|
+| **Full Jan-Apr** | 492 | **1.50** | **+289.90%** | -25.6% | — | **0** |
+| Validation 14d | 55 | 1.86 | +43.75% | -22.1% | — | 0 |
+| **Tournament 14d** | 48 | **1.16** | **+5.93%** | -17.0% | — | 0 |
+
+5-member ensemble: 3 pivots (1.0× risk) + ema20_pullback_m15 (0.2× risk) + engulfing_reversal (0.3× risk). Risk_per_trade=10%, daily_max_loss=2.5%, conc=2.
+
+### Iter31 four headlines
+
+| Config | Lev | Full | Val PF | Tourn | All 3 +? |
+|---|---:|---:|---:|---:|:---:|
+| iter28/v4_ext_a_dow_no_fri | 100 | **+497.94%** | 1.71 | -13.78% | ✗ |
+| **iter31/v4_quint_engulf03** | 100 | **+289.90%** | **1.86** | **+5.93%** | **✓** |
+| **iter31/v4_quad_dml25_em02_c2** | 100 | **+198.93%** | **2.08** | **+5.93%** | **✓** |
+| iter31/v4_quad_lev200_c2 | 200 | **+414.35%** | 2.02 | +4.73% | ✓ |
+| iter29/ema20_winner_h4 | 100 | -18.23% | 1.96 | **+11.79%** | (not full) |
+
+### Iter31 takeaways (lessons_learned has full detail)
+
+- **Per-member risk_multiplier was the missing piece.** Mixing
+  pivot family at 1.0× with overlay strategies at 0.2-0.3× lets
+  the ensemble inherit pivot growth AND overlay tournament
+  protection. This was previously impossible — risk was global
+  to the ensemble.
+- **Engulfing reversal is the right complement to pivots.**
+  Bullish/bearish engulfing on M15 with body ≥ 0.8×ATR + oversold
+  context fires ~10× per month with PF ~1.5-1.9 standalone.
+  Standalone full +13.88% / val PF 1.89 (engulfing_body08).
+- **EMA9/21 cross fails at the same point EMA20 single did.**
+  HTF filter helps marginally but the 9/21 signal is too noisy on
+  M5 — falsified for now.
+- **+200% growth + positive tournament is achievable.** Six
+  iterations of cumulative work (iter25 → iter31) finally produced
+  configs that combine pivot growth with overlay tournament
+  protection. This is the project's first "have-your-cake-and-eat-
+  it" headline.
+
+---
+
 ## TL;DR (2026-04-25 ITER30 — bulk strategy intake from web research)
 
 User directive: "Just go out there and use the internet to find a

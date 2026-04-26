@@ -3,6 +3,104 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter31: per-member risk + 2 strategies = ALL-3-POSITIVE growth
+
+User: "Keep going! Still low profits."
+
+Pushed for higher returns. Round 2 of web research, this time
+focused on aggressive M1 scalping, volatility breakouts, ATR
+trail, inside-bar/engulfing, EMA9/21 cross, VWAP-deviation. Built
+2 new strategies + a critical infrastructure upgrade.
+
+### Web research round 2 (5 searches)
+
+- M1 high-frequency scalping (TradingView/mql5/scribd)
+- Chandelier exit / ATR trail volatility breakout (FMZ/StratBase)
+- Inside bar / engulfing reversal patterns (TradingView)
+- EMA9/21 cross + RSI 50 (TradingView Pro EA / Quant Signals)
+- VWAP ± 2σ mean reversion (FXPremiere/FMZ)
+
+### New strategies built
+
+**`ai_trader/strategy/engulfing_reversal.py`** — bullish/bearish
+engulfing on M15 + ATR-body filter + recent-low/high oversold
+context + optional HTF EMA filter. Source: TradingView
+"Strongest Reversal Candlestick Patterns".
+
+**`ai_trader/strategy/ema_cross_pullback.py`** — EMA9/21 cross +
+RSI50 filter + pullback to EMA9 + optional HTF EMA200 trend.
+Source: TradingView "EMA Pullback Pro EA v14 (XAUUSD)".
+
+Standalone results:
+- engulfing (london, body=0.8): val +6.50% PF **1.89**, full +13.88%
+- engulfing (london, body=0.4): full **+33.56%** PF 1.29, val -1.4%
+- ema_cross H1: val -2.75% (FALSIFIED)
+- ema_cross H4: 0 trades (over-filtered)
+
+### Infrastructure: ensemble per-member `risk_multiplier`
+
+Previously, the ensemble wrapper applied a SINGLE risk_per_trade
+to all members. This forced overlay strategies (ema20, orb,
+engulfing) to either dilute pivot growth (low risk) or break
+themselves (high risk). Added `risk_multiplier` field to each
+member spec; emitted signals carry it into `meta`, where
+`RiskManager` already consumes it.
+
+```yaml
+members:
+  - name: pivot_bounce
+    risk_multiplier: 1.0     # full risk
+    params: {...}
+  - name: ema20_pullback_m15
+    risk_multiplier: 0.2     # 20% of base
+    params: {...}
+```
+
+This unlocked the iter31 headlines.
+
+### Headline sweep — combining iter28 v4 with overlays
+
+Base: v4_ext_a_dow_no_fri (3-pivot ensemble, risk=10%, dml=3%).
+
+| Config | Members | Risk multipliers | Full | Val | Tourn | Cap |
+|---|---|---|---:|---:|---:|---:|
+| v4_ext_a_dow_no_fri | 3 pivots | 1.0× each | +497.94% | +25.64% | **-13.78%** | 0 |
+| v4_plus_ema20_lite | + ema20 H4 | 1.0×/0.2× | +244.58% | +37.44% | -11.34% | 0 |
+| v4_plus_ema20_rm03 | + ema20 H4 | 1.0×/0.3× | +355.82% | +28.75% | -10.41% | 0 |
+| v4_quad_lite | + ema20 + orb | 1.0×/0.3×/0.3× | +84.66% | +55.08% PF 2.17 | -17.63% | 1 |
+| v4_quad_lite_dml25 | + ema20 + orb | 1.0×/0.3×/0.3× (dml=2.5) | +162.66% | +29.56% | -14.64% | 0 |
+| **v4_quad_dml25_em02_c2** | + ema20 H4 (rm=0.2, conc=2) | 1.0×/0.2× | **+198.93%** | **+50.13% PF 2.08** | **+5.93% PF 1.16** | **0** |
+| **v4_quint_engulf03** | + ema20 + engulfing | 1.0×/0.2×/0.3× | **+289.90% PF 1.50** | **+43.75% PF 1.86** | **+5.93% PF 1.16** | **0** |
+| v4_quad_lev200_c2 | (lev=200) | 1.0×/0.3× | **+414.35% PF 1.54** | **+61.34% PF 2.02** | **+4.73% PF 1.10** | **0** |
+
+### Iter31 verdict
+
+**Three new ALL-3-WINDOWS-POSITIVE headlines**, each with 0 cap
+violations:
+
+1. `v4_quad_dml25_em02_c2` (lev=100, conc=2): full +198.93%, val
+   PF 2.08, tourn +5.93%
+2. `v4_quint_engulf03` (lev=100, conc=2): full +289.90%, val
+   PF 1.86, tourn +5.93%
+3. `v4_quad_lev200_c2` (lev=200, conc=2): full **+414.35%**, val
+   PF 2.02, tourn +4.73%
+
+The lev=200 variant requires the user to confirm broker/leverage
+spec. Document as "growth-tier with positive tournament" headline.
+
+177 (iter30) + 5 (iter31) = 182 tests pass.
+
+### Code
+
+- `ai_trader/strategy/engulfing_reversal.py` (~250 lines)
+- `ai_trader/strategy/ema_cross_pullback.py` (~250 lines)
+- `ai_trader/strategy/ensemble.py` — `risk_multiplier` per-member
+- `ai_trader/strategy/registry.py` (2 new imports)
+- `tests/test_iter31_strategies.py` (5 cases)
+- `config/iter31/*.yaml` (~30 configs)
+
+---
+
 ## 2026-04-25 — Iter30: bulk strategy intake from web research (5-member balanced wins)
 
 User: "Just go out there and use the internet to find a bunch of

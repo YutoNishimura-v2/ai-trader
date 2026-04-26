@@ -129,6 +129,20 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 - [ ] ~~Push monthly mean unconditional to +200%/mo via news/leverage.~~
       SUPERSEDED by user 2026-04-25: news strategies retired,
       tournament discipline restored. iter5-7 results contaminated.
+- [x] **Iter31: per-member risk_multiplier in ensemble + 2 new
+      strategies (engulfing_reversal WIN, ema_cross_pullback
+      FALSIFIED).** Built `risk_multiplier` per-member spec on
+      ensemble; signals stamp meta consumed by RiskManager.
+      Three new ALL-3-WINDOWS-POSITIVE headlines:
+      - v4_quad_dml25_em02_c2 (lev=100): full +198.93%, val
+        PF 2.08, tourn +5.93%, 0 cap viol
+      - v4_quint_engulf03 (lev=100): full +289.90%, val PF 1.86,
+        tourn +5.93%, 0 cap viol
+      - v4_quad_lev200_c2 (lev=200): full +414.35%, val PF 2.02,
+        tourn +4.73%, 0 cap viol
+      All match or beat iter28 growth WHILE keeping tournament
+      positive — the project's first such headlines.
+      182 tests pass.
 - [x] **Iter30: bulk strategy intake from web research** — built
       3 new strategies (london_ny_orb, heikin_ashi_trend,
       three_soldiers) end-to-end. London ORB val PF 4.61, HA

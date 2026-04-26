@@ -3,6 +3,38 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## 2026-04-25 iter31 — per-member risk multiplier breakthrough
+
+- **Per-member risk_multiplier was the missing infrastructure.**
+  Iter28 had +497% growth with -13.78% tournament. Iter29 had
+  +11.79% tournament with -18% full. They couldn't be merged
+  because the ensemble forced one risk_per_trade for all members.
+  Adding `risk_multiplier` to each member's spec and stamping it
+  into `Signal.meta` unlocked the BIG combination:
+  `v4_quad_lev200_c2` = +414% full / +4.73% tournament (both
+  positive!) at PF 1.54/2.02/1.10.
+- **High-risk pivots + low-risk overlays is the canonical
+  pattern.** Pivots at 1.0× provide the growth. Overlay
+  strategies (ema20×M15 H4-filtered, engulfing, ORB) at 0.2-
+  0.3× provide tournament protection without diluting growth.
+  Multiplier ~0.2-0.3 is the empirical sweet spot — too low
+  (0.1) and the overlay does nothing; too high (0.5+) and
+  growth dilutes.
+- **Engulfing reversals on M15 are a real edge.** Standalone
+  full +13.88% PF 1.23 (body=0.8 london); val PF 1.89. Strong
+  enough to add as an overlay. Confirms TradingView/SMC
+  educators' claim that engulfing-at-extremes is mechanical.
+- **EMA9/21 cross M5 is too noisy even with HTF filter.**
+  Falsified across HTF=H1 and HTF=H4. The signal fires on every
+  noise tick of EMA9. Don't try EMA crosses below H1 base TF.
+- **Lot-cap binding masks risk_multiplier effects above ~0.3×.**
+  At lot_cap_per_unit_balance = 1e-6 × max_leverage 100, each
+  signal is already capped well below the requested risk on
+  most trades. Going from rm=0.3 to rm=1.0 produces identical
+  numbers because the cap binds first. Lifting max_leverage to
+  200 unbinds it — that's why lev=200 variants gain ~+50pts of
+  return.
+
 ## 2026-04-25 iter30 — bulk web research → strategy intake
 
 - **Web research → bulk strategy build → walk-forward filter is
