@@ -3,6 +3,114 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-26 — Iter29 adaptive controller + 4h protector breakthrough
+
+User challenged the core assumption that one static strategy should
+work in all periods. Implemented the first simulation of a live-demo
+style adaptive loop plus causal context controls for pivot strategies.
+
+### New tooling
+
+- `scripts/iter29_adaptive_sim.py`: runs static experts and causal
+  daily policies over the same Jan-Apr data. Experts used in the first
+  pass:
+  - `growth` = iter28 v4_ext_a_dow_no_fri
+  - `h4` = iter28 4h_london
+  - `defensive` = iter9 priceaction router
+  - `cash` = no-trade state
+- Policies tested: rolling winner, expectancy rotation, drawdown switch,
+  first-week observation, regime map, prove-it, cash, plus static
+  baselines.
+- `scripts/iter29_trade_attribution.py`: breaks P&L down by window,
+  pivot level, weekday, close reason, and member from closed-trade
+  comments.
+- `pivot_bounce` now supports default-off `levels`, `risk_multiplier`,
+  `confidence`, and `emit_context_meta`. Existing configs remain
+  unchanged; iter28 full re-check is byte-for-byte identical in metrics.
+
+### Baseline reproduction note
+
+Re-fetched `data/xauusd_m1_2026.csv` through 2026-04-24. Local
+split differs slightly from some docs due the exact end timestamp, but
+the full iter28 headline reproduces exactly:
+
+`config/iter28/v4_ext_a_dow_no_fri.yaml`
+
+| window | trades | PF | return | DD | cap |
+|---|---:|---:|---:|---:|---:|
+| Full Jan-Apr | 138 | 1.63 | +497.94% | -25.42% | 0 |
+| Tournament 14d (local) | 16 | 0.85 | -4.32% | -18.59% | 0 |
+| Tournament 7d (local) | 10 | 0.10 | -20.26% | -20.26% | 0 |
+
+### Adaptive simulation first pass
+
+Static/adaptive results over full Jan-Apr:
+
+| policy | return | PF | DD | min eq | trades | active/cash | switches | cap |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| static_growth | +497.94% | 1.80 | -25.42% | 100.0% | 138 | 97/0 | 0 | 0 |
+| static_h4 | +16.51% | 1.09 | -31.39% | 95.2% | 230 | 97/0 | 0 | 0 |
+| static_defensive | -15.73% | 0.66 | -26.27% | 78.9% | 211 | 97/0 | 0 | 0 |
+| rolling_winner | +47.12% | 1.26 | -31.04% | 85.0% | 135 | 79/18 | 33 | 0 |
+| **expectancy_rotation** | **+196.68%** | **1.77** | **-18.27%** | **97.5%** | 143 | 87/10 | 23 | 0 |
+| first_week_observe | +59.55% | 1.59 | -19.21% | 100.0% | 116 | 77/20 | 7 | 0 |
+| regime_map | +98.42% | 1.53 | -20.45% | 81.0% | 192 | 82/15 | 48 | 0 |
+| cash | 0.00% | 0.00 | 0.00% | 100.0% | 0 | 0/97 | 0 | 0 |
+
+Key read: adaptivity DOES add value on risk shape. It does not beat
+iter28's raw growth yet, but expectancy rotation cuts DD by ~7 pts and
+keeps min equity near 100% while delivering +196.68%. The impossible
+hindsight oracle is +7198%, proving expert rotation has a large upside
+ceiling if the causal selector improves.
+
+### Iter29 candidate configs
+
+| config | Full | Validation | Tournament 14d | cap |
+|---|---:|---:|---:|---:|
+| `h4_specialist_s1r1` | +10.06% PF 1.04 | +4.19% PF 1.11 | **+20.89% PF 1.70** | 0 |
+| `h4_specialist_no_fri_meta` | +7.66% PF 1.04 | -15.72% PF 0.63 | +7.83% PF 1.29 | 0 |
+| `v4_growth_meta` | +497.94% PF 1.63 | -0.21% PF 0.99 | -4.32% PF 0.85 | 0 |
+| `v4_plus_h4_protector` | **+455.54% PF 1.46** | -0.26% PF 0.99 | **+13.85% PF 1.37** | 0 full / 1 val |
+
+The first real breakthrough is `v4_plus_h4_protector`: it preserves
+most of iter28's full-period growth (+455% vs +497%) while flipping the
+local 14d tournament from -4.32% to +13.85%. Validation has one cap
+violation, so it is NOT yet clean enough for promotion, but the core
+thesis is validated: **a fast 4h specialist can protect April-like
+hostile regimes if added with low risk instead of naively as another
+full-risk growth member.**
+
+### Attribution findings
+
+For `h4_specialist_s1r1`:
+- Tournament +20.89%, PF 1.70.
+- R1 dominates tournament: +¥21,089 on 16 trades.
+- S1 is roughly flat in tournament (-¥200), validation-positive
+  (+¥13,640), but research-negative (-¥24,232).
+- Friday was GOOD for h4 (+¥20,499 tournament, +¥8,703 full), so the
+  iter28 "cut Friday" lesson does NOT generalise to faster pivots.
+
+For `v4_plus_h4_protector`:
+- Tournament flips positive (+13.85%) while full remains +455.54%.
+- Validation remains flat and has 1 cap violation. Next step should
+  reduce validation cap risk, probably by lowering 4h protector risk
+  or disabling the weakest validation contexts rather than touching the
+  growth stack.
+
+### Iter29 verdict so far
+
+- User's core-assumption challenge was correct: adaptation is a
+  research direction, not a distraction.
+- The first adaptive-policy pass improves risk profile but not headline
+  growth.
+- The first 4h-protector ensemble gives the first meaningful tournament
+  improvement without surrendering the high-growth engine.
+- Not promotable yet because validation cap=1 on the protector config.
+
+Tests: 173 passed.
+
+---
+
 ## 2026-04-25 — Iter28: NEW PROJECT RECORD ¥+497k (NY-pivots + Friday-cut)
 
 User: "continue."

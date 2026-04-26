@@ -144,6 +144,14 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 - [ ] **Iter29 candidates**: 4h pivot member is the only
       standalone with positive tournament (+6.69%/PF 1.20) —
       worth a deep-dive iteration.
+- [x] **Iter29 adaptive-system prototype**: added adaptive simulator,
+      trade-attribution diagnostics, pivot context metadata/level filters,
+      and candidate configs. Best new causal adaptive policy so far:
+      expectancy_rotation (+196.68% full, DD -18.27%, 0 cap) — smoother
+      than static growth but not higher return. Best new static stress
+      candidate: `config/iter29/v4_plus_h4_protector.yaml` full +455.54%
+      and known April tournament +13.85%, but validation has 1 cap violation
+      so it is a research clue, not a promotion candidate.
 - [x] **Iter9: price-action restart at user sizing.**
       `config/iter9/ensemble_priceaction_v4_router.yaml` is the
       new HONEST headline: validation +20.33% (PF 2.33),
