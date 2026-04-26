@@ -1,0 +1,33 @@
+extends: ../../default.yaml
+instrument:
+  contract_size: 100
+  quote_currency: USD
+  symbol: XAUUSD
+  tick_size: 0.01
+  tick_value: 1.0
+  timeframe: M1
+risk:
+  daily_max_loss_pct: 10.0
+  daily_profit_target_pct: 30.0
+  lot_cap_per_unit_balance: 2.0e-05
+  max_concurrent_positions: 1
+  risk_per_trade_pct: 2.0
+  withdraw_half_of_daily_profit: false
+strategy:
+  __replace__: true
+  name: ema20_pullback_m15
+  params:
+    ema_period: 20
+    confirm_bars: 2
+    touch_dollar: 0.8
+    sl_buffer_dollar: 1.0
+    tp_buffer_dollar: 1.0
+    swing_lookback_bars: 8
+    max_sl_dollar: 6.0
+    tp1_rr: 1.0
+    leg1_weight: 0.5
+    cooldown_m15_bars: 4
+    session: london
+    max_trades_per_day: 6
+    htf: H4
+    htf_ema_period: 20
