@@ -1,0 +1,10 @@
+extends: adaptive_v43_v36_loose_dd.yaml
+
+# v50: v43b with daily_max_loss=10 (the plan §A.3 envelope), so the
+# kill-switch fires only at -10%. Doesn't help cap_violations
+# (kill-switch firing at -10% allows -10% to -10.5% slip), but
+# lets winning days run further before any throttle.
+
+risk:
+  daily_max_loss_pct: 10.0
+  daily_profit_target_pct: 30.0

@@ -1,0 +1,23 @@
+extends: adaptive_v36_v31_4h_s2r2.yaml
+
+# v40: v36 + gentle intra-day pyramid. After a win, next trade is at
+# 1.20x risk (base 10% -> 12%). Capped at max_risk_per_trade=12.
+# Loss scalar 1.0 (no shrink on a single loss). After 3 losses,
+# pause. Tighter daily kill 2.5% so the 12% post-win trade hitting
+# SL trips kill at -12% < -10.5% but kill fires at -2.5% intra-day...
+# wait, that math is broken. Single -12% trade is the issue.
+
+risk:
+  risk_per_trade_pct: 8.0
+  daily_max_loss_pct: 3.0
+  min_risk_per_trade_pct: 1.0
+  max_risk_per_trade_pct: 10.0    # post-pyramid cap so worst-case = 10%
+
+strategy:
+  params:
+    intra_day_pyramid_enabled: true
+    intra_day_win_scalar: 1.25
+    intra_day_loss_scalar: 1.0
+    intra_day_max_scalar: 1.25     # 8% * 1.25 = 10% (matches max_risk)
+    intra_day_min_scalar: 0.50
+    intra_day_loss_streak_pause: 3

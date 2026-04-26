@@ -9,9 +9,9 @@ Both present the same surface so the live runner is backend-agnostic.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
 from ..strategy.base import SignalSide
 
@@ -31,6 +31,11 @@ class Order:
     # ``broker.modify_sl`` on all siblings in the same group to
     # move them to this price.
     move_siblings_sl_to_on_fill: float | None = None
+    # Optional structured Signal.meta forwarded to the broker so
+    # that close events can be attributed back to the originating
+    # Signal (member name, entry_risk_price, regime tags, etc.).
+    # Not interpreted by the broker itself.
+    meta: dict[str, Any] | None = None
 
 
 @dataclass
@@ -46,6 +51,7 @@ class Position:
     group_id: int | None = None
     leg_index: int | None = None
     move_siblings_sl_to_on_fill: float | None = None
+    meta: dict[str, Any] | None = None
 
 
 @dataclass

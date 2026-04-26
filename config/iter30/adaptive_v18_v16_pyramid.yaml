@@ -1,0 +1,23 @@
+extends: adaptive_v16_two_pivots.yaml
+
+# v18: v16 + intra-day pyramid. Base risk 6%, win_scalar 1.40,
+# max_scalar 1.66 (so worst trade is 6 * 1.66 = 9.96% < 10.5% cap).
+# After 2 wins, the third trade is at full 10%. Loss scalar 0.5,
+# min 0.30 — drops to 1.8% on losing streaks. After 3 losses,
+# pause.
+
+risk:
+  risk_per_trade_pct: 6.0
+  max_risk_per_trade_pct: 10.0
+  min_risk_per_trade_pct: 0.5
+  daily_max_loss_pct: 4.0
+  max_concurrent_positions: 1
+
+strategy:
+  params:
+    intra_day_pyramid_enabled: true
+    intra_day_win_scalar: 1.30
+    intra_day_loss_scalar: 1.00     # don't shrink on a single loss
+    intra_day_max_scalar: 1.66
+    intra_day_min_scalar: 0.30
+    intra_day_loss_streak_pause: 2  # only react to 2-loss streaks

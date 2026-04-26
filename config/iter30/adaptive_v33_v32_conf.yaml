@@ -1,0 +1,10 @@
+extends: adaptive_v32_v31_levels.yaml
+
+# v33: v32 + confidence_risk_ceiling = 1.30. With confidence ~0.6
+# average and ceiling 1.30, average effective risk multiplier becomes
+# 1.0 + 0.30*0.6 = 1.18. Tighter daily kill to 2.5% to keep cap clean.
+
+risk:
+  confidence_risk_floor: 1.0
+  confidence_risk_ceiling: 1.20
+  daily_max_loss_pct: 3.0

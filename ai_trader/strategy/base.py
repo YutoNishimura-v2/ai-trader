@@ -9,11 +9,20 @@ Per plan v3 §A.5, a single entry decision may open up to 2 sub-legs
 sharing the same entry and initial SL but having distinct TPs.
 On TP1 fill, the SL on the remaining leg(s) can be moved to break-
 even (or another offset) automatically.
+
+Strategies optionally observe closed trades via
+:meth:`BaseStrategy.on_trade_closed`. The hook fires AFTER the engine
+has already booked the close in the risk manager, so a strategy that
+maintains causal state (e.g. a member-expectancy router) can update
+that state in time to influence the NEXT bar's decision but not the
+current one. Default implementation is a no-op so existing
+strategies are unaffected.
 """
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import Any
 
@@ -93,6 +102,43 @@ class Signal:
         object.__setattr__(self, "legs", tuple(ordered))
 
 
+@dataclass(frozen=True)
+class ClosedTradeContext:
+    """Causal close-event payload delivered to ``on_trade_closed``.
+
+    Strategies use this to maintain rolling state (per-member
+    expectancy, recent win-rate, recent loss streaks) without having
+    to look at the broker or risk-manager internals. The same shape
+    is delivered in backtest and live, which is the project's
+    sim/live equivalence guarantee.
+
+    - ``member_name``: when the host strategy is an ensemble/router,
+      this is the name of the sub-strategy whose Signal opened the
+      now-closed trade. Extracted from the trade comment when it
+      starts with ``[name] ...`` (the convention used by
+      :class:`EnsembleStrategy` and :class:`RegimeRouterStrategy`).
+      ``None`` when the strategy is single-member.
+    - ``pnl``: realised P&L in account currency (positive = profit).
+    - ``r_multiple``: P&L expressed as a multiple of the per-trade
+      risk in price units, when ``Signal.meta["entry_risk_price"]``
+      was attached at entry; otherwise ``None``. Strategies that
+      tolerate ``None`` here use ``sign(pnl)`` as a fallback so a
+      router still has SOME causal signal even on legacy signals.
+    - ``meta``: the original Signal.meta dict (a copy; never the
+      live reference). Useful for routers that want to attribute a
+      close to e.g. ``meta["pivot_level"]`` or ``meta["regime"]``.
+    """
+
+    member_name: str | None
+    pnl: float
+    r_multiple: float | None
+    entry_time: datetime
+    close_time: datetime
+    reason: str
+    comment: str
+    meta: dict[str, Any] | None = None
+
+
 class BaseStrategy(ABC):
     name: str = "base"
 
@@ -126,3 +172,19 @@ class BaseStrategy(ABC):
         ``history`` is the full OHLCV frame up to and including the
         just-closed bar. Strategies must not peek at future bars.
         """
+
+    def on_trade_closed(self, ctx: "ClosedTradeContext") -> None:
+        """Called by the engine immediately after a trade closes.
+
+        Default: no-op. Adaptive strategies (e.g.
+        :class:`AdaptiveRouterStrategy`) override this to maintain
+        causal rolling state. The engine fires this hook AFTER it has
+        booked the close in the risk manager, so calling it here does
+        not affect the current bar's signal — only the next bar's.
+
+        The same hook fires in :class:`BacktestEngine` and in
+        :class:`LiveRunner`, so a strategy's adaptive state evolves
+        identically in simulation and live. This is the project's
+        sim/live equivalence guarantee for adaptive systems.
+        """
+        return

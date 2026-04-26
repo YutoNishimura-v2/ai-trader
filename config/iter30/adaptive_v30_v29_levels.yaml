@@ -1,0 +1,92 @@
+extends: adaptive_v29_static_clone.yaml
+
+# v30: v29 static-clone + use_s2r2=true on the 4h member (was false
+# in protector). Hypothesis: 4h S2/R2 levels add trades in trending
+# weeks while keeping the 0.35 protector multiplier.
+#
+# Tighter daily_max_loss_pct=2.0 to stop the worst-case bar-granularity
+# blow-through that produces a -11% day in v30b.
+
+risk:
+  daily_max_loss_pct: 2.5
+  drawdown_soft_limit_pct: 10.0
+  drawdown_soft_multiplier: 0.65
+
+strategy:
+  params:
+    members:
+      - name: pivot_bounce
+        id: pivot_daily
+        regimes: [all]
+        risk_multiplier: 1.0
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 4
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_weekly
+        regimes: [all]
+        risk_multiplier: 1.0
+        params:
+          pivot_period: weekly
+          atr_period: 14
+          touch_atr_buf: 0.10
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 2
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_monthly
+        regimes: [all]
+        risk_multiplier: 1.0
+        params:
+          pivot_period: monthly
+          atr_period: 14
+          touch_atr_buf: 0.15
+          sl_atr_buf: 0.30
+          max_sl_atr: 3.0
+          tp1_rr: 1.2
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 120
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 1
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_4h
+        regimes: [all]
+        risk_multiplier: 0.30
+        params:
+          pivot_period: 4h
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          cooldown_bars: 90
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 2
+          emit_context_meta: true

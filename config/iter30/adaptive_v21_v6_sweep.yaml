@@ -1,0 +1,79 @@
+extends: adaptive_v6_iter28core.yaml
+
+# v21: v6 + session_sweep_reclaim added. Sweep_reclaim historically
+# performed well in tournament windows. Goal: boost trade frequency
+# on chop days to lift mean daily return.
+
+risk:
+  max_concurrent_positions: 1
+
+strategy:
+  params:
+    expectancy_window: 15
+    expectancy_decay_halflife: 4.0
+    eligibility_off_threshold: -0.10
+    members:
+      - name: pivot_bounce
+        id: pivot_daily
+        regimes: [all]
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 4
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_weekly
+        regimes: [all]
+        params:
+          pivot_period: weekly
+          atr_period: 14
+          touch_atr_buf: 0.10
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 2
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_monthly
+        regimes: [all]
+        params:
+          pivot_period: monthly
+          atr_period: 14
+          touch_atr_buf: 0.15
+          sl_atr_buf: 0.30
+          max_sl_atr: 3.0
+          tp1_rr: 1.2
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 120
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 1
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: session_sweep_reclaim
+        id: sweep_reclaim
+        regimes: [all]
+        risk_multiplier: 0.50
+        params:
+          trade_start_hour: 7
+          trade_end_hour: 14
+          min_sweep_atr: 0.10
+          atr_period: 14
+          max_trades_per_day: 2

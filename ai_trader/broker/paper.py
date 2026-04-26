@@ -71,6 +71,7 @@ class PaperBroker(Broker):
             group_id=order.group_id,
             leg_index=order.leg_index,
             move_siblings_sl_to_on_fill=order.move_siblings_sl_to_on_fill,
+            meta=order.meta,
         )
         self._positions[pos.id] = pos
         self._next_id += 1

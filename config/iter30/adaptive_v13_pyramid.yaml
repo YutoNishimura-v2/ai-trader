@@ -1,0 +1,27 @@
+extends: adaptive_v8_extend_tp.yaml
+
+# v13: enables intra-day pyramiding. Within a UTC day, a winning
+# close ramps the next trade's risk_multiplier by 1.5x (capped at
+# 2.0x); a losing close cuts it by 0.6x (floored at 0.4x). After
+# 3 consecutive losses, drop to probe-level for the rest of the
+# day. State resets at UTC day rollover.
+#
+# Hypothesis: lets winning days compound (+200% potential) while
+# capping losing days near the kill-switch threshold. Mimics the
+# user's discretionary "size up after a confirmed win" approach.
+
+risk:
+  risk_per_trade_pct: 5.0
+  daily_max_loss_pct: 5.0
+  max_concurrent_positions: 1
+  min_risk_per_trade_pct: 0.5
+  max_risk_per_trade_pct: 10.0
+
+strategy:
+  params:
+    intra_day_pyramid_enabled: true
+    intra_day_win_scalar: 1.5
+    intra_day_loss_scalar: 0.5
+    intra_day_max_scalar: 2.0
+    intra_day_min_scalar: 0.3
+    intra_day_loss_streak_pause: 2

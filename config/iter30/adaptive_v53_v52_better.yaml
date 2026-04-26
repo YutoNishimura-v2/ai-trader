@@ -1,0 +1,11 @@
+extends: adaptive_v52_v50_dml6.yaml
+
+# v53: v52 + tighter DD throttle for the late period. Soft DD at
+# 18 (between v43b's 15 and v50's 20). Hopes to suppress Mar/Apr
+# cap viols via DD throttle while keeping Jan/Feb upside.
+
+risk:
+  drawdown_soft_limit_pct: 18.0
+  drawdown_hard_limit_pct: 28.0
+  drawdown_soft_multiplier: 0.65
+  drawdown_hard_multiplier: 0.40

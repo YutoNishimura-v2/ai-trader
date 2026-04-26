@@ -15,7 +15,7 @@ import pandas as pd
 
 from ..broker.base import Broker, Order
 from ..risk.manager import RiskManager
-from ..strategy.base import BaseStrategy
+from ..strategy.base import BaseStrategy, ClosedTradeContext
 from ..utils.logging import get_logger
 
 
@@ -68,6 +68,7 @@ class LiveRunner:
                         pos.id, price=float(df.iloc[-1]["close"]), now=now, reason="kill-switch"
                     )
                     self.risk.on_trade_closed(closed.pnl, when=now)
+                    self._fire_close_callback(closed, pnl_account=closed.pnl, now=now)
                 time.sleep(self.poll_seconds)
                 continue
 
@@ -88,12 +89,22 @@ class LiveRunner:
                 time.sleep(self.poll_seconds)
                 continue
 
+            # Enrich the order's meta with entry_risk_price so the
+            # close callback can compute R-multiples in the same way
+            # as the BacktestEngine. This keeps sim/live equivalence.
+            order_meta = dict(sig.meta) if sig.meta else {}
+            order_meta.setdefault("entry_risk_price", abs(ref - sig.stop_loss))
+            order_meta.setdefault("strategy_reason", sig.reason)
+            mn = _member_name_from_reason(sig.reason)
+            if mn is not None:
+                order_meta.setdefault("member_name", mn)
             order = Order(
                 side=sig.side,
                 lots=decision.lots,
                 stop_loss=sig.stop_loss,
                 take_profit=sig.take_profit,
                 comment=sig.reason,
+                meta=order_meta,
             )
             res = self.broker.submit(order, ref_price=ref, now=now)
             if res.ok:
@@ -105,3 +116,67 @@ class LiveRunner:
                 log.warning("order submit failed: %s", res.error)
 
             time.sleep(self.poll_seconds)
+
+    # ------------------------------------------------------------------
+    def _fire_close_callback(
+        self, closed, *, pnl_account: float, now: datetime
+    ) -> None:
+        """Build and dispatch a :class:`ClosedTradeContext`.
+
+        Mirrors :meth:`BacktestEngine._book_close` so the same hook
+        fires identically in simulation and live.
+        """
+        meta = dict(closed.position.meta) if closed.position.meta else None
+        member_name = (meta or {}).get("member_name") or _member_name_from_reason(
+            closed.position.comment
+        )
+        entry_risk_price = (meta or {}).get("entry_risk_price")
+        instrument = self.risk.instrument
+        if (
+            instrument.quote_currency != self.risk.account_currency
+            and self.risk.fx is not None
+        ):
+            fx_factor = self.risk.fx.convert(
+                1.0, instrument.quote_currency, self.risk.account_currency
+            )
+        else:
+            fx_factor = 1.0
+        r_mult: float | None
+        if entry_risk_price and float(entry_risk_price) > 0 and closed.position.lots > 0:
+            risk_account = (
+                float(closed.position.lots)
+                * float(instrument.contract_size)
+                * float(entry_risk_price)
+                * float(fx_factor)
+            )
+            r_mult = float(pnl_account) / risk_account if risk_account > 0 else None
+        else:
+            r_mult = None
+        ctx = ClosedTradeContext(
+            member_name=member_name,
+            pnl=float(pnl_account),
+            r_multiple=r_mult,
+            entry_time=closed.position.open_time,
+            close_time=closed.close_time,
+            reason=closed.reason,
+            comment=closed.position.comment,
+            meta=meta,
+        )
+        try:
+            self.strategy.on_trade_closed(ctx)
+        except Exception:
+            get_logger("ai_trader.live").exception(
+                "strategy.on_trade_closed raised"
+            )
+
+
+def _member_name_from_reason(reason: str) -> str | None:
+    if not reason or not reason.startswith("["):
+        return None
+    end = reason.find("]")
+    if end < 0:
+        return None
+    inside = reason[1:end]
+    if "|" in inside:
+        inside = inside.split("|", 1)[0]
+    return inside.strip() or None

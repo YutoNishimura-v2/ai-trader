@@ -1,0 +1,69 @@
+extends: adaptive_v6_iter28core.yaml
+
+# v8: extend daily tp2_rr from 1.5 to 2.5 (matching weekly), and
+# tighten cooldown to 30 bars to allow more daily entries when the
+# daily pivot is firing hot. Hypothesis: lengthening the tail of
+# winning trades pushes monthly upside past +100% without breaching
+# the kill switch.
+
+strategy:
+  params:
+    expectancy_window: 20
+    expectancy_decay_halflife: 7.0
+    eligibility_on_threshold: 0.05
+    eligibility_off_threshold: -0.15
+    members:
+      - name: pivot_bounce
+        id: pivot_daily
+        regimes: [all]
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 30
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 6
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_weekly
+        regimes: [all]
+        params:
+          pivot_period: weekly
+          atr_period: 14
+          touch_atr_buf: 0.10
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 3.0
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 3
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_monthly
+        regimes: [all]
+        params:
+          pivot_period: monthly
+          atr_period: 14
+          touch_atr_buf: 0.15
+          sl_atr_buf: 0.30
+          max_sl_atr: 3.0
+          tp1_rr: 1.2
+          tp2_rr: 3.0
+          leg1_weight: 0.5
+          cooldown_bars: 120
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 1
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true

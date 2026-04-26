@@ -1,0 +1,115 @@
+extends: ../default.yaml
+
+# Iter30 adaptive router v1 (XAUUSD only, no news strategies).
+#
+# Five-member roster spanning daily/weekly/4h pivots,
+# session_sweep_reclaim, and bos_retest_scalper. The router gates
+# each member by causal HTF ADX regime and weights it by decayed
+# realised R-multiple expectancy.
+
+instrument: {symbol: XAUUSD, timeframe: M1, contract_size: 100, tick_size: 0.01, tick_value: 1.0, quote_currency: USD}
+
+risk:
+  # Dynamic risk on so the router's per-signal risk_multiplier and
+  # confidence drive sizing. Base risk 7% per trade with envelope
+  # caps at [1%, 10%].
+  risk_per_trade_pct: 7.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 5.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000020
+  dynamic_risk_enabled: true
+  min_risk_per_trade_pct: 1.0
+  max_risk_per_trade_pct: 10.0
+  confidence_risk_floor: 0.75
+  confidence_risk_ceiling: 1.10
+  drawdown_soft_limit_pct: 12.0
+  drawdown_hard_limit_pct: 22.0
+  drawdown_soft_multiplier: 0.7
+  drawdown_hard_multiplier: 0.4
+
+strategy:
+  __replace__: true
+  name: adaptive_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 20.0
+    trend_adx_min: 25.0
+    expectancy_window: 30
+    expectancy_decay_halflife: 10.0
+    eligibility_on_threshold: 0.05
+    eligibility_off_threshold: -0.10
+    probe_risk_multiplier: 0.20
+    active_risk_multiplier_floor: 0.30
+    active_risk_multiplier_cap: 1.00
+    members:
+      - name: pivot_bounce
+        id: pivot_daily
+        regimes: [range, transition]
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 4
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_weekly
+        regimes: [range, transition]
+        params:
+          pivot_period: weekly
+          atr_period: 14
+          touch_atr_buf: 0.10
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 2
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_4h
+        regimes: [range, transition, trend]
+        params:
+          pivot_period: 4h
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          cooldown_bars: 90
+          session: london
+          use_s2r2: false
+          levels: [S1, R1]
+          max_trades_per_day: 2
+          emit_context_meta: true
+      - name: session_sweep_reclaim
+        id: sweep_reclaim
+        regimes: [range, transition]
+        params:
+          trade_start_hour: 7
+          trade_end_hour: 14
+          min_sweep_atr: 0.10
+          atr_period: 14
+          max_trades_per_day: 2
+      - name: bos_retest_scalper
+        id: bos_retest
+        regimes: [trend]
+        params: {}

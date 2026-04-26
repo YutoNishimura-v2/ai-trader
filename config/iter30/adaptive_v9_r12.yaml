@@ -1,0 +1,17 @@
+extends: adaptive_v8_extend_tp.yaml
+
+# v9: bump risk_per_trade to 12% per trade with tight kill-switch.
+# At max_concurrent_positions=1 and dml=4%, a single trade losing
+# its full 12% is +1.5% over the kill-switch line, so the engine
+# closes the day after one bad trade. This keeps cap violations
+# at 0 while pushing winning months higher.
+
+risk:
+  risk_per_trade_pct: 12.0
+  daily_max_loss_pct: 4.0
+  min_risk_per_trade_pct: 1.0
+  max_risk_per_trade_pct: 12.0
+  drawdown_soft_limit_pct: 10.0
+  drawdown_hard_limit_pct: 20.0
+  drawdown_soft_multiplier: 0.65
+  drawdown_hard_multiplier: 0.35

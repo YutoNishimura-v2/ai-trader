@@ -1,0 +1,83 @@
+extends: adaptive_v22_all_levels.yaml
+
+# v23: maximize trade frequency on top of v22. Push tp2_rr lower
+# (1.5) so trades close faster and free up cooldown. Increase max
+# trades per day. Even shorter cooldown. Hypothesis: best_month
+# Jan +160% should compound past 200% with another 20-30% trades.
+
+strategy:
+  params:
+    expectancy_decay_halflife: 3.0
+    members:
+      - name: pivot_bounce
+        id: pivot_daily
+        regimes: [all]
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          cooldown_bars: 15
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 10
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_weekly
+        regimes: [all]
+        params:
+          pivot_period: weekly
+          atr_period: 14
+          touch_atr_buf: 0.10
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 30
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 6
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_monthly
+        regimes: [all]
+        params:
+          pivot_period: monthly
+          atr_period: 14
+          touch_atr_buf: 0.15
+          sl_atr_buf: 0.30
+          max_sl_atr: 3.0
+          tp1_rr: 1.2
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 3
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_4h
+        regimes: [all]
+        risk_multiplier: 0.60
+        params:
+          pivot_period: 4h
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 2.0
+          leg1_weight: 0.5
+          cooldown_bars: 30
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 6
+          emit_context_meta: true

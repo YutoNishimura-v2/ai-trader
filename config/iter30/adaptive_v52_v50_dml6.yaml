@@ -1,0 +1,7 @@
+extends: adaptive_v50_v43b_dml10.yaml
+
+# v52: v50 with dml=6 (between 4 of v43b and 10 of v50). Trying
+# to find the sweet spot.
+
+risk:
+  daily_max_loss_pct: 6.0

@@ -1,0 +1,10 @@
+extends: adaptive_v8_extend_tp.yaml
+
+# v15: just the loss-streak pause. No pyramid. Tries to extract
+# upside without losing on bad days. After 3 consecutive losses
+# in a UTC day, drop to probe-level for the rest of the day.
+
+strategy:
+  params:
+    intra_day_pyramid_enabled: false
+    intra_day_loss_streak_pause: 3

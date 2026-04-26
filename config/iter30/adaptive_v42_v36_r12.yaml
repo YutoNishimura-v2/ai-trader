@@ -1,0 +1,15 @@
+extends: adaptive_v36_v31_4h_s2r2.yaml
+
+# v42: v36 + risk_per_trade 10 -> 12. Tighter daily kill at 2% so
+# the worst-case single SL of -12% is still over the cap (-10.5%
+# kill), but the DD throttle should reduce subsequent trades fast
+# enough to avoid a string of bad days.
+
+risk:
+  risk_per_trade_pct: 12.0
+  max_risk_per_trade_pct: 12.0
+  daily_max_loss_pct: 2.0
+  drawdown_soft_limit_pct: 8.0
+  drawdown_soft_multiplier: 0.55
+  drawdown_hard_limit_pct: 16.0
+  drawdown_hard_multiplier: 0.30

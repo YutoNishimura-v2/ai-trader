@@ -1,0 +1,16 @@
+extends: adaptive_v36_v31_4h_s2r2.yaml
+
+# v41: v36 with active expectancy reweighting enabled. Lift cap to
+# 1.20 so winning members get +20% size; floor 0.80 so losing
+# members get -20%. Halflife 5 for fast adaptation. Off threshold
+# -0.05 for fast demotion.
+
+strategy:
+  params:
+    expectancy_window: 15
+    expectancy_decay_halflife: 5.0
+    eligibility_on_threshold: 0.05
+    eligibility_off_threshold: -0.05
+    active_risk_multiplier_floor: 0.80
+    active_risk_multiplier_cap: 1.20
+    initial_state: active

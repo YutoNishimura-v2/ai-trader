@@ -1,0 +1,28 @@
+extends: adaptive_v43_v36_loose_dd.yaml
+
+# v47: v43b + intra-day pyramid only after a winning close. Base
+# 9%, after 1 win scale to 11.7% (capped at 12), after 2 wins
+# scale to 13.5+ (capped at 12). Loss scalar 1.0 (no shrink) - the
+# next trade after a single loss stays at current scalar; after
+# 2 losses, drop to probe.
+#
+# Math: first trade of day = 9% (well under -10.5% cap). After a
+# win, next trade = 11.7%. A SL hit on that 11.7% trade closes the
+# day at +9 - 11.7 = -2.7% (assuming first won 1R = 9% gain). So
+# day P&L is well above -10.5%. The pyramid ONLY amplifies on
+# winning paths.
+
+risk:
+  risk_per_trade_pct: 8.0
+  daily_max_loss_pct: 2.5
+  max_risk_per_trade_pct: 10.0
+  min_risk_per_trade_pct: 1.0
+
+strategy:
+  params:
+    intra_day_pyramid_enabled: true
+    intra_day_win_scalar: 1.25
+    intra_day_loss_scalar: 0.50
+    intra_day_max_scalar: 1.25     # 8 * 1.25 = 10% cap
+    intra_day_min_scalar: 0.30
+    intra_day_loss_streak_pause: 1

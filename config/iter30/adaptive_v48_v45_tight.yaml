@@ -1,0 +1,7 @@
+extends: adaptive_v45_v43b_r11.yaml
+
+# v48: v45 (risk=11) with tighter dml=2.5%. Tries to preserve Jan
+# upside (+267%) while preventing Mar/Apr cap breaches.
+
+risk:
+  daily_max_loss_pct: 2.5

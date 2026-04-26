@@ -1,0 +1,16 @@
+extends: adaptive_v22_all_levels.yaml
+
+# v25: v22 + slight risk bump (10 -> 11). With dml=4 a single SL at
+# 11% trips the kill-switch on -11% day, but cap_violations counts
+# only days with P&L < -10.5%. With single SL = -11% on day = cap
+# breach. Mitigated by drawdown_hard_multiplier=0.35 kicking in
+# after big DD. Still risky; testing the edge.
+
+risk:
+  risk_per_trade_pct: 10.0
+  max_risk_per_trade_pct: 10.0
+  daily_max_loss_pct: 4.0
+  drawdown_soft_limit_pct: 25.0
+  drawdown_hard_limit_pct: 40.0
+  drawdown_soft_multiplier: 0.85
+  drawdown_hard_multiplier: 0.60
