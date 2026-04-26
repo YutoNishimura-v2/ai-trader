@@ -1,0 +1,15 @@
+extends: adaptive_v50_v43b_dml10.yaml
+
+# v51: v50 (Jan +288% but Mar/Apr cap viols) + intra-day loss-streak
+# pause and aggressive loss scalar shrink. The pause kicks AFTER the
+# first losing trade at probe-level risk for the rest of the day.
+
+strategy:
+  params:
+    intra_day_pyramid_enabled: true
+    intra_day_win_scalar: 1.0
+    intra_day_loss_scalar: 0.30
+    intra_day_max_scalar: 1.0
+    intra_day_min_scalar: 0.20
+    intra_day_loss_streak_pause: 1
+    probe_risk_multiplier: 0.20
