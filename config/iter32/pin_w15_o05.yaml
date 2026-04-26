@@ -1,0 +1,27 @@
+extends: ../default.yaml
+instrument: {symbol: XAUUSD, timeframe: M1, contract_size: 100, tick_size: 0.01, tick_value: 1.0, quote_currency: USD}
+risk:
+  risk_per_trade_pct: 2.5
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000020
+strategy:
+  __replace__: true
+  name: pin_bar_reversal
+  params:
+    atr_period: 14
+    wick_to_body: 1.5
+    opp_wick_to_body: 0.5
+    body_min_atr: 0.10
+    body_max_atr: 0.7
+    extreme_lookback: 12
+    sl_buffer_dollar: 0.5
+    max_sl_dollar: 8.0
+    tp1_rr: 1.0
+    tp2_rr: 2.5
+    leg1_weight: 0.5
+    cooldown_m15_bars: 4
+    session: london_or_ny
+    max_trades_per_day: 4
+    allow_counter_trend: true
