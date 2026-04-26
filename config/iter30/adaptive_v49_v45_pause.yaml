@@ -1,0 +1,15 @@
+extends: adaptive_v45_v43b_r11.yaml
+
+# v49: v45 (risk=11, Jan +267 but cap viols) + intra-day loss-streak
+# pause=1 + loss_scalar=0.4 to cut size after a single losing day.
+# Goal: keep Jan upside (winning days don't trigger pause) while
+# preventing the Mar/Apr -14% bleeds.
+
+strategy:
+  params:
+    intra_day_pyramid_enabled: true
+    intra_day_win_scalar: 1.0
+    intra_day_loss_scalar: 0.40
+    intra_day_max_scalar: 1.0
+    intra_day_min_scalar: 0.30
+    intra_day_loss_streak_pause: 1
