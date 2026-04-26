@@ -1,0 +1,9 @@
+extends: adaptive_v22_all_levels.yaml
+
+# v27: v22 + daily_profit_target_pct lifted from 30 to 50. The
+# daily target acts as a kill-switch: when realised P&L hits +30%
+# the day flattens. Lifting to +50% lets winning runs extend, which
+# is what we need to push Jan past 200%.
+
+risk:
+  daily_profit_target_pct: 50.0
