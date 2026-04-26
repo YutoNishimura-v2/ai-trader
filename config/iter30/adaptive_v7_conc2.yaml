@@ -1,0 +1,12 @@
+extends: adaptive_v6_iter28core.yaml
+
+# v7: same as v6 but max_concurrent_positions=2 to let pivot_daily
+# and pivot_weekly fire simultaneously when both bounce off
+# different levels. Daily kill-switch tightened to compensate.
+
+risk:
+  risk_per_trade_pct: 8.0
+  daily_max_loss_pct: 5.0
+  max_concurrent_positions: 2
+  min_risk_per_trade_pct: 1.0
+  max_risk_per_trade_pct: 8.0
