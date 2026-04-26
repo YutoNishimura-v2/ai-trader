@@ -1,0 +1,15 @@
+extends: adaptive_v22_all_levels.yaml
+
+# v26: v22 with very fast adaptation. Halflife 2, on_threshold +0.10,
+# off_threshold -0.05. The router demotes a member after just a
+# few losing trades. With many trades from v22's 4-pivot all-levels
+# config, expectancy reaches significance fast.
+
+strategy:
+  params:
+    expectancy_window: 8
+    expectancy_decay_halflife: 2.0
+    eligibility_on_threshold: 0.10
+    eligibility_off_threshold: -0.05
+    initial_state: probe
+    probe_risk_multiplier: 0.30
