@@ -1,0 +1,8 @@
+extends: adaptive_v43_v36_loose_dd.yaml
+
+# v54: v43b with dml lifted from 4 to 6. v43b had Jan +159 with
+# dml=4. Try dml=6 to see if Jan can break +200 while keeping
+# 4/4 wins and 0 cap viols.
+
+risk:
+  daily_max_loss_pct: 6.0
