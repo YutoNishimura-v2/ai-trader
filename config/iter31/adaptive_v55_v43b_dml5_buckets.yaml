@@ -1,9 +1,8 @@
 extends: ../iter30/adaptive_v55_v43b_dml5.yaml
 
-# Iter31: same risk stack as iter30 headline v55, but enable causal
-# market-state buckets so per-(member × bucket) expectancy and
-# probe/active hysteresis track Mar/Apr regime shifts without waiting
-# for a single global decayed mean to move.
+# DEPRECATED for research: parent uses flat active sizing (floor=cap=1),
+# so bucket keys have no effect on priority or size — identical to v55.
+# Use adaptive_v55_expectancy_buckets.yaml instead (expectancy sizing on).
 
 strategy:
   params:
