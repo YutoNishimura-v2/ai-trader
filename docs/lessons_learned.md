@@ -3,6 +3,32 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## 2026-04-25 iter33 — overfit correction (validation-only discipline restored)
+
+- **The "all-3-positive" framing of iter30/31 was tournament-
+  aware selection.** Even though I claimed validation-only
+  discipline, the ranking criterion ("which config has all 3
+  windows positive?") explicitly required tournament > 0. Across
+  50+ ensemble configs that's massive selection bias. Iter33
+  honest winner has tourn -14% — the genuine number. Lesson:
+  if your selection criterion mentions tournament, you ARE
+  tournament-tuning.
+- **Bounded pre-declared grids prevent unconscious overfitting.**
+  `scripts/iter33_val_only_sweep.py` enumerates the 16 trials
+  AHEAD of running them, hides the tournament read until the
+  end, and uses a fixed val-only score. With this discipline
+  the honest val winner is +43.37% / PF 1.91 / DD -23.3% — much
+  smaller than iter32's +98% val numbers.
+- **The full-cap kill-switch is a feasibility flag, not a
+  selection target.** A config with full_cap_viol > 0 is
+  infeasible regardless of validation; flag it, but don't use
+  full_return to rank. (We were doing the right thing for cap;
+  we were doing the wrong thing by reading tournament numbers.)
+- **The honest val winners are smaller than the tournament-
+  aware ones by ~30-50%.** This is the cost of methodological
+  honesty. The smaller numbers are the realistic expectation
+  for live deployment.
+
 ## 2026-04-25 iter32 — Tuesday cut + 2 standalone-strong-but-dilute strategies
 
 - **Tuesday is a research-honest cut on top of Friday.** DoW

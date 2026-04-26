@@ -129,6 +129,16 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 - [ ] ~~Push monthly mean unconditional to +200%/mo via news/leverage.~~
       SUPERSEDED by user 2026-04-25: news strategies retired,
       tournament discipline restored. iter5-7 results contaminated.
+- [x] **Iter33: validation-only sweep (OVERFIT CORRECTION).**
+      Per user feedback, restored plan v3 §B.3 strict discipline.
+      Two pre-declared 16-trial bounded grids (pivot ensemble
+      family + ema20 family). Tournament hidden during ranking,
+      single-shot read at end. Honest winners:
+      - Pivot: trial_r8_dml30_em20_eng20 — val +43.37% PF 1.91,
+        full +266%, tourn -14.18% (single read)
+      - EMA20: ema20_H4_lon_or_ny_t80_sb8 — val +13.17% PF 2.20,
+        full -17%, tourn +1.93% PF 1.08 (single read)
+      Iter28-32 numbers acknowledged as tournament-aware-overfit.
 - [x] **Iter32: Tuesday-cut + 2 new strategies = val PF 3.17 (record) + full +488%.**
       Built `keltner_breakout` and `pin_bar_reversal` (4 web
       sources). Pin standalone tourn PF 2.46. DoW analysis of

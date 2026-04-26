@@ -3,6 +3,75 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter33: validation-only sweep (overfit correction)
+
+**User feedback:** "i think this result shows overfitting to the
+train. please maximize the result of val. and use tournament
+data less."
+
+User is correct. Iter28-32 made dozens of decisions that used
+tournament numbers (the "all-3-positive" framing literally
+conditioned on tournament return ≥ 0). Restoring plan v3 §B.3
+discipline.
+
+### Method
+
+`scripts/iter33_val_only_sweep.py`:
+1. Pre-declared 16-trial bounded grid: risk ∈ {8, 10}, dml ∈
+   {2.5, 3.0}, ema_rm ∈ {0.2, 0.3}, eng_rm ∈ {None, 0.2}.
+2. Per trial: print VALIDATION ONLY metrics. Tournament computed
+   but suppressed during ranking.
+3. Hard kill-switches: val_cap_viol == 0 AND full_cap_viol == 0
+   (full cap is a feasibility flag, not a selection target).
+4. Score: `val_return × val_PF / max(1, val_DD/25)`.
+5. Tournament read EXACTLY ONCE at the end. Reported, not used.
+
+### Pivot-ensemble val-only winner
+
+`trial_r8_dml30_em20_eng20`:
+- val: +43.37% PF 1.91 DD -23.3% (50 trades, 0 cap viol)
+- full: +266.38% PF 1.34 (0 cap viol)
+- **tournament (single read): -14.18% PF 0.69**
+
+Promoted to `config/iter33/headline_val_only.yaml`.
+
+Discarded: 8 of 16 trials had full_cap_viol > 0 → DQed. r=10
+configs all hit cap. Honest ceiling at lev=200 is r=8 with
+dml=3. The risk=10 / dml=2.5 winners we celebrated in iter31
+were tournament-aware selections within an infeasible region.
+
+### EMA20 family val-only winner
+
+Separate sweep (16 trials, htf×session×touch×swing):
+`ema20_H4_london_or_ny_t80_sb8`:
+- val: +13.17% PF 2.20 DD -9.4% (38 trades, 0 cap viol)
+- full: -17.48% PF 0.88 (0 cap viol)
+- **tournament (single read): +1.93% PF 1.08** ← positive
+
+Promoted to `config/iter33/headline_ema20_val.yaml`. Genuinely
+clean small-edge headline.
+
+### Honest read vs iter32
+
+- iter32 best (pivot tier): full +488%, val PF 3.15, tourn -11.92%
+- iter33 honest winner: full +266%, val PF 1.91, tourn -14.18%
+
+The iter32 numbers were inflated by tournament-aware param
+selection. Iter33 is what the genuine val-only edge looks like.
+
+### Code
+
+- `scripts/iter33_val_only_sweep.py` — 16-trial pivot grid
+- `scripts/iter33_ema20_sweep.py` — 16-trial ema20 grid
+- `scripts/iter33_rerank.py` — re-rank with full-cap kill-switch
+- `config/iter33/headline_val_only.yaml` — pivot ensemble winner
+- `config/iter33/headline_ema20_val.yaml` — ema20 winner
+- ~32 sweep configs
+
+185 tests pass (no code changes, only sweep configs).
+
+---
+
 ## 2026-04-25 — Iter32: 2 new strategies + Tuesday cut → val PF 3.17 (record), full +488%
 
 User: "Don't stop, keep going."
