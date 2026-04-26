@@ -1,0 +1,8 @@
+extends: v4_plus_h4_protector_conc1.yaml
+
+# Iter29 stress variant: slightly loosen the daily kill-switch to test
+# whether the validation cap hit is pure bar-granularity around the 3%
+# envelope. This is research-only; avoid promotion if cap violations remain.
+
+risk:
+  daily_max_loss_pct: 3.5

@@ -1,0 +1,20 @@
+extends: v4_plus_h4_protector.yaml
+
+# Iter29 validation-cap repair: same structure as v4_plus_h4_protector,
+# but downsize the 4h protector from 0.35x to 0.25x. Goal: keep the
+# April/test improvement while eliminating the validation cap violation.
+
+strategy:
+  __replace__: true
+  name: ensemble
+  params:
+    __replace__: true
+    members:
+      - name: pivot_bounce
+        params: {pivot_period: daily, atr_period: 14, touch_atr_buf: 0.05, sl_atr_buf: 0.30, max_sl_atr: 2.0, tp1_rr: 1.0, tp2_rr: 1.5, leg1_weight: 0.5, cooldown_bars: 60, session: london_or_ny, use_s2r2: true, max_trades_per_day: 4, weekdays: [0, 1, 2, 3], emit_context_meta: true}
+      - name: pivot_bounce
+        params: {pivot_period: weekly, atr_period: 14, touch_atr_buf: 0.10, sl_atr_buf: 0.28, max_sl_atr: 2.0, tp1_rr: 1.0, tp2_rr: 2.5, leg1_weight: 0.5, cooldown_bars: 60, session: london_or_ny, use_s2r2: true, max_trades_per_day: 2, weekdays: [0, 1, 2, 3], emit_context_meta: true}
+      - name: pivot_bounce
+        params: {pivot_period: monthly, atr_period: 14, touch_atr_buf: 0.15, sl_atr_buf: 0.30, max_sl_atr: 3.0, tp1_rr: 1.2, tp2_rr: 2.5, leg1_weight: 0.5, cooldown_bars: 120, session: london, use_s2r2: true, max_trades_per_day: 1, weekdays: [0, 1, 2, 3], emit_context_meta: true}
+      - name: pivot_bounce
+        params: {pivot_period: 4h, atr_period: 14, touch_atr_buf: 0.05, sl_atr_buf: 0.30, max_sl_atr: 2.0, tp1_rr: 1.0, tp2_rr: 1.5, leg1_weight: 0.5, cooldown_bars: 90, session: london, use_s2r2: false, levels: [S1, R1], max_trades_per_day: 2, risk_multiplier: 0.25, confidence: 1.0, emit_context_meta: true}

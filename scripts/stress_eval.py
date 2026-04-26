@@ -106,7 +106,9 @@ def main() -> int:
     df_idx = df.index
     if df_idx.tz is None:
         df_idx = df_idx.tz_localize("UTC")
-    months = pd.Series(df_idx).dt.to_period("M").unique()
+    months = pd.Series(
+        df_idx.tz_convert("UTC").tz_localize(None) if df_idx.tz is not None else df_idx
+    ).dt.to_period("M").unique()
     for mo in months:
         start = mo.start_time.tz_localize("UTC")
         end = mo.end_time.tz_localize("UTC")

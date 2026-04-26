@@ -3,6 +3,42 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## 2026-04-26 iter29 — adaptive simulation
+
+- **H4 protector validates the adaptive thesis.** A full-risk static
+  growth stack still wins raw Jan-Apr return, but adding a low-risk
+  H4 S1/R1 protector with concurrency=1 produced +832% full and
+  +13.85% on the local 14d stress window, versus iter28's +497% /
+  -4.32%. The market-state answer is not "one strategy"; it's
+  specialist participation with careful exposure control.
+- **Validation cap violations are the new blocker.** The best H4
+  protector variant is excellent on full and recent stress but trips
+  one validation cap violation. Loosening daily max loss raises full
+  return but worsens cap/stress. Next work should address the
+  specific validation loss day, not blindly change global risk.
+- **Adaptivity is useful, but naive trailing-winner selection is not
+  enough.** Rolling 5-day winner switching collapses to +47% full
+  vs static growth +498%, with 33 switches. It reacts to noise and
+  pays whipsaw cost. Adaptation needs a stronger state model than
+  "pick recent P&L leader."
+- **Expertise is regime-specific, not globally ranked.** Static H4
+  pivot is weak full-period (+16.5%) but dominates the April stress
+  window in local reproduction (+42.8% tournament 14d). A bad
+  all-period expert can still be the correct defensive mode.
+- **Causal adaptive policies can improve risk shape.** Expectancy
+  rotation (+196.7%, DD -18.3%, min_eq 97.5%) sacrifices static
+  growth's upside but materially improves drawdown profile. This is
+  closer to live-demo behaviour: choose what is working, preserve
+  capital when confidence is low.
+- **The oracle gap is enormous.** Hindsight best-expert rotation is
+  +7198% with tiny DD, proving the expert library contains enough
+  diverse edge to matter. The unsolved problem is causal selection,
+  not absence of any exploitable behaviour.
+- **Friday is not universally bad.** Iter28 Friday-cut helped the
+  growth stack, but H4 specialist attribution shows Friday was a
+  major positive in April stress. Calendar filters must be
+  strategy/context-specific, not global doctrine.
+
 ## 2026-04-25 iter28 — bold exploration
 
 - **NY session adds independent alpha to pivot bounces.** We

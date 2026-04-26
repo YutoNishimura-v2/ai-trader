@@ -87,9 +87,19 @@ class PivotBounce(BaseStrategy):
         # Set as e.g. [0,2,3] to trade only Mon/Wed/Thu (the strong days
         # discovered in the iter28 dow-profile of v4_extended_a).
         weekdays: list[int] | tuple[int, ...] | None = None,
+        # Optional level allowlist. Example: ["S1", "R1"] keeps only the
+        # first support/resistance bounces. None = use the historic
+        # use_s2r2 behavior unchanged.
+        levels: list[str] | tuple[str, ...] | None = None,
         # iter28: hour-of-day blacklist (UTC). Skip these hours entirely
         # even if inside the session window. e.g. [8,13] = avoid worst hours.
         block_hours_utc: list[int] | tuple[int, ...] | None = None,
+        # Optional dynamic-risk metadata. Defaults preserve historic
+        # behaviour; when set, RiskManager's dynamic_risk layer can size
+        # this pivot member without a wrapper strategy.
+        risk_multiplier: float | None = None,
+        confidence: float | None = None,
+        emit_context_meta: bool = False,
         min_history: int | None = None,
     ) -> None:
         super().__init__(
@@ -109,7 +119,11 @@ class PivotBounce(BaseStrategy):
             adx_max=adx_max,
             pivot_period=pivot_period,
             weekdays=tuple(weekdays) if weekdays is not None else None,
+            levels=tuple(str(x).upper() for x in levels) if levels is not None else None,
             block_hours_utc=tuple(block_hours_utc) if block_hours_utc is not None else None,
+            risk_multiplier=risk_multiplier,
+            confidence=confidence,
+            emit_context_meta=emit_context_meta,
         )
         self.min_history = min_history or max(atr_period * 3, 60)
         self._atr_cache: pd.Series | None = None
@@ -135,11 +149,14 @@ class PivotBounce(BaseStrategy):
         df_utc.index = idx
 
         period = p.get("pivot_period", "daily")
+        idx_naive = idx.tz_convert("UTC").tz_localize(None) if idx.tz is not None else idx
         if period == "weekly":
-            # Group by Mon-anchored ISO week (Mon..Sun)
-            buckets = idx.to_period("W-SUN").to_timestamp().tz_localize("UTC")
+            # Group by Mon-anchored ISO week (Mon..Sun). Convert through
+            # tz-naive timestamps first to avoid pandas PeriodIndex
+            # timezone-drop warnings while keeping identical UTC buckets.
+            buckets = idx_naive.to_period("W-SUN").to_timestamp().tz_localize("UTC")
         elif period == "monthly":
-            buckets = idx.to_period("M").to_timestamp().tz_localize("UTC")
+            buckets = idx_naive.to_period("M").to_timestamp().tz_localize("UTC")
         elif period in ("4h", "h4", "H4"):
             # iter28: 4-hour pivots — much faster, fires more often.
             buckets = idx.floor("4h")
@@ -175,7 +192,18 @@ class PivotBounce(BaseStrategy):
             self._htf_adx = None
 
     def _build_signal(
-        self, side: SignalSide, entry: float, sl: float, risk: float, reason: str,
+        self,
+        side: SignalSide,
+        entry: float,
+        sl: float,
+        risk: float,
+        reason: str,
+        *,
+        level_name: str,
+        level_value: float,
+        atr_value: float,
+        ts_utc,
+        htf_adx: float | None = None,
     ) -> Signal:
         p = self.params
         tp1 = entry + p["tp1_rr"] * risk if side == SignalSide.BUY else entry - p["tp1_rr"] * risk
@@ -195,7 +223,25 @@ class PivotBounce(BaseStrategy):
                 SignalLeg(weight=w1, take_profit=float(tp1), move_sl_to_on_fill=float(entry), tag="tp1"),
                 SignalLeg(weight=1.0 - w1, take_profit=float(tp2), tag="tp2"),
             )
-        return Signal(side=side, entry=None, stop_loss=sl, legs=legs, reason=reason)
+        meta = None
+        if p.get("emit_context_meta") or p.get("risk_multiplier") is not None or p.get("confidence") is not None:
+            meta = {
+                "strategy": self.name,
+                "pivot_period": p.get("pivot_period", "daily"),
+                "pivot_level": level_name,
+                "pivot_level_value": float(level_value),
+                "session": p.get("session"),
+                "weekday": int(ts_utc.weekday()),
+                "hour_utc": int(ts_utc.hour),
+                "atr": float(atr_value),
+            }
+            if htf_adx is not None:
+                meta["htf_adx"] = float(htf_adx)
+            if p.get("risk_multiplier") is not None:
+                meta["risk_multiplier"] = float(p["risk_multiplier"])
+            if p.get("confidence") is not None:
+                meta["confidence"] = float(p["confidence"])
+        return Signal(side=side, entry=None, stop_loss=sl, legs=legs, reason=reason, meta=meta)
 
     def on_bar(self, history: pd.DataFrame) -> Signal | None:
         p = self.params
@@ -236,14 +282,15 @@ class PivotBounce(BaseStrategy):
             return None
 
         # HTF ADX gate (skip strong-trend regimes where pivot bounces fail).
+        htf_adx_val: float | None = None
         if self._mtf is not None and self._htf_adx is not None:
             pos = self._mtf.last_closed_idx(p["htf"], ts_utc)
             if pos is None or pos >= len(self._htf_adx):
                 return None
-            adx_val = float(self._htf_adx[pos])
-            if not np.isfinite(adx_val):
+            htf_adx_val = float(self._htf_adx[pos])
+            if not np.isfinite(htf_adx_val):
                 return None
-            if adx_val > float(p["adx_max"]):
+            if htf_adx_val > float(p["adx_max"]):
                 return None
 
         last = history.iloc[-1]
@@ -268,6 +315,11 @@ class PivotBounce(BaseStrategy):
         if p["use_s2r2"]:
             levels_buy.append(("S2", float(pv["S2"])))
             levels_sell.append(("R2", float(pv["R2"])))
+        allowed_levels = p.get("levels")
+        if allowed_levels is not None:
+            allowed = set(allowed_levels)
+            levels_buy = [(nm, lvl) for nm, lvl in levels_buy if nm in allowed]
+            levels_sell = [(nm, lvl) for nm, lvl in levels_sell if nm in allowed]
 
         # Long bounce: low touched the support (or pierced) AND
         # close > support, with bullish rejection wick.
@@ -292,6 +344,11 @@ class PivotBounce(BaseStrategy):
                 return self._build_signal(
                     SignalSide.BUY, entry, sl, risk,
                     reason=f"pivot-bounce long @{name}={lvl:.2f}",
+                    level_name=name,
+                    level_value=lvl,
+                    atr_value=atr_val,
+                    ts_utc=ts_utc,
+                    htf_adx=htf_adx_val,
                 )
 
         for name, lvl in levels_sell:
@@ -315,6 +372,11 @@ class PivotBounce(BaseStrategy):
                 return self._build_signal(
                     SignalSide.SELL, entry, sl, risk,
                     reason=f"pivot-bounce short @{name}={lvl:.2f}",
+                    level_name=name,
+                    level_value=lvl,
+                    atr_value=atr_val,
+                    ts_utc=ts_utc,
+                    htf_adx=htf_adx_val,
                 )
 
         return None

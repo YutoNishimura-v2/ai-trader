@@ -1,0 +1,8 @@
+extends: v4_plus_h4_protector.yaml
+
+# Iter29 protector stress: cap-risk control by allowing only one open
+# decision at a time. Tests whether validation cap=1 in the protector
+# prototype is a concurrency artifact.
+
+risk:
+  max_concurrent_positions: 1
