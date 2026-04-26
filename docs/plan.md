@@ -145,6 +145,23 @@ The bot is the evidence-producer; you are the judge.
 **Automatic reject** (non-discretionary): any constraint in §A is
 violated in backtest or demo.
 
+> **Update (2026-04-26, iter30 — generalization scoring):** The
+> single-window "tournament 14d" headline is no longer the project
+> scoreboard. Iter30 ships
+> `ai_trader/research/stability.py`, which evaluates configs on a
+> rolling battery of N non-overlapping (research, validation, test)
+> triples. Per-window `generalization_score` returns
+> `min(val.return_pct, test.return_pct)` only when BOTH windows
+> have `cap_violations=0`, `ruin_flag=False`, profit_factor ≥ 1.0,
+> and same-sign returns; otherwise it disqualifies. Promotion now
+> requires the dual gate of (a) `windows_passing >= 3 of 4` with
+> per-window val PF ≥ 1.5 / test PF ≥ 1.2 AND (b)
+> `best_month_pct >= 200` with cap_violations=0 on that month and
+> on the full period. Each test-window opening is audit-logged via
+> the literal `i_know_this_is_tournament_evaluation=True` token.
+> Full-period return is reported but is no longer used as a tuning
+> objective (it was a known overfitting trap in iter28-29).
+
 ## Roadmap
 
 ### Phase 0 — demo environment ✅ delivered
