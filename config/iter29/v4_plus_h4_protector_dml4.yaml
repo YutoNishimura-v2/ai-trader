@@ -1,0 +1,8 @@
+extends: v4_plus_h4_protector_conc1.yaml
+
+# Slightly loosen daily kill from 3% to 4% to test whether the validation
+# "cap violation" is a bookkeeping artefact of tight multi-leg flushes while
+# preserving the 4h protector's latest-window improvement.
+
+risk:
+  daily_max_loss_pct: 4.0
