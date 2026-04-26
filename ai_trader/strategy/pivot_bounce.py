@@ -82,6 +82,14 @@ class PivotBounce(BaseStrategy):
         # "daily" (default) — pivots from prior UTC day OHLC.
         # "weekly"          — pivots from prior calendar week OHLC.
         pivot_period: str = "daily",
+        # iter28: day-of-week filter (UTC weekday 0=Mon..4=Fri,5=Sat,6=Sun).
+        # If set, only trade on these days. None = all days allowed.
+        # Set as e.g. [0,2,3] to trade only Mon/Wed/Thu (the strong days
+        # discovered in the iter28 dow-profile of v4_extended_a).
+        weekdays: list[int] | tuple[int, ...] | None = None,
+        # iter28: hour-of-day blacklist (UTC). Skip these hours entirely
+        # even if inside the session window. e.g. [8,13] = avoid worst hours.
+        block_hours_utc: list[int] | tuple[int, ...] | None = None,
         min_history: int | None = None,
     ) -> None:
         super().__init__(
@@ -100,6 +108,8 @@ class PivotBounce(BaseStrategy):
             adx_period=adx_period,
             adx_max=adx_max,
             pivot_period=pivot_period,
+            weekdays=tuple(weekdays) if weekdays is not None else None,
+            block_hours_utc=tuple(block_hours_utc) if block_hours_utc is not None else None,
         )
         self.min_history = min_history or max(atr_period * 3, 60)
         self._atr_cache: pd.Series | None = None
@@ -130,6 +140,11 @@ class PivotBounce(BaseStrategy):
             buckets = idx.to_period("W-SUN").to_timestamp().tz_localize("UTC")
         elif period == "monthly":
             buckets = idx.to_period("M").to_timestamp().tz_localize("UTC")
+        elif period in ("4h", "h4", "H4"):
+            # iter28: 4-hour pivots — much faster, fires more often.
+            buckets = idx.floor("4h")
+        elif period in ("h1", "H1", "1h"):
+            buckets = idx.floor("1h")
         else:
             buckets = idx.normalize()
         agg = df_utc.groupby(buckets).agg(
@@ -166,10 +181,20 @@ class PivotBounce(BaseStrategy):
         tp1 = entry + p["tp1_rr"] * risk if side == SignalSide.BUY else entry - p["tp1_rr"] * risk
         tp2 = entry + p["tp2_rr"] * risk if side == SignalSide.BUY else entry - p["tp2_rr"] * risk
         w1 = float(p["leg1_weight"])
-        legs = (
-            SignalLeg(weight=w1, take_profit=float(tp1), move_sl_to_on_fill=float(entry), tag="tp1"),
-            SignalLeg(weight=1.0 - w1, take_profit=float(tp2), tag="tp2"),
-        )
+        # iter28: single-TP case (leg1_weight ≈ 1.0). Only emit one leg.
+        if w1 >= 0.999:
+            legs = (
+                SignalLeg(weight=1.0, take_profit=float(tp1), tag="tp1"),
+            )
+        elif w1 <= 0.001:
+            legs = (
+                SignalLeg(weight=1.0, take_profit=float(tp2), tag="tp2"),
+            )
+        else:
+            legs = (
+                SignalLeg(weight=w1, take_profit=float(tp1), move_sl_to_on_fill=float(entry), tag="tp1"),
+                SignalLeg(weight=1.0 - w1, take_profit=float(tp2), tag="tp2"),
+            )
         return Signal(side=side, entry=None, stop_loss=sl, legs=legs, reason=reason)
 
     def on_bar(self, history: pd.DataFrame) -> Signal | None:
@@ -187,6 +212,14 @@ class PivotBounce(BaseStrategy):
         ts_utc = ts_dt.astimezone(timezone.utc)
         sess = p.get("session")
         if sess and not check_session(ts_utc.time(), sess):
+            return None
+        # iter28: day-of-week filter (UTC weekday 0=Mon).
+        wds = p.get("weekdays")
+        if wds is not None and ts_utc.weekday() not in wds:
+            return None
+        # iter28: hour blacklist (UTC).
+        bhrs = p.get("block_hours_utc")
+        if bhrs is not None and ts_utc.hour in bhrs:
             return None
 
         day_key = ts_utc.date().isoformat()

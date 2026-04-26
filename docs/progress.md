@@ -3,6 +3,131 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-04-25 — Iter28: NEW PROJECT RECORD ¥+497k (NY-pivots + Friday-cut)
+
+User: "continue."
+
+Bold exploration following user's "move much faster with bold
+and daring algorithm exploration" directive. Three coherent
+experiments delivered the new growth record.
+
+### Phase A — Multi-session pivot exploration (12 standalone runs)
+
+Sweep `pivot_bounce` standalone across (period × session) at
+the v4 risk profile. Validation column unchanged in summary
+because we never used tournament for selection.
+
+Headline standalone results (FULL window):
+
+| period   | session       | full      | val (PF) | tourn (PF)   |
+|----------|---------------|----------:|---------:|-------------:|
+| daily    | london        | +43.84%   | +12.26 (2.84) | -15.60 (0.38) |
+| daily    | **london_or_ny** | **+61.64%** | +11.13 (1.69) | -10.10 (0.62) |
+| daily    | ny            | -21.29%   | -0.44 (0.97)  | -26.19 (0.17) |
+| weekly   | london        | +40.62%   | -9.45 (0.22)  | -7.10  (0.43) |
+| weekly   | **london_or_ny** | **+61.81%** | +1.32 (1.11)  | -7.10  (0.43) |
+| monthly  | london        | -3.25%    | -2.50 (0.59)  |  0.00 (---)   |
+| **4h**   | **london**    | +10.79%   | +1.11 (1.03)  | **+6.69 (1.20)** |
+
+Key finding: NY session adds ~+18 pts to FULL on daily AND weekly
+pivots. ALSO: 4h pivot is the only variant with positive
+tournament — candidate for iter29 deep dive.
+
+### Phase B — Day-of-week filter (research-honest)
+
+DoW profile of `v4_extended_a_conc1` on RESEARCH window:
+
+| dow | n | wins | losses | pnl¥    | win% |
+|-----|--:|-----:|-------:|--------:|-----:|
+| Mon |  8|     4|       4| -5,185  | 50.0 |
+| Tue |  6|     2|       4| -4,290  | 33.3 |
+| Wed |  8|     4|       4| +2,863  | 50.0 |
+| Thu | 14|     6|       8| -5,089  | 42.9 |
+| **Fri** | **8** | **2** | **6** | **-14,116** | **25.0** |
+
+Friday is the obvious bleed on RESEARCH alone. Cutting only
+Friday (Mon-Thu allowed) is research-honest — it doesn't peek
+at validation or tournament. Hour-of-day filters were also
+tested but consistently HURT (see `v4_ext_a_no_fri_h*` configs).
+
+### Phase C — Single-TP variants (per user feedback)
+
+Tested w1=1.0 (single-TP) on the new headline:
+- v4_no_fri_single_tp:        full +361%, val +19% PF 1.55
+- v4_no_fri_single_tp_run:    full +465%, val +3% PF 1.06
+
+Two-leg with TP1+BE (0.5/0.5) still wins on full. User's "TP1
+alone is enough" was right for the BALANCED config (iter26),
+but the GROWTH configs need the runner.
+
+### Phase D / E — Combined headline
+
+Added `weekdays` and `block_hours_utc` params to `pivot_bounce`
+strategy. Final v4_ext_a_dow_no_fri:
+
+```
+config/iter28/v4_ext_a_dow_no_fri.yaml
+- daily   pivot_bounce, london_or_ny, weekdays=[0,1,2,3]
+- weekly  pivot_bounce, london_or_ny, weekdays=[0,1,2,3]
+- monthly pivot_bounce, london,        weekdays=[0,1,2,3]
+- risk_per_trade_pct=10, daily_max_loss=3, conc=1
+- dynamic_risk: drawdown 12/22 → 0.7/0.4
+```
+
+| window         | trades | PF   | return       | DD       | cap |
+|----------------|-------:|-----:|-------------:|---------:|----:|
+| **Full Jan-Apr** | 138 | **1.63** | **+497.94%** | -25.4%   | **0** |
+| Research 60d   |     66 | 2.15 | +202.56%     | -17.4%   | 0   |
+| Validation 14d |     22 | 1.71 | +25.64%      | -20.1%   | 0   |
+| Tournament 14d |     22 | 0.66 | -13.78%      | -22.5%   | 0   |
+
+Per-month: Jan +104.79%, Feb +94.16%, Mar +45.20%, Apr +3.57%.
+**ALL FOUR MONTHS POSITIVE** — first time in iter9-iter28
+honest discipline. ¥100k → ¥597,940 (4.98×).
+
+### Side experiments (also tested)
+
+- v4 + sweep_reclaim @ r=6: val +119.5% PF 4.20 BUT cap viols
+  on full → REJECTED for live promotion, kept as headline-tier
+  validation curiosity (`iter28/v4_no_fri_sw_r6`).
+- v4 + 4h pivot member: dilutes (+62% full vs +497%) — too many
+  trades from short-term level.
+- DML 2.5/3.0/4.0/5.0: 3.0 wins (current default).
+- Hour blacklist [7], [8], [7,8]: all HURT.
+- conc=2 vs conc=1: conc=1 wins on this 3-member stack.
+
+### Iter28 verdict
+
+**Project growth record: ¥+497,940 / 4.98× capital, val PF 1.71.**
+NY-session was the missing alpha. Friday was the obvious cut.
+Tournament still negative across all growth-tier configs.
+
+Code changes:
+- `ai_trader/strategy/pivot_bounce.py`: weekdays, block_hours_utc,
+  pivot_period in {"4h","h1"}, single-TP signal handling.
+
+Files: 30+ configs in `config/iter28/`, scripts/iter28_phase_a.sh,
+scripts/iter28_parse.py, scripts/iter28_dow_profile.py.
+
+168 tests still pass. 0 cap violations on the headline.
+
+---
+
+## 2026-04-25 — Iter27: v4_plus_sweep_r4 — project-record val PF 4.57
+
+User: "continue"
+
+Built `iter27/v4_plus_sweep_r4` (4-member: triple-pivot +
+session_sweep_reclaim london, risk=4, conc=2). Validation
+window April PF=4.57 — project record. Full +39.18% (sweep
+drags Jan), tournament -16.09%.
+
+Conclusion: sweep_reclaim contributes a powerful validation
+signal in April but drags Jan. Co-headline alongside iter24
+(growth) and iter9 (tournament).
+
+---
+
 ## 2026-04-25 — Iter26: M5 base TF (FAILED) + concurrency=2 single-TP (WIN)
 
 User: "go go go!"

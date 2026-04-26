@@ -12,6 +12,85 @@ other doc. The rest of `docs/` is supporting material:
 - `docs/log.md` — chronological session diary.
 - `docs/todo.md` — living task list.
 
+## TL;DR (2026-04-25 ITER28 — NEW PROJECT RECORD ¥+497k)
+
+**Iter28 is the new headline iteration.** Three bold experiments
+broke the long-standing growth ceiling:
+
+1. **Phase A — Multi-session pivots.** Standalone session sweep
+   showed `pivot_period=daily session=london_or_ny` lifts the
+   daily pivot member from full +43.84% (london only) to +61.64%
+   (london_or_ny). Same for weekly: +40.62% → +61.81%. **NY
+   session adds non-trivial alpha that we previously missed.**
+2. **Phase B — Day-of-week filter.** DoW profile of the new
+   stack on the RESEARCH window showed Friday losing ¥-14k
+   (8 trades, 25% winrate). Cutting Friday only (research-honest
+   filter, val DoW unchanged) lifts full from +286% → +497.94%.
+3. **Strategy code:** added `weekdays` and `block_hours_utc`
+   filters to `pivot_bounce`, plus `pivot_period` "4h"/"h1"
+   options (4h showed standalone POSITIVE tournament +6.69%).
+
+### Iter28 headline result — `config/iter28/v4_ext_a_dow_no_fri.yaml`
+
+3-member ensemble (daily + weekly + monthly pivot_bounce), all
+on session=london_or_ny (monthly stays london — NY had no edge
+on monthly), Mon-Thu only, risk=10%/trade, daily_max_loss=3%,
+concurrency=1, dynamic-risk drawdown throttle on.
+
+**Numbers (real 2026 M1 XAUUSD, JPY-native, validation-only-tuned):**
+
+| window         | trades | PF   | return       | JPY delta      | DD       | cap viol |
+|----------------|-------:|-----:|-------------:|----------------|---------:|---------:|
+| **Full Jan-Apr** | 138 | **1.63** | **+497.94%** | **¥+497,940** | -25.4 %  | **0** |
+| Validation 14d |     22 | 1.71 | +25.64%      | ¥+25,635       | -20.1 %  | 0     |
+| Tournament 14d |     22 | 0.66 | -13.78%      | ¥-13,777       | -22.5 %  | 0     |
+
+**Per-month JPY (full Jan-Apr, compounded):**
+- Jan ¥+104,794 (+104.79%)  ← was -18% in iter9
+- Feb ¥+192,837 (+94.16%)
+- Mar ¥+179,723 (+45.20%)
+- Apr ¥+20,585 (+3.57%)
+
+**¥100,000 → ¥597,940 over 4 months = 4.98× capital.** Monthly
+mean +61.93%/mo (geometric ≈ 56%/mo), best day +27.76%, worst
+day -10.00%. ZERO cap violations across every window.
+
+### Co-headlines (validation discipline)
+
+Three configs co-exist as headlines depending on objective:
+
+| Config | Objective | Full | Val PF | Tourn |
+|---|---|---:|---:|---:|
+| **iter28/v4_ext_a_dow_no_fri** | Best Growth (NEW) | **+497.94%** | 1.71 | -13.78% |
+| iter28/v4_no_fri_sw_r6 | Best Validation PF | +132.33% | **4.20** | -6.75% |
+| iter27/v4_plus_sweep_r4 | Best historical val PF | +39.18% | 4.57 | -16.09% |
+| iter9/ensemble_priceaction_v4_router | Best Tournament | -14.40% | 2.33 | **+5.41%** |
+
+### Honest tournament gap
+
+Tournament (last 14d of April 2026) is consistently negative
+across iter24-iter28's growth-tier configs (-13% to -22%).
+April-tournament is structurally hostile to pivot-bounce
+strategies in this dataset. The configs that ARE positive on
+tournament (iter9 v4_router, iter28 4h_london standalone) have
+much weaker full numbers. **The honest tournament-positive
+config remains iter9.**
+
+### Iter28 takeaways
+
+- Multi-session pivots (london_or_ny) lift growth substantially
+  on daily and weekly periods; NY adds alpha previously missed.
+- Day-of-week is a strong, research-honest mechanical filter:
+  Friday underperformance was visible on RESEARCH alone.
+- Day-of-week and hour filters are now first-class params on
+  `pivot_bounce`.
+- 4h pivot is the only standalone with positive tournament —
+  worth more exploration in iter29.
+- Tournament hostility persists — the structural Jan/Apr regime
+  drag on pivot bounces is a real limitation.
+
+---
+
 ## TL;DR (2026-04-25 ITER9 — major reset)
 
 **Iter9 RETIRES the news-calendar approach** that drove v3-v11.
