@@ -131,7 +131,6 @@ class PivotBounce(BaseStrategy):
         self._pivots: pd.DataFrame | None = None
         self._mtf: MTFContext | None = None
         self._htf_adx: np.ndarray | None = None
-        self._higher_pivots: dict[str, pd.DataFrame] = {}
         self._last_signal_iloc: int = -(10**9)
         self._day_key: str | None = None
         self._day_trades: int = 0
@@ -182,23 +181,6 @@ class PivotBounce(BaseStrategy):
         # Map back onto each M1 bar via the bar's bucket-key.
         per_bar = prev.loc[buckets, ["P", "R1", "S1", "R2", "S2"]].set_axis(idx)
         self._pivots = per_bar
-
-        self._higher_pivots = {}
-        for hp in p.get("min_distance_from_periods") or ():
-            hp_buckets = self._bucket_index(idx, str(hp))
-            hp_agg = df_utc.groupby(hp_buckets).agg(
-                bk_open=("open", "first"),
-                bk_high=("high", "max"),
-                bk_low=("low", "min"),
-                bk_close=("close", "last"),
-            )
-            hp_prev = hp_agg.shift(1)
-            hp_prev["P"] = (hp_prev["bk_high"] + hp_prev["bk_low"] + hp_prev["bk_close"]) / 3.0
-            hp_prev["R1"] = 2 * hp_prev["P"] - hp_prev["bk_low"]
-            hp_prev["S1"] = 2 * hp_prev["P"] - hp_prev["bk_high"]
-            hp_prev["R2"] = hp_prev["P"] + (hp_prev["bk_high"] - hp_prev["bk_low"])
-            hp_prev["S2"] = hp_prev["P"] - (hp_prev["bk_high"] - hp_prev["bk_low"])
-            self._higher_pivots[str(hp)] = hp_prev.loc[hp_buckets, ["P", "R1", "S1", "R2", "S2"]].set_axis(idx)
 
         # Optional HTF ADX gate.
         if p.get("htf") and p.get("adx_max") is not None:
