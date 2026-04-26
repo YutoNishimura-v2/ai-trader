@@ -12,6 +12,179 @@ other doc. The rest of `docs/` is supporting material:
 - `docs/log.md` — chronological session diary.
 - `docs/todo.md` — living task list.
 
+## TL;DR (2026-04-26 ITER29 — adaptive/protector breakthrough)
+
+**Iter29 changes the research frame.** The user challenged the
+assumption that one static algorithm should work across all market
+periods. We built an adaptive-policy simulator and a 4h-pivot
+"protector" path to test whether the system should switch among
+specialists instead of forcing one all-period strategy.
+
+### What changed
+
+1. **Adaptive simulation harness.**
+   `scripts/iter29_adaptive_sim.py` runs static experts plus causal
+   daily policies over the same historical period. The initial expert
+   library is:
+   - `growth` = iter28 `v4_ext_a_dow_no_fri`
+   - `h4` = 4h pivot specialist
+   - `defensive` = iter9 price-action router
+   - `cash` = no-trade state
+
+   Tested policies include rolling winner, expectancy rotation,
+   stability rotation, equity-curve filter, loss-streak pause,
+   first-week observation, monthly risk budget, regime map, prove-it,
+   and an impossible oracle for ceiling diagnostics.
+
+2. **Pivot context controls.**
+   `pivot_bounce` now supports default-off `levels`,
+   `risk_multiplier`, `confidence`, and `emit_context_meta`. Existing
+   configs are unchanged; iter28 full metrics reproduce exactly.
+
+3. **Trade attribution.**
+   `scripts/iter29_trade_attribution.py` breaks closed P&L down by
+   member, pivot level, weekday, close reason, and window.
+
+### Iter29 best research clue — `config/iter29/v4_plus_h4_protector_conc1.yaml`
+
+This config keeps the iter28 growth stack, adds an S1/R1-only 4h
+pivot protector at lower risk, and runs concurrency=1.
+
+| window / stress | trades | PF | return | DD | cap |
+|---|---:|---:|---:|---:|---:|
+| **Full Jan-Apr** | 296 | 1.56 | **+832.42%** | -26.66% | 0 |
+| Jan standalone | 86 | 2.22 | +115.75% | -14.81% | 0 |
+| Feb standalone | 69 | 1.61 | +64.92% | -29.43% | 0 |
+| Mar standalone | 72 | 1.54 | +57.60% | -17.61% | 0 |
+| Apr standalone | 70 | 1.27 | +20.32% | -22.49% | 0 |
+| Tournament 14d (local stress) | 36 | 1.37 | +13.85% | -16.34% | 0 |
+| Tournament 21d (local stress) | 56 | 1.29 | +19.37% | -20.14% | 0 |
+| Tournament 7d (local stress) | 16 | 0.34 | -15.11% | -18.47% | 0 |
+
+**Important:** this is **not promotable yet** because the validation
+stress windows still show cap violations:
+
+- validation 14d at T=14d: -0.26%, PF 0.99, **cap=1**
+- validation 14d at T=21d: -10.15%, PF 0.78, **cap=1**
+
+Treat it as the strongest research clue so far, not a live/demo
+candidate. It proves that an H4 protector can dramatically improve
+the local stress profile while preserving or even exceeding the
+iter28 growth engine.
+
+### Adaptive-policy result
+
+Over full Jan-Apr with the base expert library:
+
+| policy | return | PF | DD | min eq | notes |
+|---|---:|---:|---:|---:|---|
+| static growth | +497.94% | 1.80 | -25.42% | 100.0% | iter28 baseline |
+| expectancy rotation | +196.68% | 1.77 | -18.27% | 97.5% | smoother, lower upside |
+| first-week observe | +59.55% | 1.59 | -19.21% | 100.0% | user's example class |
+| regime map | +98.42% | 1.53 | -20.45% | 81.0% | too noisy |
+| rolling winner | +47.12% | 1.26 | -31.04% | 85.0% | whipsaw-prone |
+
+On the latest local stress window from 2026-04-10, static H4
+specialist is the strongest causal expert (+17.03%), while the
+causal adaptive selectors still trail it. The hindsight oracle over
+that same window is +82.31%, confirming that the remaining problem is
+**causal selection**, not absence of diverse edge.
+
+### Iter29 takeaways
+
+- The user's core assumption challenge was correct: adaptation is a
+  first-class research direction.
+- A static universal strategy is probably the wrong target; expert
+  specialists can be bad full-period but correct for a local regime.
+- Naive trailing-winner switching is not enough; it whipsaws.
+- The 4h pivot is a real defensive/current-regime specialist, but not
+  universal: Jan/Feb are negative and interleaved validation/tournament
+  remain weak.
+- Friday is not universally bad. Iter28 Friday-cut helped the growth
+  stack, but H4 attribution showed Friday was strongly positive in the
+  April stress window.
+- Next move: fix the protector validation cap issue or wait for fresh
+  May/forward data to evaluate the adaptive selector honestly.
+
+---
+
+## TL;DR (2026-04-26 ITER29 — adaptive/protector breakthrough)
+
+User challenged the core assumption that one static strategy should
+work across every period. Iter29 implemented that idea as executable
+research, not just theory:
+
+- `scripts/iter29_adaptive_sim.py` — causal daily adaptive-policy
+  simulator. It compares static experts with rolling/expert-rotation,
+  equity-curve, first-week, regime-map, loss-pause, monthly-risk-budget
+  and cash/no-trade policies. Supports `--start-day/--end-day` for
+  recent-window simulations while preserving prior lookback history.
+- `scripts/iter29_trade_attribution.py` — closed-trade attribution by
+  window, pivot level, weekday, close reason, member.
+- `pivot_bounce` now has default-off `levels`, `risk_multiplier`,
+  `confidence`, and `emit_context_meta` controls. Existing configs are
+  unchanged when these are off.
+
+### New best research clue — `config/iter29/v4_plus_h4_protector_conc1.yaml`
+
+This is iter28's growth stack plus a low-risk 4h S1/R1 pivot
+"protector." It is **not promoted** because validation windows have cap
+violations, but it is the clearest evidence so far that a fast adaptive
+member can protect April-like hostile regimes without surrendering the
+growth engine.
+
+| window / stress | trades | PF | return | DD | cap |
+|---|---:|---:|---:|---:|---:|
+| **Full Jan-Apr** | 296 | 1.56 | **+832.42%** | -26.66% | 0 |
+| Jan standalone | 86 | 2.22 | +115.75% | -14.81% | 0 |
+| Feb standalone | 69 | 1.61 | +64.92% | -29.43% | 0 |
+| Mar standalone | 72 | 1.54 | +57.60% | -17.61% | 0 |
+| Apr standalone | 70 | 1.27 | +20.32% | -22.49% | 0 |
+| Tournament 7d | 16 | 0.34 | -15.11% | -18.47% | 0 |
+| Tournament 14d | 36 | 1.37 | +13.85% | -16.34% | 0 |
+| Tournament 21d | 56 | 1.29 | +19.37% | -20.14% | 0 |
+| Validation 14d (T=14d) | 45 | 0.99 | -0.26% | -25.04% | **1** |
+
+**Interpretation:** growth + 4h protection is a real direction. It
+flips the local 14d stress from iter28's -4.32% to +13.85% and lifts
+full growth from +497.94% to +832.42% in the local reproduction. But
+validation cap violations mean it remains a research candidate only.
+
+### Adaptive-policy first pass
+
+Using experts `growth` (iter28), `h4` (4h S1/R1), `defensive` (iter9),
+and cash:
+
+| policy | full return | DD | note |
+|---|---:|---:|---|
+| static_growth | +497.94% | -25.42% | still best clean static headline |
+| expectancy_rotation | +196.68% | -18.27% | smoother, lower growth |
+| first_week_observe | +59.55% | -19.21% | proves user's example is testable, not best |
+| regime_map | +98.42% | -20.45% | useful but noisy |
+
+Recent-window run from 2026-04-10 shows causal selectors still lag the
+best specialist:
+
+- static_growth +2.72%
+- static_h4 +17.03%
+- defensive +6.26%
+- best causal selector only +5.78%
+- hindsight oracle +82.31%
+
+**Lesson:** the expert library contains enough diverse edge; the
+remaining hard problem is causal expert selection.
+
+### Current honest headlines after iter29
+
+| Objective | Config | Status |
+|---|---|---|
+| Best clean full growth | `config/iter28/v4_ext_a_dow_no_fri.yaml` | Full +497.94%, cap-clean |
+| Best research growth clue | `config/iter29/v4_plus_h4_protector_conc1.yaml` | Full +832.42%, but validation cap=1 |
+| Best current-regime/defensive specialist | `config/iter29/h4_specialist_s1r1.yaml` | Local 14d +20.89%, weak full |
+| Best smoother adaptive policy | `expectancy_rotation` in `iter29_adaptive_sim.py` | Full +196.68%, DD -18.27% |
+
+---
+
 ## TL;DR (2026-04-25 ITER28 — NEW PROJECT RECORD ¥+497k)
 
 **Iter28 is the new headline iteration.** Three bold experiments
