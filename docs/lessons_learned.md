@@ -3,6 +3,56 @@
 Append-only. One bullet per insight. Keep short; link to a PR or a
 progress entry for the full story.
 
+## 2026-04-26 iter30 — adaptive router and the cap-respecting frontier
+
+- **Single-month 3x is reachable on this dataset; full-period 3x-clean
+  is not.** Config `config/iter30/adaptive_v55_v43b_dml5.yaml` delivers
+  ¥100k → ¥356k in January 2026 with PF 3.82 and zero cap violations
+  on every reported window and on the full Jan-Apr run. Same config
+  runs cap-clean across the entire 4-month period (296 trades, worst
+  day -9.98%) — the trade-off is that April is -3.55%, not catastrophic
+  but no longer 3x-clean as a self-contained month.
+- **Cap-respecting risk_per_trade ceiling is 10% on this engine.** At
+  risk=11%, the first SL hit of the day closes the day at -11% which
+  already breaches the -10.5% cap_violations threshold. No pause,
+  throttle, pyramid, or DD throttle saves this — the math is
+  structural. The user's ¥100k → ¥300k gate must be reached at
+  risk≤10% to remain promotable.
+- **4/4-generalization and 200%+ best-month are incompatible at this
+  data budget.** v43b is the cap-clean 4/4 leader (Jan +159%); v55b is
+  the cap-clean 3x-month leader (Jan +257%, 2/4 wins). The dataset's
+  ~14-day regime flips defeat any static member roster on at least
+  half the rolling-battery windows; the adaptive router's hysteresis
+  helps but cannot fully bridge the gap with only 14 days of
+  validation history per window.
+- **Mon-Thu filter on EVERY member, not just the growth stack, was
+  the consistency unlock.** The iter29 protector_conc1 had its 4h
+  member trading Fridays; switching all four pivot members to
+  weekdays=[0,1,2,3] in v36 → v43b moved generalization from 3/4 to
+  4/4 wins on the rolling battery without lowering best_month.
+- **Full-period optimization is the wrong objective on this dataset.**
+  iter28's +497% and iter29's +832% full numbers were reached by
+  configs that pass only 1/4 (iter28) or 3/4 (iter29) windows —
+  they're in-sample fits. Removing full-period from the sweep
+  objective and ranking on `worst_score` (the worst per-window
+  generalization score, not the mean or max) was a key methodological
+  change for iter30.
+- **The iter29 adaptive simulator is not live-faithful and should not
+  be used as a decision tool.** It picks daily winners from precomputed
+  expert return streams — which in live cannot exist (you can't
+  observe the returns of strategies you didn't deploy). The `adaptive_router`
+  strategy added in iter30 is the live-faithful replacement: it
+  evolves causal state (per-member decayed R-multiple expectancy) via
+  the new `Strategy.on_trade_closed` engine hook, which fires
+  identically in `BacktestEngine` and `live/runner.py`. The simulator
+  remains as a research diagnostic only.
+- **The audit-logged test-window opening is now a first-class
+  artefact.** Every test-window opening goes to
+  `artifacts/iter30/stability/audit.jsonl` with the literal
+  `i_know_this_is_tournament_evaluation=True` token, the config hash,
+  and the window date span. Project audit can now confirm post-hoc
+  that each test window was opened exactly once per candidate.
+
 ## 2026-04-26 iter29 — adaptive simulation
 
 - **H4 protector validates the adaptive thesis.** A full-risk static
