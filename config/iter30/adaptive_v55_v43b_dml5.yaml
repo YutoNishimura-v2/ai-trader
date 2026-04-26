@@ -1,0 +1,13 @@
+extends: adaptive_v43_v36_loose_dd.yaml
+
+# v55: v43b with dml=5 + tighter DD throttle (10% soft, 15% hard).
+# The DD throttle should kick in fast on March/April drawdowns to
+# scale down sizing, while January's mostly-up trajectory keeps
+# the throttle off.
+
+risk:
+  daily_max_loss_pct: 5.0
+  drawdown_soft_limit_pct: 10.0
+  drawdown_hard_limit_pct: 15.0
+  drawdown_soft_multiplier: 0.60
+  drawdown_hard_multiplier: 0.30
