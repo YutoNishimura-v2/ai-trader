@@ -53,7 +53,7 @@ class PolicyResult:
 
 DEFAULT_EXPERTS = (
     "growth=config/iter28/v4_ext_a_dow_no_fri.yaml",
-    "h4=config/iter28/_phaseA/4h_london.yaml",
+    "h4=config/iter29/h4_specialist_s1r1.yaml",
     "defensive=config/iter9/ensemble_priceaction_v4_router.yaml",
     "cash=CASH",
 )
@@ -285,8 +285,16 @@ def _simulate(
     min_score: float = 0.0,
     loss_stop_pct: float = -8.0,
     warmup_days: int = 5,
+    start_day: pd.Timestamp | None = None,
+    end_day: pd.Timestamp | None = None,
 ) -> PolicyResult:
     days = market.index.intersection(next(iter(expert_daily.values())).index)
+    if start_day is not None:
+        start_ts = pd.Timestamp(start_day)
+        days = days[days >= start_ts]
+    if end_day is not None:
+        end_ts = pd.Timestamp(end_day)
+        days = days[days <= end_ts]
     experts = [e for e in expert_daily.keys() if e != "cash"]
     cash_name = "cash" if "cash" in expert_daily else next(iter(expert_daily.keys()))
 
@@ -327,6 +335,20 @@ def _simulate(
                 active_start_equity = equity
             else:
                 chosen, reason = active, "active_not_stopped"
+        elif policy == "stability_rotation":
+            chosen, reason = _choose_stability_rotation(
+                expert_daily, experts, cash_name, day, active, lookback_days, min_score, switch_margin=3.0
+            )
+        elif policy == "equity_curve_filter":
+            chosen, reason = _choose_equity_curve_filter(
+                expert_daily, experts, cash_name, day, lookback_days, min_score
+            )
+        elif policy == "loss_streak_pause":
+            active_hist = [r for r in hist_days if r["expert"] != cash_name]
+            if len(active_hist) >= 2 and active_hist[-1]["pnl"] < 0 and active_hist[-2]["pnl"] < 0:
+                chosen, reason = cash_name, "two_active_loss_days"
+            else:
+                chosen, reason = _choose_rolling(expert_daily, experts, cash_name, day, lookback_days, min_score)
         elif policy == "first_week_observe":
             day_in_month = _trading_day_number(days, day)
             if day_in_month <= warmup_days:
@@ -344,6 +366,14 @@ def _simulate(
                 chosen, reason = base, "proved_" + why
             else:
                 chosen, reason = cash_name, "not_proved"
+        elif policy == "monthly_risk_budget":
+            day_in_month = _trading_day_number(days, day)
+            if day_in_month <= warmup_days:
+                chosen, reason = cash_name, f"observe_day_{day_in_month}"
+            elif month_active_days[month_key] >= 12:
+                chosen, reason = cash_name, "monthly_risk_budget_spent"
+            else:
+                chosen, reason = _choose_rolling(expert_daily, experts, cash_name, day, lookback_days, min_score)
         else:
             raise ValueError(f"unknown policy {policy!r}")
 
@@ -405,6 +435,73 @@ def _choose_rolling(
     if scores[best] <= min_score:
         return cash_name, f"best_score_{scores[best]:.2f}_<=_{min_score}"
     return best, f"{score_mode}_{lookback_days}d_{scores[best]:.2f}"
+
+
+def _score_map(
+    expert_daily: dict[str, pd.DataFrame],
+    experts: list[str],
+    day: pd.Timestamp,
+    lookback_days: int,
+    *,
+    score_mode: str = "risk_adjusted",
+) -> dict[str, float]:
+    scores = {}
+    for e in experts:
+        hist = expert_daily[e][expert_daily[e].index < day].tail(lookback_days)
+        scores[e] = _score(hist, mode=score_mode)
+    return scores
+
+
+def _choose_stability_rotation(
+    expert_daily: dict[str, pd.DataFrame],
+    experts: list[str],
+    cash_name: str,
+    day: pd.Timestamp,
+    active: str,
+    lookback_days: int,
+    min_score: float,
+    *,
+    switch_margin: float,
+) -> tuple[str, str]:
+    """Rolling winner with hysteresis to reduce whipsaw switching."""
+    scores = _score_map(expert_daily, experts, day, lookback_days)
+    best = max(scores, key=scores.get)
+    best_score = scores[best]
+    if best_score <= min_score:
+        return cash_name, f"best_score_{best_score:.2f}_<=_{min_score}"
+    if active in scores and scores[active] > min_score and scores[active] >= best_score - switch_margin:
+        return active, f"keep_active score={scores[active]:.2f} best={best}:{best_score:.2f}"
+    return best, f"switch_to_best {best_score:.2f}"
+
+
+def _choose_equity_curve_filter(
+    expert_daily: dict[str, pd.DataFrame],
+    experts: list[str],
+    cash_name: str,
+    day: pd.Timestamp,
+    lookback_days: int,
+    min_score: float,
+) -> tuple[str, str]:
+    """Only deploy an expert whose own trailing return stream is recovering.
+
+    This emulates a live review rule: a specialist has to prove its equity
+    curve is above its short trailing midpoint before it gets capital.
+    """
+    eligible: dict[str, float] = {}
+    for e in experts:
+        hist = expert_daily[e][expert_daily[e].index < day].tail(lookback_days)
+        if len(hist) < max(2, lookback_days // 2):
+            continue
+        curve = (1.0 + hist["ret_pct"].astype(float) / 100.0).cumprod()
+        midpoint = float(curve.rolling(max(2, lookback_days // 2), min_periods=1).mean().iloc[-1])
+        if float(curve.iloc[-1]) >= midpoint:
+            eligible[e] = _score(hist)
+    if not eligible:
+        return cash_name, "no_expert_above_trailing_curve"
+    best = max(eligible, key=eligible.get)
+    if eligible[best] <= min_score:
+        return cash_name, f"eligible_score_{eligible[best]:.2f}_<=_{min_score}"
+    return best, f"equity_curve_ok_{eligible[best]:.2f}"
 
 
 def _trading_day_number(days: pd.DatetimeIndex, day: pd.Timestamp) -> int:
@@ -507,9 +604,19 @@ def _month_key(ts: pd.Timestamp) -> str:
     return str(t.to_period("M"))
 
 
-def _oracle(expert_daily: dict[str, pd.DataFrame], starting_balance: float) -> PolicyResult:
+def _oracle(
+    expert_daily: dict[str, pd.DataFrame],
+    starting_balance: float,
+    *,
+    start_day: pd.Timestamp | None = None,
+    end_day: pd.Timestamp | None = None,
+) -> PolicyResult:
     experts = [e for e in expert_daily if e != "cash"]
     days = next(iter(expert_daily.values())).index
+    if start_day is not None:
+        days = days[days >= pd.Timestamp(start_day)]
+    if end_day is not None:
+        days = days[days <= pd.Timestamp(end_day)]
     rows = []
     equity = starting_balance
     for day in days:
@@ -548,6 +655,10 @@ def main() -> int:
     ap.add_argument("--min-score", type=float, default=0.0)
     ap.add_argument("--loss-stop-pct", type=float, default=-8.0)
     ap.add_argument("--warmup-days", type=int, default=5)
+    ap.add_argument("--start-day", type=str, default=None,
+                    help="Optional UTC date (YYYY-MM-DD) to start policy simulation while retaining prior expert history.")
+    ap.add_argument("--end-day", type=str, default=None,
+                    help="Optional UTC date (YYYY-MM-DD) to end policy simulation.")
     ap.add_argument("--out-dir", type=Path, default=Path("artifacts/iter29_adaptive"))
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
@@ -557,6 +668,8 @@ def main() -> int:
     expert_daily, expert_metrics, sb = load_experts(df, experts)
     market = _market_features(df)
     args.out_dir.mkdir(parents=True, exist_ok=True)
+    start_day = pd.Timestamp(args.start_day, tz="UTC") if args.start_day else None
+    end_day = pd.Timestamp(args.end_day, tz="UTC") if args.end_day else None
 
     print("# Static experts")
     for name, met in expert_metrics.items():
@@ -577,7 +690,11 @@ def main() -> int:
         "rolling_winner",
         "expectancy_rotation",
         "drawdown_switch",
+        "stability_rotation",
+        "equity_curve_filter",
+        "loss_streak_pause",
         "first_week_observe",
+        "monthly_risk_budget",
         "regime_map",
         "prove_it",
         "cash",
@@ -594,13 +711,15 @@ def main() -> int:
             min_score=args.min_score,
             loss_stop_pct=args.loss_stop_pct,
             warmup_days=args.warmup_days,
+            start_day=start_day,
+            end_day=end_day,
         )
         results.append(res)
         _print_summary(p, res.metrics)
         res.daily.to_csv(args.out_dir / f"{p}_daily.csv")
         res.decisions.to_csv(args.out_dir / f"{p}_decisions.csv", index=False)
 
-    oracle = _oracle(expert_daily, sb)
+    oracle = _oracle(expert_daily, sb, start_day=start_day, end_day=end_day)
     _print_summary("oracle_hindsight", oracle.metrics)
     oracle.daily.to_csv(args.out_dir / "oracle_hindsight_daily.csv")
 
