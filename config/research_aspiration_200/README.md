@@ -55,3 +55,7 @@ Saved cap-clean picks from `iter35_moonshot_cap_frontier.py`:
   member adds `block_hours_utc: [13, 14]` and `adx_max: 28`. Same CSV:
   **Apr ~+5.9%** (vs ~-12.8% base), **cap=0**, full **~+250%**, Feb **~+126%**;
   **Mar ~-8.1%** trade-off. Reproduce sweep: `scripts/iter37_dual_pivot_april_sweep.py`.
+- **`adaptive_dual_pivot_chop_moon_r9_tp9_balanced.yaml`** — Iter38: same chop
+  as aprilblock; **pivot_trend** at TP2 **1.6R**, risk **0.6×**, max **2** trades/day.
+  **Mar ~-0.24%**, **Apr ~+2.17%**, **cap=0**, full **~+252%** (Mar/Apr Pareto
+  winner in `scripts/iter38_mar_apr_pareto_sweep.py --quick`).
