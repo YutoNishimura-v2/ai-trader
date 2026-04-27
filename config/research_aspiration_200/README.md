@@ -59,3 +59,18 @@ Saved cap-clean picks from `iter35_moonshot_cap_frontier.py`:
   as aprilblock; **pivot_trend** at TP2 **1.6R**, risk **0.6×**, max **2** trades/day.
   **Mar ~-0.24%**, **Apr ~+2.17%**, **cap=0**, full **~+252%** (Mar/Apr Pareto
   winner in `scripts/iter38_mar_apr_pareto_sweep.py --quick`).
+
+## Iter39 — rolling harness + triple-member falsification
+
+`python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv <configs>`:
+
+| YAML | full % | Mar | Apr | rolling wins | worst_score | full cap |
+|------|-------:|----:|----:|:-------------:|------------:|:--------:|
+| dual `r9_tp9` (base) | ~60 | -2.6 | -10.8 | **0/4** | DQ | 0 |
+| dual aprilblock | ~250 | -8.1 | +5.9 | 1/4 | ~3.60 | 0 |
+| **dual balanced** | ~252 | -0.2 | +2.2 | **2/4** | **~0.97** | **0** |
+| triple weekly-first | ~355 | -11.5 | +7.3 | 1/4 | ~4.41 | **1** |
+
+**Takeaway:** **balanced** is the best **generalization** trade-off in this
+family on the default 4-window battery. **`adaptive_triple_pivot_protect_r9_balanced.yaml`**
+(weekly listed first) is **falsified**: preempts daily members and trips caps.
