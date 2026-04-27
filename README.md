@@ -46,6 +46,10 @@ see [`docs/HANDOFF.md`](docs/HANDOFF.md).
 
 ## Specification
 
+Research priority (per user direction): evaluate **March and April** calendar
+months on `data/xauusd_m1_2026.csv` ahead of headline Jan/Feb or single-month
+moonshots; see `docs/plan.md` and `config/research_aspiration_200/README.md`.
+
 - `docs/plan.md` — locked spec (constraints, gates, instruments).
 - `docs/HANDOFF.md` — current state + how to continue.
 - `docs/progress.md` — append-only iteration log with raw numbers.

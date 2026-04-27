@@ -62,6 +62,12 @@ of adaptation; they are evidence of trend-favoured regime. April's
 **The rest of this handover assumes April is the proving ground**
 and orients next steps accordingly.
 
+The user has **reiterated** that simulation and tuning should **prioritize
+March and April** returns on the reference dataset ahead of easy-month (Jan/Feb)
+headline numbers or moonshot single-month spikes; see `docs/plan.md` and
+`config/research_aspiration_200/README.md` for the current dual-pivot Mar/Apr
+candidates vs moonshot ceiling probes.
+
 ---
 
 ## 2. Repository layout
