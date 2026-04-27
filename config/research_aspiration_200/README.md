@@ -236,3 +236,18 @@ matches **`worst_score` ~0.533** but **April ~11.8%** vs **~27.3%** at tam **24*
 **Low tam (18–19):** huge March but **April negative / ~0** — useless for the stated goal.
 
 **Conclusion:** keep **`…_adx1724_kr046_km20`** as the **tam 24** flagship; no better **4/4** cell found in this sweep.
+
+### Iter55 — **`range_adx_max` extend below 17** (`scripts/iter55_ram_extend_tam24_sweep.py`)
+
+Fixed **tam 24**, **kr046 + km2.0**; swept **ram** **14–23** (Iter53 covered **17–22** partially; this extends **14–16**).
+
+**Best rolling among 4/4:** still **`range_adx_max: 17`** → **`worst_score` ~0.533** (unchanged flagship).
+
+**Higher Mar/Apr (4/4) alternative:** **`range_adx_max: 14`** → **`adaptive_triple_keltner_overlap_adx1424_kr046_km20.yaml`**
+
+| YAML | Mar % | Apr % | min(Mar,Apr) | worst_score |
+|------|------:|------:|-------------:|------------:|
+| `..._adx1724_...` (ram **17**) | ~26.3 | ~27.3 | ~26.3 | **~0.533** |
+| **`..._adx1424_...` (ram **14**)** | **~44.0** | **~31.0** | **~31.0** | **~0.850** |
+
+**Dead:** **ram 22** caps; **ram 23** **0/4** harness.
