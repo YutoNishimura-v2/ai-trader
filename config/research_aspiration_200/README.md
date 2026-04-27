@@ -104,3 +104,23 @@ and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
 (**Mar ~+3.4%, Apr ~+4.4%**, full ~153%, cap=0) but **worst_score ~4.2** and **1/4**
 window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
 recent-month lift outweighs cross-window score.
+
+## Iter45 — multi-method stacks (web-inspired; March/April focus)
+
+Desk-style ideas: combine **regime identification**, **session liquidity**, and
+**mean reversion in chop** (Keltner / ATR bands) rather than pivot-only grids.
+
+### Strong Mar/Apr: `adaptive_triple_keltner_split_regimes_r8.yaml`
+
+**adaptive_router** with **split regimes**: **transition → Keltner MR** (listed first),
+**range → chop pivot**, **trend → tight pivot**. Same **8%/trade** stack as rollwin.
+
+On `data/xauusd_m1_2026.csv`: **Mar ~+20%, Apr ~+10%**, **cap=0**, harness **3/4**
+passes — large lift vs rollwin **~+0.8% / ~+1.3%** for those months. Trade-off:
+**worst_score ~2.5** vs **~0.1**; use when **difficult months** matter more than
+minimax rolling score.
+
+### Falsified: `regime_router_keltner_range_squeeze_trend_r8.yaml`
+
+**regime_router** (Keltner in range, squeeze in transition, pivot in trend) →
+**cap_violations**, bad March. See **FALSIFIED** in file header.
