@@ -155,3 +155,11 @@ Iter45. Use **Iter45 triple** for a Mar/Apr lift with milder harness pain; use
 **Practical pick:** use **`_overlap_keltner`** when you want **strong Mar/Apr *and* rolling
 robustness**; use **`_m131415`** or **Iter45 base** when you want **maximum** Mar/Apr
 on the sample and can accept **3/4** harness or **worse** `worst_score`.
+
+### Iter48 — overlap stack refinements (negative / marginal)
+
+| YAML | Mar % | Apr % | wins | worst_score | Verdict |
+|------|------:|------:|:------:|------------:|---------|
+| `adaptive_triple_keltner_split_overlap_keltner.yaml` (Iter47) | ~13.3 | ~8.0 | **4/4** | ~0.65 | **Baseline** |
+| `..._overlap_keltner_m131415.yaml` | ~12.9 | ~7.7 | 4/4 | ~1.10 | **Worse** — wider chop block does not help this combo. |
+| `..._overlap_keltner_kr040.yaml` | ~14.1 | ~8.0 | 4/4 | ~0.65 | **Marginal** — tiny March lift, same worst_score as Iter47. |
