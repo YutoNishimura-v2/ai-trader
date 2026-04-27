@@ -1,18 +1,38 @@
-# Research — +200%/month aspiration (simulation-only)
+# Research — simulation-only stacks (moonshot + dual-pivot lines)
 
-Per `docs/plan.md`, **+200% per calendar month** is an *aspiration*, not the
-iter30 rolling-window promotion gate. This directory holds **explicitly
-aggressive, simulation-only** YAML stacks that loosen sizing within plan
-§A guardrails (no martingale, no averaging down, no lookahead, no news
-strategies) to answer: *is the ceiling risk/sizing or signal quality?*
+Per `docs/plan.md`, **March and April** calendar returns on the reference CSV
+(`data/xauusd_m1_2026.csv`) are the **primary** research objectives for
+near-term deployment — “difficult months” outweigh January/February spikes or
+single-month ceilings.
 
-**Do not deploy these as the HFM baseline** without a separate review. They
-exist to push the search frontier and log honest metrics.
+The **+200%/month aspiration** stays in the plan as a **stretch** probe
+(moonshot family below). Novel work should **lead** with Mar/Apr and rolling
+scores where applicable; chasing only best-month or full-period headline
+without lifting Mar/Apr is off-priority unless explicitly labelled a ceiling
+experiment.
 
-See `scripts/iter34_moonshot_sweep.py` for a bounded grid over members of
-this family.
+This directory holds **explicitly aggressive** YAML stacks that loosen sizing
+within plan §A guardrails (no martingale, no averaging down, no lookahead, no
+news strategies).
 
-## Result snapshot (2026-01..04 M1, same CSV as other iter runs)
+**Recommended Mar/Apr–oriented headline (same CSV, cap-clean):**
+
+- `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml` — balanced dual pivot at
+  **8%/trade**: Mar ~**+0.83%**, Apr ~**+1.28%**, harness **2/4**, **worst_score ~0.10**.
+- **Higher Mar/Apr sample lift, worse harness:**  
+  `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_m131415_tp16.yaml` — wider UTC
+  chop block `[13,14,15]`: Mar ~**+3.4%**, Apr ~**+4.4%**, **worst_score ~4.2**.
+
+**Ceiling probes** (moonshots; often weak Mar/Apr or cap violations): see table
+below.
+
+**Do not deploy these as the HFM baseline** without a separate review.
+
+See `scripts/iter34_moonshot_sweep.py` for moonshot grids;
+`scripts/iter32_compare_configs.py` / `scripts/iter42_rollwin_mar_apr_sweep.py`
+for Mar/Apr comparisons.
+
+## Moonshot (+200%/month aspiration) snapshot (2026-01..04 M1)
 
 | Config | best month % | full % | cap viol | ruin |
 |--------|-------------:|-------:|:--------:|:----:|

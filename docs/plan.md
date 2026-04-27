@@ -29,6 +29,16 @@ return. Targets are high-risk / high-reward:
   multiple iterations show it's unreachable we discuss in a review
   session and adjust.
 
+> **Update (2026-04-27, evaluation priority):** Research and iteration
+> **prioritize March and April** calendar-month performance on the
+> reference M1 dataset (recent “difficult” chop conditions), **ahead of**
+> peak months such as January/February or headline full-period return.
+> The **+200%/month aspiration** remains a secondary stretch goal: it must
+> not distract from tuning that actually lifts **Mar/Apr** under the risk
+> guardrails. Novel configs are scored first on Mar/Apr (and rolling-window
+> robustness where used); moonshot configs that spike one month but leave
+> Mar/Apr weak are labelled **ceiling probes**, not headline candidates.
+
 > **Update (2026-04-25, GOLD-only HRHR revision):** The user has
 > explicitly narrowed research back to **XAUUSD only** and authorized
 > materially more risk if needed. The primary non-negotiable guardrail
