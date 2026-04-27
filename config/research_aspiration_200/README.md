@@ -173,3 +173,13 @@ Swept **Keltner `risk_multiplier`** × **`kelt_mult`** on the overlap stack (15 
   Mar ~**13.4%**, Apr ~**8.0%**, **min(Mar,Apr) ~8.0%** vs baseline ~**7.99%**, **4/4** wins.
 
 Use as a **drop-in refinement** over Iter47 overlap when optimizing the **weaker of Mar/Apr**.
+
+### Iter50 — London Keltner vs ADX-tuned overlap
+
+| YAML | Mar % | Apr % | cap | wins | worst_score | Note |
+|------|------:|------:|:---:|:------:|------------:|------|
+| `..._overlap_keltner_kr042_km19` (Iter49) | ~13.4 | ~8.0 | **0** | **4/4** | ~**0.65** | **Default** overlap refinement |
+| `..._london_keltner_kr042_km19` | ~28.2 | ~14.8 | **1** | 4/4 | ~2.08 | **FALSIFIED** — daily cap hit |
+| `..._overlap_adx1924_kr038_km19` | **~27.0** | **~18.9** | **0** | **4/4** | ~**1.89** | **Mar/Apr rocket**, rolling score worse than Iter49 |
+
+When you want **maximum Mar/Apr** while keeping **caps = 0** and **all windows**, try **`_overlap_adx1924_kr038_km19`**; when you want **best rolling minimax**, stay on **`_kr042_km19`**.
