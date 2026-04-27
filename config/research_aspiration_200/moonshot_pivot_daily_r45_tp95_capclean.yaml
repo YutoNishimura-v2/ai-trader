@@ -1,0 +1,29 @@
+extends: _base_moonshot_m1.yaml
+
+# SIMULATION-ONLY — cap-clean frontier (see README + iter35 script).
+# 4.5%/trade, TP2 RR=9.5: on 2026-01..04 M1 sample, best month ~+90.3%,
+# cap_violations=0 (slightly higher peak month than r5/tp9.5 in the grid).
+
+risk:
+  risk_per_trade_pct: 4.5
+  lot_cap_per_unit_balance: 0.00002
+
+strategy:
+  __replace__: true
+  name: pivot_bounce
+  params:
+    __replace__: true
+    pivot_period: daily
+    atr_period: 14
+    touch_atr_buf: 0.05
+    sl_atr_buf: 0.28
+    max_sl_atr: 2.0
+    tp1_rr: 1.0
+    tp2_rr: 9.5
+    leg1_weight: 0.45
+    cooldown_bars: 45
+    session: london_or_ny
+    use_s2r2: true
+    max_trades_per_day: 6
+    weekdays: [0, 1, 2, 3]
+    emit_context_meta: true

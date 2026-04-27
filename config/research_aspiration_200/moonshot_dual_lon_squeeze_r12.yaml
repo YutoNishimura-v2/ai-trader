@@ -1,0 +1,49 @@
+extends: _base_moonshot_m1.yaml
+
+# Simulation-only: ordered ensemble — session sweep/reclaim (London box)
+# first, then squeeze breakout. Chases non-overlapping intraday edges at
+# high risk %.
+
+risk:
+  risk_per_trade_pct: 12.0
+  lot_cap_per_unit_balance: 0.000018
+
+strategy:
+  __replace__: true
+  name: ensemble
+  params:
+    __replace__: true
+    members:
+      - name: session_sweep_reclaim
+        params:
+          range_start_hour: 0
+          range_end_hour: 6
+          trade_start_hour: 7
+          trade_end_hour: 12
+          min_range_atr: 0.6
+          min_sweep_atr: 0.1
+          sl_atr_buffer: 0.28
+          max_sl_atr: 2.2
+          atr_period: 14
+          tp_mode: opposite_edge
+          tp1_rr: 0.55
+          tp2_rr: 3.0
+          leg1_weight: 0.45
+          max_trades_per_day: 2
+      - name: squeeze_breakout
+        params:
+          bb_n: 20
+          bb_k: 2.0
+          kc_atr_mult: 1.5
+          atr_period: 14
+          squeeze_lookback: 16
+          box_lookback: 16
+          break_atr: 0.09
+          sl_atr_buffer: 0.22
+          max_sl_atr: 2.5
+          require_volume_spike: false
+          session: london
+          cooldown_bars: 6
+          tp1_rr: 0.5
+          tp2_rr: 3.5
+          leg1_weight: 0.45
