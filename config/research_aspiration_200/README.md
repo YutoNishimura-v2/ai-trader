@@ -221,3 +221,18 @@ Fixed stack: **`adaptive_triple_keltner_overlap_adx1924_kr046_km20`** (kr046 + k
 lifting **April** massively while **improving** rolling score vs Iter49 overlap — **cap=0**, **4/4** windows.
 
 **Note:** At default ADX **20/25**, changing **kelt_mult** 1.9→2.0 matches km19 metrics (no extra YAML).
+
+### Iter54 — **`trend_adx_min` sweep at `range_adx_max=17`** (`scripts/iter54_ram17_tam_sweep.py`)
+
+On **`adaptive_triple_keltner_overlap_adx1724_kr046_km20.yaml`**, swept **tam** ∈ **18–25**.
+
+**4/4 harness + best Mar/Apr:** **`trend_adx_min` 24** (and **24.5** — **identical** metrics on this CSV). **`23.5`**
+matches **`worst_score` ~0.533** but **April ~11.8%** vs **~27.3%** at tam **24** — worse April-first trade.
+
+**`trend_adx_min` 21:** **`worst_score` ~0.16** but only **3/4** windows — rolling robustness fails.
+
+**`trend_adx_min` 20:** **cap violation** (dead).
+
+**Low tam (18–19):** huge March but **April negative / ~0** — useless for the stated goal.
+
+**Conclusion:** keep **`…_adx1724_kr046_km20`** as the **tam 24** flagship; no better **4/4** cell found in this sweep.
