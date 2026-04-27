@@ -88,3 +88,19 @@ risk block changes). Reproduce sweep: `scripts/iter40_rollwin_risk_sweep.py`.
 
 `ensemble_sweep_then_dual_pivot_r8.yaml` (sweep first, dual stack second) →
 **falsified**: cap hit, **0/4** harness wins (sweep dominates bars).
+
+## Iter42 — state buckets + Mar/Apr sweep on rollwin
+
+On `data/xauusd_m1_2026.csv` vs ``adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml``:
+
+| YAML | Notes |
+|------|--------|
+| `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_buckets.yaml` | Iter31 buckets on; **bit-identical** to rollwin — **flat sizing** (`floor == cap`) makes bucket keys irrelevant for risk; `priority_mode: config` prevents expectancy reordering. |
+| `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_expect.yaml` | Probe + **0.55–1.0** active sizing (mirrors iter31 sizing_b): **Apr / Mar can improve** but **rolling harness regresses** (worst_score ~1.9–2.0 vs ~0.1, same 2/4 wins). |
+
+**Mar/Apr tilt:** `scripts/iter42_rollwin_mar_apr_sweep.py` perturbs chop `block_hours_utc`
+and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
+**[13,14,15]** — saved as `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_m131415_tp16.yaml`
+(**Mar ~+3.4%, Apr ~+4.4%**, full ~153%, cap=0) but **worst_score ~4.2** and **1/4**
+window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
+recent-month lift outweighs cross-window score.
