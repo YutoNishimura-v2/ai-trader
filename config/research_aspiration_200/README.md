@@ -104,3 +104,24 @@ and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
 (**Mar ~+3.4%, Apr ~+4.4%**, full ~153%, cap=0) but **worst_score ~4.2** and **1/4**
 window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
 recent-month lift outweighs cross-window score.
+
+## Iter44 — risk × wider UTC block (Mar/Apr priority continuation)
+
+Script: **`scripts/iter44_rollwin_risk_mar_apr.py`** — sweeps **risk 7–10%** on the
+balanced dual-pivot template (same stack as rollwin family). Finding: **7%**
+has **higher min(Mar,Apr)** (~**1.94%**) than **8%** (~**0.83%**) but **worse**
+`worst_score` (**~1.73** vs **~0.10**) and fewer harness wins — **risk alone**
+does not beat rollwin when both Mar/Apr *and* rolling robustness matter.
+
+Combining **7%/trade** + chop block **[13,14,15]** (same widening as `_m131415_tp16`,
+but keeps trend **tp2_rr 1.6**):
+
+| YAML | Mar % | Apr % | min(Mar,Apr) | worst_score | wins |
+|------|------:|------:|-------------:|------------:|:----:|
+| `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml` | ~0.83 | ~1.28 | ~0.83 | ~0.10 | 2/4 |
+| **`adaptive_dual_pivot_chop_moon_r7_tp9_rollwin_m131415.yaml`** | ~1.83 | ~3.92 | **~1.83** | **~0.67** | **2/4** |
+| `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_m131415_tp16.yaml` | ~3.38 | ~4.42 | ~3.38 | ~4.16 | 1/4 |
+
+**Takeaway:** **`_r7_*_m131415`** is the best **Mar/Apr vs rolling score** compromise
+found in this pass — stronger difficult months than baseline rollwin with **same
+2/4** harness wins; **worst_score** between baseline and the aggressive `_m131415_tp16`.
