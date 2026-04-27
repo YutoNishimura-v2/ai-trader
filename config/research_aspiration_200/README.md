@@ -163,3 +163,13 @@ on the sample and can accept **3/4** harness or **worse** `worst_score`.
 | `adaptive_triple_keltner_split_overlap_keltner.yaml` (Iter47) | ~13.3 | ~8.0 | **4/4** | ~0.65 | **Baseline** |
 | `..._overlap_keltner_m131415.yaml` | ~12.9 | ~7.7 | 4/4 | ~1.10 | **Worse** — wider chop block does not help this combo. |
 | `..._overlap_keltner_kr040.yaml` | ~14.1 | ~8.0 | 4/4 | ~0.65 | **Marginal** — tiny March lift, same worst_score as Iter47. |
+
+### Iter49 — overlap micro-grid (`scripts/iter49_overlap_micro_grid.py`)
+
+Swept **Keltner `risk_multiplier`** × **`kelt_mult`** on the overlap stack (15 cap-clean trials).
+**`worst_score` was identical (~0.645)** across the grid; **best min(Mar,Apr)**:
+
+- **`adaptive_triple_keltner_split_overlap_keltner_kr042_km19.yaml`** — **kelt_rm 0.42**, **kelt_mult 1.9**:
+  Mar ~**13.4%**, Apr ~**8.0%**, **min(Mar,Apr) ~8.0%** vs baseline ~**7.99%**, **4/4** wins.
+
+Use as a **drop-in refinement** over Iter47 overlap when optimizing the **weaker of Mar/Apr**.
