@@ -143,3 +143,15 @@ Saved: **`adaptive_triple_keltner_split_regimes_r8_tune_adx19.yaml`**
 **March/April explode in-sample** but **rolling worst_score gets much worse** than
 Iter45. Use **Iter45 triple** for a Mar/Apr lift with milder harness pain; use
 **tune_adx19** only as an extreme Mar/Apr probe.
+
+### Iter47 — session + chop variants on the triple-Keltner stack
+
+| YAML | Mar % | Apr % | wins | worst_score | Note |
+|------|------:|------:|:------:|------------:|------|
+| `adaptive_triple_keltner_split_overlap_keltner.yaml` | ~13.3 | ~8.0 | **4/4** | **~0.65** | Keltner only in **12–16 UTC overlap** — **only variant to pass all 4 windows** with Mar/Apr well above rollwin. |
+| `adaptive_triple_keltner_split_regimes_r8_m131415.yaml` | **~28.0** | **~11.1** | 3/4 | ~2.47 | Wider chop block **13–15 UTC**; best **raw** Mar/Apr in this family, same rolling pain as Iter45. |
+| rollwin (reference) | ~0.8 | ~1.3 | 2/4 | ~0.1 | Cautious dual-pivot. |
+
+**Practical pick:** use **`_overlap_keltner`** when you want **strong Mar/Apr *and* rolling
+robustness**; use **`_m131415`** or **Iter45 base** when you want **maximum** Mar/Apr
+on the sample and can accept **3/4** harness or **worse** `worst_score`.
