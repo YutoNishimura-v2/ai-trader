@@ -124,3 +124,22 @@ minimax rolling score.
 
 **regime_router** (Keltner in range, squeeze in transition, pivot in trend) →
 **cap_violations**, bad March. See **FALSIFIED** in file header.
+
+### Iter46 — widen **transition** band (`range_adx_max`, `trend_adx_min`)
+
+Quick grid over Keltner `risk_multiplier` × ADX thresholds (**script:**
+`scripts/iter46_triple_keltner_tune.py` — phase 1 fast screen, optional harness on top-K).
+
+Saved: **`adaptive_triple_keltner_split_regimes_r8_tune_adx19.yaml`**
+(**range_adx_max=19**, **trend_adx_min=24**, **kelt_rm=0.40**).
+
+| YAML | Mar % | Apr % | wins | worst_score |
+|------|------:|------:|:------:|------------:|
+| Triple Keltner (Iter45 base) | ~20 | ~10 | 3/4 | ~2.48 |
+| **Tune adx19 (Iter46)** | **~38.5** | **~26.4** | 3/4 | **~8.6** |
+| Rollwin dual pivot | ~0.8 | ~1.3 | 2/4 | ~0.10 |
+
+**Takeaway:** Tightening “range” vs “transition” routing sends more bars to Keltner —
+**March/April explode in-sample** but **rolling worst_score gets much worse** than
+Iter45. Use **Iter45 triple** for a Mar/Apr lift with milder harness pain; use
+**tune_adx19** only as an extreme Mar/Apr probe.
