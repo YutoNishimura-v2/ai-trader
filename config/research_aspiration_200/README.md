@@ -41,3 +41,13 @@ Saved cap-clean picks from `iter35_moonshot_cap_frontier.py`:
 
 - `moonshot_pivot_daily_r45_tp95_capclean.yaml` — **~+90.3%** best month.
 - `moonshot_pivot_daily_r5_tp95_capclean.yaml` — **~+83.5%** best month, **~+204%** full.
+
+## Iter36 — regime splits (creative, mostly falsified)
+
+- **`regime_split_pivot_mr_squeeze_tr.yaml`**: pivot in chop, squeeze in trend
+  → **bad** (negative full, caps) on 2026 sample. Marked falsified in file.
+- **`regime_split_squeeze_mr_pivot_tr.yaml`**: inverse → **bad** (caps).
+- **`adaptive_dual_pivot_chop_moon_r9_tp9.yaml`**: `adaptive_router` with two
+  `pivot_bounce` members — wide TP2 + M15 `adx_max` on chop only, tight pivot
+  in trend. At **9%/trade** → **cap=0**, Feb **~+104%**, full **~+60%** on the
+  same CSV (Apr still weak; not a full fix).
