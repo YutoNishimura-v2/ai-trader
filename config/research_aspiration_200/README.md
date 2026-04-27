@@ -25,6 +25,18 @@ in-sample by a lone high-risk `pivot_bounce` with long TP2; the same recipe
 still has bad months, cap hits, and is not walk-forward safe. Treat as a
 ceiling probe, not a live candidate.
 
+### Iter43 — +200% month vs cap-clean (extended grid)
+
+Script: `scripts/iter43_moonshot_200_sweep.py` scans **risk 6–18%** × **tp2 8–11**
+on the stripped daily pivot moonshot (same template family as iter35).
+
+| Constraint | Result on `data/xauusd_m1_2026.csv` |
+|------------|-------------------------------------|
+| **best calendar month ≥ 200%** | **Yes** — e.g. **18% / tp2 9.5** → best month **~+291%**, full **~+778%**, **cap_violations = 4** (`moonshot_pivot_daily_r18_tp95.yaml`). |
+| **same + cap_violations = 0** | **No hits** in that grid — cap-clean monthly ceiling stays near **~90%** (iter35 frontier). |
+
+So the **+200% monthly aspiration is reachable in-sample only by accepting risk-engine cap breaks** on this harness; there is no free lunch at **cap = 0** on the same four months.
+
 ## Cap-clean frontier (same family, Jan–Apr 2026 M1)
 
 Scripted grid (`scripts/iter35_moonshot_cap_frontier.py`): with **no HTF
