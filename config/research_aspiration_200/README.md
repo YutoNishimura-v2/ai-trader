@@ -204,3 +204,20 @@ Saved **`adaptive_triple_keltner_overlap_adx1924_kr046_km20.yaml`** (same stack,
 **`trend_adx_min`:** **`23`** vs **24** shrinks trend bucket → **Apr ~4.7%**, Mar ~23%, **`worst_score` ~0.88**
 but only **3/4** harness wins — **April collapses** (do not use for Mar/Apr-first without accepting that).
 **`25`** → **3/4** wins and bad `worst_score` (~3.43).
+
+### Iter53 — **`range_adx_max` sweep at `trend_adx_min=24`** (`scripts/iter53_ram_fixed_tam24_sweep.py`)
+
+Fixed stack: **`adaptive_triple_keltner_overlap_adx1924_kr046_km20`** (kr046 + km2.0); sweep **`range_adx_max`** ∈ **17–22**.
+
+**Winner:** **`range_adx_max: 17`** → **`adaptive_triple_keltner_overlap_adx1724_kr046_km20.yaml`**
+
+| YAML | Mar % | Apr % | wins | worst_score |
+|------|------:|------:|:------:|------------:|
+| Iter49 `..._kr042_km19` | ~13.4 | ~8.0 | **4/4** | ~**0.645** |
+| **`..._adx1724_kr046_km20`** | **~26.3** | **~27.3** | **4/4** | **~0.533** |
+| `..._adx1924_kr046_km20` | ~26.2 | ~17.4 | 4/4 | ~1.878 |
+
+**Interpretation:** **Tighter range threshold** (ram **17**) widens **transition → Keltner** vs ram **19**,
+lifting **April** massively while **improving** rolling score vs Iter49 overlap — **cap=0**, **4/4** windows.
+
+**Note:** At default ADX **20/25**, changing **kelt_mult** 1.9→2.0 matches km19 metrics (no extra YAML).
