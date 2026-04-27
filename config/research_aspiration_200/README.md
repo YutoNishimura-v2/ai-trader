@@ -74,3 +74,17 @@ Saved cap-clean picks from `iter35_moonshot_cap_frontier.py`:
 **Takeaway:** **balanced** is the best **generalization** trade-off in this
 family on the default 4-window battery. **`adaptive_triple_pivot_protect_r9_balanced.yaml`**
 (weekly listed first) is **falsified**: preempts daily members and trips caps.
+
+## Iter40 — risk% for rolling `worst_score`
+
+Grid on `adaptive_dual_pivot_chop_moon_r9_tp9_balanced` (trend params fixed):
+**8%/trade** gives **worst_score ~0.10** and **2/4** window passes (vs 9% with
+~0.97). Full sample: **Mar ~+0.83%**, **Apr ~+1.28%**, cap=0, full **~+233%**.
+
+Saved: `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml` (extends balanced; only
+risk block changes). Reproduce sweep: `scripts/iter40_rollwin_risk_sweep.py`.
+
+## Iter41 — `ensemble` sweep + dual router
+
+`ensemble_sweep_then_dual_pivot_r8.yaml` (sweep first, dual stack second) →
+**falsified**: cap hit, **0/4** harness wins (sweep dominates bars).
