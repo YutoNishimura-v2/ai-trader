@@ -20,48 +20,14 @@ Example::
 from __future__ import annotations
 
 import argparse
-import os
 from pathlib import Path
 
-from ..broker.mt5_live import MT5LiveBroker
 from ..config import load_config
 from ..live.runner import LiveRunner
 from ..risk.fx import FixedFX
 from ..risk.manager import InstrumentSpec, RiskManager
 from ..strategy.registry import get_strategy
-
-
-def _env(name: str | None) -> str | None:
-    if not name:
-        return None
-    return os.environ.get(name)
-
-
-def _login_from_cfg(cfg: dict, broker_cfg: dict) -> int | None:
-    alt = broker_cfg.get("mt5_login_env")
-    if alt:
-        v = _env(str(alt))
-        if v is not None and str(v).strip():
-            return int(str(v).strip())
-    acct = broker_cfg.get("account")
-    return int(acct) if acct is not None else None
-
-
-def _terminal_path_from_cfg(broker_cfg: dict) -> str | None:
-    tp = broker_cfg.get("mt5_terminal_path_env")
-    if tp:
-        return _env(str(tp))
-    return broker_cfg.get("terminal_path")
-
-
-def _password_from_cfg(broker_cfg: dict) -> str | None:
-    pw_env = broker_cfg.get("password_env")
-    if pw_env:
-        pw = _env(str(pw_env))
-        if pw:
-            return pw
-    direct = broker_cfg.get("password")
-    return str(direct) if direct else None
+from .broker_config import build_mt5_broker_from_config, ensure_password_if_required
 
 
 def _make_mt5_fetcher(symbol: str, timeframe: str):  # pragma: no cover
@@ -140,23 +106,11 @@ def main() -> int:  # pragma: no cover
 
     live_cfg = cfg.get("live", {})
     broker_cfg = cfg.get("broker", {}) or {}
-    login = _login_from_cfg(cfg, broker_cfg)
-    password = _password_from_cfg(broker_cfg)
-    terminal_path = _terminal_path_from_cfg(broker_cfg)
-    pw_env = broker_cfg.get("password_env")
-    if pw_env and password is None:
-        raise SystemExit(
-            f"Missing environment variable {pw_env!r} (MT5 trading password). "
-            "Do not commit passwords; set the variable on the VPS only."
-        )
-    broker = MT5LiveBroker(
+    ensure_password_if_required(broker_cfg)
+    broker = build_mt5_broker_from_config(
         instrument=instrument,
-        magic=int(live_cfg.get("magic_number", 20260424)),
-        comment=live_cfg.get("comment", "ai-trader-demo"),
-        terminal_path=terminal_path,
-        login=login,
-        server=broker_cfg.get("server"),
-        password=password,
+        live_cfg=live_cfg,
+        broker_cfg=broker_cfg,
     )
 
     strat_cfg = cfg["strategy"]

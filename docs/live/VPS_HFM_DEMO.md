@@ -41,7 +41,14 @@ execute trades from this Linux repository — you run Python **on the VPS**.
    setx AI_TRADER_MT5_PASSWORD "your_mt5_trading_password"
    ```
 
-   Open a **new** terminal so `setx` takes effect, activate venv, then:
+   Open a **new** terminal so `setx` takes effect, activate venv, then verify the Python
+   API can see the terminal (does not open trades):
+
+   ```bat
+   python -m ai_trader.scripts.mt5_connectivity_check --config config\live_local.yaml
+   ```
+
+   Then start the runner:
 
    ```bat
    python -m ai_trader.scripts.run_demo --config config\live_local.yaml
