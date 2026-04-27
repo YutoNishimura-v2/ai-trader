@@ -194,3 +194,13 @@ Script: **`scripts/iter51_overlap_adx1924_rm_sweep.py`** (0.30–0.50 step 0.02,
 **`adaptive_triple_keltner_overlap_adx1924_kr046_km19.yaml`**.
 
 **Trade-off:** March sample **~25.7%** vs **~27%** at `kelt_rm` 0.38 — slightly less March, slightly better `worst_score`.
+
+### Iter52 — `kelt_mult` + `trend_adx_min` on **kr046** (`scripts/iter52_overlap_kr046_km_tam_sweep.py`)
+
+**`kelt_mult`:** **1.75** spikes `worst_score` (~**2.88**) — wide bands hurt here. Among **4/4**
+windows, **`kelt_mult` 1.95–2.0** ties **lowest `worst_score`** (~**1.878**) vs **1.880** at **1.9**.
+Saved **`adaptive_triple_keltner_overlap_adx1924_kr046_km20.yaml`** (same stack, **`kelt_mult: 2.0`**).
+
+**`trend_adx_min`:** **`23`** vs **24** shrinks trend bucket → **Apr ~4.7%**, Mar ~23%, **`worst_score` ~0.88**
+but only **3/4** harness wins — **April collapses** (do not use for Mar/Apr-first without accepting that).
+**`25`** → **3/4** wins and bad `worst_score` (~3.43).
