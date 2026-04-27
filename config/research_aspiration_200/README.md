@@ -183,3 +183,14 @@ Use as a **drop-in refinement** over Iter47 overlap when optimizing the **weaker
 | `..._overlap_adx1924_kr038_km19` | **~27.0** | **~18.9** | **0** | **4/4** | ~**1.89** | **Mar/Apr rocket**, rolling score worse than Iter49 |
 
 When you want **maximum Mar/Apr** while keeping **caps = 0** and **all windows**, try **`_overlap_adx1924_kr038_km19`**; when you want **best rolling minimax**, stay on **`_kr042_km19`**.
+
+### Iter51 — `kelt_rm` sweep on ADX19/24 overlap stack
+
+Script: **`scripts/iter51_overlap_adx1924_rm_sweep.py`** (0.30–0.50 step 0.02, cap-clean only).
+
+**Surprise:** **very low** `kelt_rm` (**0.30–0.32**) **hurts** `worst_score** (~**3.31** vs ~**1.88**) — not monotonic.
+
+**Best rolling score** in band: **`kelt_rm` ~0.46–0.50** → `worst_score` ~**1.880** (tiny improvement over **0.38** at ~**1.887**). Saved:
+**`adaptive_triple_keltner_overlap_adx1924_kr046_km19.yaml`**.
+
+**Trade-off:** March sample **~25.7%** vs **~27%** at `kelt_rm` 0.38 — slightly less March, slightly better `worst_score`.
