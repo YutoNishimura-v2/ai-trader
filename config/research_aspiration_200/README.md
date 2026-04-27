@@ -51,3 +51,7 @@ Saved cap-clean picks from `iter35_moonshot_cap_frontier.py`:
   `pivot_bounce` members — wide TP2 + M15 `adx_max` on chop only, tight pivot
   in trend. At **9%/trade** → **cap=0**, Feb **~+104%**, full **~+60%** on the
   same CSV (Apr still weak; not a full fix).
+- **`adaptive_dual_pivot_chop_moon_r9_tp9_aprilblock.yaml`** — Iter37: chop
+  member adds `block_hours_utc: [13, 14]` and `adx_max: 28`. Same CSV:
+  **Apr ~+5.9%** (vs ~-12.8% base), **cap=0**, full **~+250%**, Feb **~+126%**;
+  **Mar ~-8.1%** trade-off. Reproduce sweep: `scripts/iter37_dual_pivot_april_sweep.py`.
