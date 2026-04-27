@@ -1,0 +1,12 @@
+extends: adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml
+
+# Iter42 — Same as rollwin but **expectancy-driven active sizing** (floor < cap),
+# mirroring config/iter31/adaptive_v55_expectancy_sizing_b.yaml rationale.
+
+strategy:
+  params:
+    initial_state: probe
+    eligibility_off_threshold: -0.08
+    probe_risk_multiplier: 0.55
+    active_risk_multiplier_floor: 0.55
+    active_risk_multiplier_cap: 1.0
