@@ -1,0 +1,17 @@
+extends: moonshot_pivot_daily_r18_tp9.yaml
+
+# SIMULATION-ONLY — Iter43 ceiling probe: wider TP2 on the r18 moonshot stack.
+#
+# On data/xauusd_m1_2026.csv (Jan–Apr M1, 8pt spread):
+#   - Best calendar month **~+291%** (2026-02), full **~+778%**.
+#   - **cap_violations = 4** — NOT promotion-clean (same family as r18/tp9).
+#
+# Iter43 grid (`scripts/iter43_moonshot_200_sweep.py`): among (risk 6–18%, tp2 8–11),
+# **zero** trials had both **best_month ≥ 200%** and **cap_violations = 0**.
+
+strategy:
+  params:
+    tp2_rr: 9.5
+
+risk:
+  risk_per_trade_pct: 18.0
