@@ -181,8 +181,24 @@ SL buffer × TP2): no row beat baseline **`worst_score`** (~1.43); several tied.
 | `..._trend_tp17_r8.yaml` | +19.4 | +17.6 | **+17.6** | 4/4 | ~0.68 | ~322 | 0 |
 | `..._bb_vwap_r8.yaml` (BB → VWAP ensemble) | +21.3 | +16.3 | +16.3 | 4/4 | ~0.50 | ~255 | 0 |
 
-**Takeaway:** **`_trend_tp17_r8`** is the best **min(Mar, Apr)** lift among saved
-4/4 configs here, at the cost of a **lower** `worst_score` (weaker bottleneck
-window vs ORB-strict baseline). **`_trend_tp155_r8`** trades April for a
-middling `worst_score` (~1.18). **BB → VWAP** after BB lowers headline full
-return but does not beat baseline on `worst_score`.
+**Takeaway:** **`_trend_tp17_r8`** was the first coarse lift on **min(Mar, Apr)**
+at the cost of a **lower** `worst_score` vs baseline 1.6R. Iter65’s fine sweep
+supersedes it with **`_trend_tp172_r8`** (see below). **`_trend_tp155_r8`**
+trades April for a middling `worst_score` (~1.18). **BB → VWAP** after BB lowers
+headline full return but does not beat baseline on `worst_score`.
+
+## Iter65 — never give up: fine `tp2_rr` grid on ORB-strict
+
+`scripts/iter65_orb_strict_trend_tp2_sweep.py` steps `pivot_trend.tp2_rr` from
+**1.56 → 1.71** on `adaptive_quad_orb_bbonly_orb_strict_r8.yaml`. Highlights on
+`data/xauusd_m1_2026.csv`:
+
+- **1.67–1.69R** briefly trips **cap=1** on the full sample while still showing
+  4/4 harness wins — **avoid** that band for cap-clean promotion.
+- **1.71R** already beats the old **1.7R** snapshot on both `min(Mar,Apr)` and
+  `worst_score` with **cap=0**.
+- **1.72R** (saved as `adaptive_quad_orb_bbonly_orb_strict_trend_tp172_r8.yaml`)
+  is the best **cap-clean** compromise we measured next: **Mar ~+19.6%**,
+  **Apr ~+18.0%**, **min(Mar,Apr) ~+18.0%**, **worst_score ~0.78**, **4/4**,
+  **cap=0**, full **~+324%** — strictly better than `_trend_tp17_r8` on this
+  slice for both difficult-month floor and rolling bottleneck score.
