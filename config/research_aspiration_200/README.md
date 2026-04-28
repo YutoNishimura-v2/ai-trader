@@ -104,3 +104,24 @@ and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
 (**Mar ~+3.4%, Apr ~+4.4%**, full ~153%, cap=0) but **worst_score ~4.2** and **1/4**
 window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
 recent-month lift outweighs cross-window score.
+
+## Iter61 — creative multi-method (session edges + MR ensemble)
+
+External playbooks often emphasize **London open after an Asian range** and
+**session liquidity** on gold; we stacked those ideas on top of the Iter40
+`adaptive_dual_pivot_chop_moon_r8_tp9_rollwin` core (same risk block).
+
+`python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv <configs>`:
+
+| YAML | full % | Mar | Apr | rolling wins | worst_score | full cap |
+|------|-------:|----:|----:|:-------------:|------------:|:--------:|
+| rollwin baseline | ~233 | +0.83 | +1.28 | 2/4 | ~0.101 | **0** |
+| `adaptive_quad_orb_bb_keltner_rollwin_r8.yaml` | ~294 | +15.8 | +15.5 | **3/4** | ~0.117 | **0** |
+| `adaptive_quartet_orb_liq_tom_rollwin_r8.yaml` | ~192 | -0.15 | -16.9 | 1/4 | ~1.91 | **1** |
+| `adaptive_quad_atr_squeeze_trend_rollwin_r8.yaml` | ~155 | -15.0 | -2.6 | **0/4** | DQ | **1** |
+
+**Takeaway:** a **transition** stack of **BB squeeze reversal → Keltner** (overlap),
+then **London ORB**, then the existing dual pivots, materially lifts **Mar/Apr**
+on this sample while staying cap-clean, at the cost of still missing one rolling
+window. **Turn-of-month + ORB + liquidity sweep** and **ATR squeeze in trend**
+were **falsified** here (caps and/or harness collapse).
