@@ -25,6 +25,18 @@ in-sample by a lone high-risk `pivot_bounce` with long TP2; the same recipe
 still has bad months, cap hits, and is not walk-forward safe. Treat as a
 ceiling probe, not a live candidate.
 
+### Iter60 — extended moonshot grid (`scripts/iter60_moonshot_aggressive_sweep.py`)
+
+**108 trials:** **risk 8–30%** × **tp2_rr 6–14** on stripped `moonshot_pivot_daily` (same family as `moonshot_pivot_daily_r18_tp9.yaml`).
+
+| Metric | Result on `data/xauusd_m1_2026.csv` |
+|--------|-------------------------------------|
+| **`n_cap_clean`** | **0** — every cell in this grid hits **≥1** cap violation |
+| **`best_month ≥ 200%` with caps** | **0** |
+| **Best month ignoring caps** | **~296.6%** at **30% / tp2 9** (4 caps); **~291%** at **24% / tp2 9** (4 caps) |
+
+So **+200%/month on this slice still requires breaking the daily risk envelope** under this template; widening the grid did **not** produce a cap-clean **200%+** month.
+
 ## Cap-clean frontier (same family, Jan–Apr 2026 M1)
 
 Scripted grid (`scripts/iter35_moonshot_cap_frontier.py`): with **no HTF
