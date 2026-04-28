@@ -251,3 +251,14 @@ Fixed **tam 24**, **kr046 + km2.0**; swept **ram** **14–23** (Iter53 covered *
 | **`..._adx1424_...` (ram **14**)** | **~44.0** | **~31.0** | **~31.0** | **~0.850** |
 
 **Dead:** **ram 22** caps; **ram 23** **0/4** harness.
+
+### Iter56 — **Keltner tuning on ram 14** (`scripts/iter56_ram14_keltner_tune.py`)
+
+Grid **kelt_rm** × **kelt_mult** on **`adaptive_triple_keltner_overlap_adx1424_kr046_km20.yaml`**.
+
+**Result:** among **4/4** trials, **`worst_score` stays ~0.850** whenever **`kelt_mult` = 2.0** (any **kelt_rm** in grid);
+**`kelt_mult` < 2.0** jumps **`worst_score` to ~1.85+** while **hurting** Mar/Apr floor. **No better Pareto**
+than the default **kr046 / km2.0** ram14 file — **keep `…_adx1424_…` as-is** for that branch.
+
+**Fractional `range_adx_max` (quick check, tam 24, kr046 km20):** **14.5** → Mar ~32%, Apr ~42%,
+**4/4** but **`worst_score` ~0.95** (worse than **14** and **17**). **15.0 == 15.5** on this sample.
