@@ -40,6 +40,10 @@ python -m ai_trader.scripts.run_backtest \
 For everything else (sweeps, tournament eval, live demo, architecture)
 see [`docs/HANDOFF.md`](docs/HANDOFF.md).
 
+**HFM VPS + MT5 live demo (Windows on Beeks):** see
+[`docs/live/VPS_HFM_DEMO.md`](docs/live/VPS_HFM_DEMO.md) and
+`config/live_demo_hfm.template.yaml` (use env vars for secrets; see `.env.example`).
+
 ## Specification
 
 - `docs/plan.md` — locked spec (constraints, gates, instruments).
