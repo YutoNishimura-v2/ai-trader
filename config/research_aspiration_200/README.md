@@ -147,3 +147,20 @@ transition mean reversion before ORB.
 test PF only ~**1.018** — use the BB+Keltner file if you prefer higher
 `min(val,test)` on passing windows; use BB-only if you require **4/4** on this
 battery without touching risk caps.
+
+## Iter63 — tighten W2 without losing 4/4 (`scripts/iter63_bbonly_w2_tune.py`)
+
+Small sweep on `adaptive_quad_orb_bbonly_rollwin_r8.yaml` (overlap BB, same risk).
+
+| YAML | full % | Mar | Apr | wins | worst_score | cap | Notes |
+|------|-------:|----:|----:|:----:|------------:|:---:|-------|
+| overlap BB (Iter62) | ~307 | +19.9 | +14.5 | 4/4 | ~0.58 | 0 | W2 test PF ~1.02 |
+| `adaptive_quad_orb_bbonly_orb_strict_r8.yaml` | ~314 | +19.5 | +16.7 | 4/4 | **~1.43** | 0 | Stricter ORB only |
+| `adaptive_quad_orb_bbonly_bb_lonny_r8.yaml` | ~595 | **+57.7** | **+30.9** | 4/4 | **~2.24** | 0 | BB session `london_or_ny` |
+
+**Takeaway:** moving transition BB from **overlap → london_or_ny** is a blunt
+instrument here — it **massively** lifts Mar/Apr and `worst_score` on this CSV
+but also more than doubles headline full-period return (sanity-check before any
+live use). **Stricter ORB** alone is a calmer middle ground: still **4/4**,
+higher `min(Mar,Apr)` than overlap-BB, `worst_score` ~**1.43**. ADX band tweaks
+and BB/ORB risk tilts in the same sweep tended to **break** 4/4.
