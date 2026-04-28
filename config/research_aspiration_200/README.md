@@ -287,3 +287,11 @@ weight **April** and micro rolling score over **March**.
 (Mar/Apr/worst_score/full/PF match Iter57). So **priority inside this pair does not change outcomes**
 on this slice — likely one leg dominates firing or paths coincide; no need to maintain two configs for
 deployment; kept for **reproducibility / negative structural result**.
+
+### Iter59 — **volume_reversion → Keltner** (FALSIFIED)
+
+**`adaptive_triple_ensemble_volume_keltner_overlap_adx1724.yaml`** — volume-confirmed BB fade in overlap,
+then Keltner; same ADX17/tam24 stack.
+
+**Harness:** **Apr ~+46%** sample but **Mar ~+24%**, only **2/4** wins, **`worst_score` ~3.93**, **cap=0**.
+Marked **FALSIFIED** in YAML — **April spike buys rolling failure** vs flagship.
