@@ -16,3 +16,6 @@ data/cache/
 !data/news/.gitkeep
 !data/news/example.csv
 .DS_Store
+# Local MT5 / broker secrets (never commit)
+config/live_local*.yaml
+config/*secrets*.yaml

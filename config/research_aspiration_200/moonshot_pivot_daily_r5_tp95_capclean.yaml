@@ -1,0 +1,33 @@
+extends: _base_moonshot_m1.yaml
+
+# SIMULATION-ONLY — "safety frontier" sibling to moonshot_pivot_daily_r18_tp9.
+# Same lone daily pivot stack, but 5%/trade and TP2 RR=9.5 so the harness
+# reports cap_violations=0 on data/xauusd_m1_2026.csv (Jan–Apr M1).
+#
+# Observed on that slice: best month ~+83.5% (Feb), full ~+204%, all months
+# positive — still far from +200%/month every month, but promotion-cleaner
+# than r18/tp2=9.
+
+risk:
+  risk_per_trade_pct: 5.0
+  lot_cap_per_unit_balance: 0.00002
+
+strategy:
+  __replace__: true
+  name: pivot_bounce
+  params:
+    __replace__: true
+    pivot_period: daily
+    atr_period: 14
+    touch_atr_buf: 0.05
+    sl_atr_buf: 0.28
+    max_sl_atr: 2.0
+    tp1_rr: 1.0
+    tp2_rr: 9.5
+    leg1_weight: 0.45
+    cooldown_bars: 45
+    session: london_or_ny
+    use_s2r2: true
+    max_trades_per_day: 6
+    weekdays: [0, 1, 2, 3]
+    emit_context_meta: true

@@ -1,0 +1,15 @@
+extends: ../iter30/adaptive_v55_v43b_dml5.yaml
+
+# DEPRECATED for research: parent uses flat active sizing (floor=cap=1),
+# so bucket keys have no effect on priority or size — identical to v55.
+# Use adaptive_v55_expectancy_buckets.yaml instead (expectancy sizing on).
+
+strategy:
+  params:
+    state_buckets_enabled: true
+    bucket_persist_tf: M15
+    bucket_m15_lookback_bars: 8
+    bucket_m15_move_thresh: 0.0008
+    bucket_atr_ewm_span: 500
+    bucket_vol_low_ratio: 0.88
+    bucket_vol_high_ratio: 1.12
