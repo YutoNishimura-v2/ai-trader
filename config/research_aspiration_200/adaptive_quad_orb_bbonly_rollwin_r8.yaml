@@ -1,15 +1,15 @@
 extends: adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml
 
-# Iter61 — Mar/Apr lift vs rollwin dual-pivot on 2026 M1 sample (harness):
-# Mar ~+15.8%, Apr ~+15.5%, cap=0, full ~+294%, 3/4 wins, worst_score ~0.117
-# vs baseline Mar ~+0.83%, Apr ~+1.28%, 2/4, worst_score ~0.101.
-# Trade-off: **3/4** rolling-window passes (W2 late-Mar test: PF < 1). For
-# **4/4 + cap=0** on the same CSV, see sibling
-# `adaptive_quad_orb_bbonly_rollwin_r8.yaml` (Iter62: BB-only transition MR).
-
-# Iter61 — Transition = ordered MR ensemble (BB squeeze reversal → Keltner)
-# before London ORB, then dual pivots. Hypothesis: choppy transition benefits
-# from MR confluence before breakout-style ORB.
+# Iter62 — **4/4 rolling harness** + cap=0 on data/xauusd_m1_2026.csv (same
+# risk as rollwin). Iter61 `adaptive_quad_orb_bb_keltner_rollwin_r8` was 3/4:
+# W2 test (late Mar) had profit_factor < 1 while MR+ORB stack still profited.
+# Dropping **Keltner** from the transition ensemble (BB squeeze reversal only)
+# fixes W2 (test PF ~1.018) at the cost of a **higher worst_score** (~0.58 vs
+# ~0.12 for the BB+Keltner stack) — the bottleneck window is now barely
+# profitable on both legs.
+#
+# Full-sample vs Iter61 quad: Mar ~+19.9% (was ~+15.8%), Apr ~+14.5% (was
+# ~+15.5%), full ~+307% (was ~+294%), min(Mar,Apr) ~+14.5% (was ~+15.5%).
 
 risk:
   risk_per_trade_pct: 8.0
@@ -33,7 +33,7 @@ strategy:
     active_risk_multiplier_cap: 1.0
     members:
       - name: ensemble
-        id: tr_mr_stack
+        id: tr_bb_only
         regimes: [transition]
         risk_multiplier: 0.85
         params:
@@ -48,16 +48,6 @@ strategy:
                 leg1_weight: 0.5
                 cooldown_bars: 10
                 max_trades_per_day: 4
-                session: overlap
-            - name: keltner_mean_reversion
-              params:
-                ema_period: 20
-                kelt_mult: 2.0
-                tp1_rr: 0.6
-                tp2_rr: 2.0
-                leg1_weight: 0.5
-                cooldown_bars: 8
-                max_trades_per_day: 5
                 session: overlap
       - name: london_orb
         id: lon_orb_tr

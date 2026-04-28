@@ -125,3 +125,25 @@ then **London ORB**, then the existing dual pivots, materially lifts **Mar/Apr**
 on this sample while staying cap-clean, at the cost of still missing one rolling
 window. **Turn-of-month + ORB + liquidity sweep** and **ATR squeeze in trend**
 were **falsified** here (caps and/or harness collapse).
+
+## Iter62 — fix W2 harness (BB-only transition MR)
+
+The failing window for `adaptive_quad_orb_bb_keltner_rollwin_r8.yaml` is **W2**
+(validation **2026-02-27 → 03-13**, test **03-13 → 03-27**): test PF **~0.915**
+while validation is fine — marginal losers in late March, not caps.
+
+| YAML | full % | Mar | Apr | rolling wins | worst_score | full cap | Notes |
+|------|-------:|----:|----:|:-------------:|------------:|:--------:|-------|
+| `adaptive_quad_orb_bb_keltner_rollwin_r8.yaml` | ~294 | +15.8 | +15.5 | 3/4 | ~0.117 | 0 | W2 test PF < 1 |
+| **`adaptive_quad_orb_bbonly_rollwin_r8.yaml`** | ~307 | **+19.9** | +14.5 | **4/4** | ~0.577 | **0** | Drop Keltner from transition ensemble |
+
+A coarse ORB-parameter grid (`scripts/iter62_quad_orb_tune.py`) did **not** rescue
+W2 (best stayed **2/4**). **Tiny** transition `atr_squeeze_breakout` add-ons
+(risk multiplier ≤0.07) were **no-ops** on this sample (same metrics as each
+other). The structural fix that clears **all four** windows is **BB-only**
+transition mean reversion before ORB.
+
+**Trade-off:** `worst_score` rises (~0.58 vs ~0.12) because W2 now passes with
+test PF only ~**1.018** — use the BB+Keltner file if you prefer higher
+`min(val,test)` on passing windows; use BB-only if you require **4/4** on this
+battery without touching risk caps.
