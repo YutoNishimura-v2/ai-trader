@@ -104,3 +104,26 @@ and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
 (**Mar ~+3.4%, Apr ~+4.4%**, full ~153%, cap=0) but **worst_score ~4.2** and **1/4**
 window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
 recent-month lift outweighs cross-window score.
+
+## Iter66 — outer `regime_router` + nested `adaptive_router` (web-inspired “adaptive regime”)
+
+Public write-ups on gold algos often stress **separate mechanics for trend vs chop**
+(ADX regime, volatility expansion vs mean reversion; e.g. [MQL5 adaptive regime discussion](https://www.mql5.com/en/blogs/post/766905)).
+
+We tested a **drastic** stack: outer **M15 ADX** `regime_router` with **trend-only**
+members listed **first** (so inner `pivot_trend` does not preempt them), then the
+unchanged **dual-pivot** `adaptive_router` on **[range, transition]**.
+
+`python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv`:
+
+| YAML | full % | Mar | Apr | wins | caps |
+|------|-------:|----:|----:|:----:|:----:|
+| rollwin baseline | ~233 | +0.83 | +1.28 | 2/4 | **0** |
+| `regime_outer_dual_pivot_squeeze_tr_r8.yaml` (trend → squeeze) | **~-56** | -7.1 | +0.7 | **0/4** | **3** |
+| `regime_outer_dual_pivot_momo_tr_r8.yaml` (trend → momentum) | ~+28 | -3.4 | **-42** | **0/4** | **5** |
+
+**Takeaway:** on this 2026 M1 slice, **handing ADX-trend bars to squeeze/momentum
+before the dual-pivot router is falsified** — heavy cap violations and harness
+collapse. The nested router remains a valid *code* pattern, but this particular
+split is a **negative control**; keep rollwin-style inner routing unless a new
+trend leg is re-tuned from scratch with cap discipline.
