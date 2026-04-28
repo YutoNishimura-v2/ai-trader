@@ -164,3 +164,25 @@ but also more than doubles headline full-period return (sanity-check before any
 live use). **Stricter ORB** alone is a calmer middle ground: still **4/4**,
 higher `min(Mar,Apr)` than overlap-BB, `worst_score` ~**1.43**. ADX band tweaks
 and BB/ORB risk tilts in the same sweep tended to **break** 4/4.
+
+## Iter64 — refine ORB-strict 4/4 line (pivot trend + optional VWAP)
+
+Starting from `adaptive_quad_orb_bbonly_orb_strict_r8.yaml` (Iter63).
+
+**ORB execution grid** (`scripts/iter64_orb_strict_refine.py`, retest tolerance ×
+SL buffer × TP2): no row beat baseline **`worst_score`** (~1.43); several tied.
+
+**Pivot trend `tp2_rr` sweep** (same ORB + overlap BB):
+
+| YAML | Mar | Apr | min(M,A) | wins | worst_score | full % | cap |
+|------|----:|----:|---------:|:----:|------------:|-------:|:---:|
+| `adaptive_quad_orb_bbonly_orb_strict_r8.yaml` | +19.5 | +16.7 | +16.7 | 4/4 | **~1.43** | ~314 | 0 |
+| `..._trend_tp155_r8.yaml` | +22.0 | +13.6 | +13.6 | 4/4 | ~1.18 | ~309 | 0 |
+| `..._trend_tp17_r8.yaml` | +19.4 | +17.6 | **+17.6** | 4/4 | ~0.68 | ~322 | 0 |
+| `..._bb_vwap_r8.yaml` (BB → VWAP ensemble) | +21.3 | +16.3 | +16.3 | 4/4 | ~0.50 | ~255 | 0 |
+
+**Takeaway:** **`_trend_tp17_r8`** is the best **min(Mar, Apr)** lift among saved
+4/4 configs here, at the cost of a **lower** `worst_score` (weaker bottleneck
+window vs ORB-strict baseline). **`_trend_tp155_r8`** trades April for a
+middling `worst_score` (~1.18). **BB → VWAP** after BB lowers headline full
+return but does not beat baseline on `worst_score`.
