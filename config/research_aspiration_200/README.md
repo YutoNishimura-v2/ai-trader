@@ -262,3 +262,19 @@ than the default **kr046 / km2.0** ram14 file — **keep `…_adx1424_…` as-is
 
 **Fractional `range_adx_max` (quick check, tam 24, kr046 km20):** **14.5** → Mar ~32%, Apr ~42%,
 **4/4** but **`worst_score` ~0.95** (worse than **14** and **17**). **15.0 == 15.5** on this sample.
+
+### Iter57 — **VWAP + Keltner ensemble in transition** (structural)
+
+**`adaptive_triple_ensemble_vwap_keltner_overlap_adx1724.yaml`** — same **ADX 17 / tam 24** and pivots as
+the Iter53 flagship, but **transition** is **`ensemble`**: **VWAP reversion** (overlap, M15 HTF filter)
+then **Keltner** if VWAP is flat.
+
+On `data/xauusd_m1_2026.csv` vs **`..._adx1724_kr046_km20`**:
+
+| | Mar % | Apr % | worst_score |
+|---|------:|------:|------------:|
+| Keltner-only | ~26.3 | ~27.3 | ~0.533 |
+| **VWAP→Keltner** | ~24.0 | **~27.7** | **~0.5325** |
+
+**4/4**, **cap=0** both. **Trade-off:** VWAP front-run **steals** some March edge from Keltner; use if you
+weight **April** and micro rolling score over **March**.
