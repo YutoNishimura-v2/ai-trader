@@ -1,0 +1,116 @@
+extends: adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml
+
+# Iter61 — Mar/Apr lift vs rollwin dual-pivot on 2026 M1 sample (harness):
+# Mar ~+15.8%, Apr ~+15.5%, cap=0, full ~+294%, 3/4 wins, worst_score ~0.117
+# vs baseline Mar ~+0.83%, Apr ~+1.28%, 2/4, worst_score ~0.101.
+# Trade-off: **3/4** rolling-window passes (W2 late-Mar test: PF < 1). For
+# **4/4 + cap=0** on the same CSV, see sibling
+# `adaptive_quad_orb_bbonly_rollwin_r8.yaml` (Iter62: BB-only transition MR).
+
+# Iter61 — Transition = ordered MR ensemble (BB squeeze reversal → Keltner)
+# before London ORB, then dual pivots. Hypothesis: choppy transition benefits
+# from MR confluence before breakout-style ORB.
+
+risk:
+  risk_per_trade_pct: 8.0
+  min_risk_per_trade_pct: 2.0
+  max_risk_per_trade_pct: 10.0
+
+strategy:
+  __replace__: true
+  name: adaptive_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 20.0
+    trend_adx_min: 25.0
+    initial_state: active
+    priority_mode: config
+    eligibility_off_threshold: -1000.0
+    probe_risk_multiplier: 1.0
+    active_risk_multiplier_floor: 1.0
+    active_risk_multiplier_cap: 1.0
+    members:
+      - name: ensemble
+        id: tr_mr_stack
+        regimes: [transition]
+        risk_multiplier: 0.85
+        params:
+          members:
+            - name: bb_squeeze_reversal
+              params:
+                bb_period: 20
+                bb_mult: 2.0
+                contract_lookback: 5
+                tp1_rr: 0.65
+                tp2_rr: 1.75
+                leg1_weight: 0.5
+                cooldown_bars: 10
+                max_trades_per_day: 4
+                session: overlap
+            - name: keltner_mean_reversion
+              params:
+                ema_period: 20
+                kelt_mult: 2.0
+                tp1_rr: 0.6
+                tp2_rr: 2.0
+                leg1_weight: 0.5
+                cooldown_bars: 8
+                max_trades_per_day: 5
+                session: overlap
+      - name: london_orb
+        id: lon_orb_tr
+        regimes: [transition]
+        risk_multiplier: 0.5
+        params:
+          window_min: 150
+          min_range_atr: 1.35
+          min_break_atr: 0.22
+          tp1_rr: 1.0
+          tp2_rr: 2.2
+          leg1_weight: 0.5
+          max_sl_atr: 4.0
+          max_trades_per_day: 1
+      - name: pivot_bounce
+        id: pivot_chop
+        regimes: [range, transition]
+        risk_multiplier: 1.0
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 9.0
+          leg1_weight: 0.45
+          cooldown_bars: 45
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 5
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+          htf: M15
+          adx_period: 14
+          adx_max: 28.0
+          block_hours_utc: [13, 14]
+      - name: pivot_bounce
+        id: pivot_trend
+        regimes: [trend]
+        risk_multiplier: 0.6
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.6
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 2
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
