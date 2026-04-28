@@ -1,0 +1,82 @@
+extends: adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml
+
+# FALSIFIED (2026 M1): cap_violations=3, Mar deeply negative — do not promote.
+
+# Iter45 — **regime_router** (not adaptive): alternate methodologies by ADX regime.
+# Range → Keltner MR; transition → squeeze breakout (vol expansion); trend → pivot.
+# Hypothesis: March/April chop benefits from non-pivot tools without ensemble starvation.
+
+strategy:
+  __replace__: true
+  name: regime_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 20.0
+    trend_adx_min: 25.0
+    regime_risk_multipliers:
+      range: 1.0
+      transition: 0.85
+      trend: 1.0
+    member_risk_multipliers:
+      keltner_mean_reversion: 1.0
+      squeeze_breakout: 0.9
+      pivot_bounce: 0.6
+    regime_confidence:
+      range: 0.62
+      transition: 0.50
+      trend: 0.58
+    adx_confidence_weight: 0.35
+    members:
+      - name: keltner_mean_reversion
+        regimes: [range]
+        params:
+          ema_period: 20
+          atr_period: 14
+          kelt_mult: 2.0
+          slope_lookback: 10
+          slope_max_atr_long: 0.2
+          slope_max_atr_short: 0.2
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.2
+          tp1_rr: 0.55
+          tp2_rr: 2.0
+          leg1_weight: 0.5
+          cooldown_bars: 10
+          max_trades_per_day: 5
+          session: london_or_ny
+      - name: squeeze_breakout
+        regimes: [transition]
+        params:
+          bb_n: 20
+          bb_k: 2.0
+          kc_atr_mult: 1.5
+          atr_period: 14
+          squeeze_lookback: 24
+          box_lookback: 20
+          break_atr: 0.25
+          sl_atr_buffer: 0.32
+          max_sl_atr: 2.0
+          session: london_or_ny
+          cooldown_bars: 12
+          tp1_rr: 0.55
+          tp2_rr: 2.2
+          leg1_weight: 0.5
+      - name: pivot_bounce
+        regimes: [trend]
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.6
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 2
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true

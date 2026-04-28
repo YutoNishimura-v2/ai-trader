@@ -1,0 +1,84 @@
+extends: adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml
+
+# Iter46 — ADX regime tune (full-sample screen): range_adx_max **19**, trend_adx_min **24**,
+# Keltner risk **0.40**. Huge Mar/Apr lift vs Iter45 triple on data/xauusd_m1_2026.csv but
+# **worst_score ~8.6** vs ~2.5 (rolling harness) — prioritize **recent months** only.
+# Prefer `adaptive_triple_keltner_split_regimes_r8.yaml` if rolling robustness matters.
+
+strategy:
+  __replace__: true
+  name: adaptive_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 19.0
+    trend_adx_min: 24.0
+    initial_state: active
+    priority_mode: config
+    eligibility_off_threshold: -1000.0
+    probe_risk_multiplier: 1.0
+    active_risk_multiplier_floor: 1.0
+    active_risk_multiplier_cap: 1.0
+    members:
+      - name: keltner_mean_reversion
+        id: keltner_transition
+        regimes: [transition]
+        risk_multiplier: 0.40
+        params:
+          ema_period: 20
+          atr_period: 14
+          kelt_mult: 2.0
+          slope_lookback: 10
+          slope_max_atr_long: 0.18
+          slope_max_atr_short: 0.18
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.2
+          tp1_rr: 0.55
+          tp2_rr: 1.8
+          leg1_weight: 0.5
+          cooldown_bars: 12
+          max_trades_per_day: 4
+          session: london_or_ny
+      - name: pivot_bounce
+        id: pivot_chop
+        regimes: [range]
+        risk_multiplier: 1.0
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 9.0
+          leg1_weight: 0.45
+          cooldown_bars: 45
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 5
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+          htf: M15
+          adx_period: 14
+          adx_max: 28.0
+          block_hours_utc: [13, 14]
+      - name: pivot_bounce
+        id: pivot_trend
+        regimes: [trend]
+        risk_multiplier: 0.6
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.6
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 2
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
