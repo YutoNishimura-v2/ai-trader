@@ -278,3 +278,12 @@ On `data/xauusd_m1_2026.csv` vs **`..._adx1724_kr046_km20`**:
 
 **4/4**, **cap=0** both. **Trade-off:** VWAP front-run **steals** some March edge from Keltner; use if you
 weight **April** and micro rolling score over **March**.
+
+### Iter58 — **Keltner → VWAP** order (reverse Iter57)
+
+**`adaptive_triple_ensemble_keltner_vwap_overlap_adx1724.yaml`** — same params, **Keltner listed first**.
+
+**Surprise:** on `data/xauusd_m1_2026.csv` harness output is **bit-identical** to **VWAP → Keltner**
+(Mar/Apr/worst_score/full/PF match Iter57). So **priority inside this pair does not change outcomes**
+on this slice — likely one leg dominates firing or paths coincide; no need to maintain two configs for
+deployment; kept for **reproducibility / negative structural result**.
