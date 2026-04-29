@@ -104,3 +104,30 @@ and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
 (**Mar ~+3.4%, Apr ~+4.4%**, full ~153%, cap=0) but **worst_score ~4.2** and **1/4**
 window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
 recent-month lift outweighs cross-window score.
+
+## Iter69–100 — numbered chop micro-grid (exactly 32 runs = iter 69 … 100)
+
+Script: ``scripts/iter69_100_rollwin_chop_grid.py``.
+
+Vary **only** `pivot_chop` on ``adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml``:
+
+- ``adx_max`` ∈ {24, 26, 28, 30}
+- ``block_hours_utc`` ∈ {[13,14], [13,14,15]}
+- ``tp2_rr`` (chop) ∈ {7.5, 8.5, 9.5, 10.5}
+
+Outputs (one JSON object per line, **iter** field 69–100):
+
+- ``config/research_aspiration_200/iter69_100_rollwin_chop_grid.jsonl``
+- ``config/research_aspiration_200/iter69_100_rollwin_chop_grid.summary.json``
+
+**Best cap-clean row** by ``min(Mar,Apr)`` then ``windows_passing`` then
+``worst_score`` on ``data/xauusd_m1_2026.csv``: **iter 83** and **iter 99**
+(tie): ``block_hours_utc [13,14,15]``, chop ``tp2_rr=9.5``, ``adx_max`` **26**
+(iter 83) or **30** (iter 99) → Mar ~+4.68%, Apr ~+5.20%, **min ~+4.68%**, cap **0**,
+but only **1/4** harness wins and ``worst_score ~4.52`` — **still worse than
+rollwin** on rolling robustness (baseline **2/4**, ``worst_score ~0.10``).
+
+**Takeaway:** within this 32-point neighborhood, **nothing beats rollwin** on
+the harness while improving Mar/Apr enough to matter; wider block + higher
+chop TP2 buys difficult months at the price of **generalization collapse**
+(already flagged at Iter42 for the same trade-off).
