@@ -104,3 +104,26 @@ and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
 (**Mar ~+3.4%, Apr ~+4.4%**, full ~153%, cap=0) but **worst_score ~4.2** and **1/4**
 window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
 recent-month lift outweighs cross-window score.
+
+## Iter66 — outer `regime_router` + nested `adaptive_router` (falsified)
+
+`regime_outer_dual_pivot_squeeze_tr_r8.yaml` and `regime_outer_dual_pivot_momo_tr_r8.yaml`:
+outer M15 ADX router hands **trend** to `squeeze_breakout` or `momentum_continuation`
+(listed **before** the nested `adaptive_router` so inner `pivot_trend` cannot preempt).
+On `data/xauusd_m1_2026.csv` both are **falsified** (heavy caps, **0/4** harness vs rollwin).
+
+## Iter67 — retune outer+squeeze (`scripts/iter67_outer_squeeze_retune.py`)
+
+Bounded grid over squeeze `risk_multiplier`, outer `regime_risk_multipliers.trend`,
+and squeeze `tp2_rr` / `break_atr` / `cooldown_bars`.
+
+- **`--quick` (24 trials):** **zero** rows with `cap_violations==0`.
+- **Manual ultra-low squeeze risk** (e.g. member mult **0.05–0.12**, trend mult
+  **0.30–0.45**, tight TP2, wide cooldown): can reach **cap=0** but **Mar/Apr stay
+  deeply negative** and harness remains **0/4** — the architecture still loses on
+  this slice even when daily envelopes are respected.
+
+**Takeaway:** the failure of Iter66 is **not only sizing**; shrinking the squeeze
+leg removes caps but **does not restore** March/April or rolling generalization.
+Prefer other lines (e.g. ORB-strict / pivot-tune stacks on other branches) over
+retrying this outer-router shape without a new signal thesis.
