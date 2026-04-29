@@ -1,0 +1,87 @@
+extends: adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml
+
+# FALSIFIED (Iter68): `iter32_compare` on data/xauusd_m1_2026.csv — cap=0 but
+# Mar ~-16.8%, Apr ~-3.1%, 1/4 wins vs rollwin 2/4; worse on difficult months.
+
+# Iter68 — **Liquidity sweep** (overlap, low risk) listed **first** in
+# `adaptive_router` so it can preempt pivots when a sweep+reversal lines up;
+# dual pivot unchanged after. Hypothesis: March/April chop benefits from
+# stop-hunt fades without dropping the rollwin core.
+
+risk:
+  risk_per_trade_pct: 8.0
+  min_risk_per_trade_pct: 2.0
+  max_risk_per_trade_pct: 10.0
+
+strategy:
+  __replace__: true
+  name: adaptive_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 20.0
+    trend_adx_min: 25.0
+    initial_state: active
+    priority_mode: config
+    eligibility_off_threshold: -1000.0
+    probe_risk_multiplier: 1.0
+    active_risk_multiplier_floor: 1.0
+    active_risk_multiplier_cap: 1.0
+    members:
+      - name: liquidity_sweep
+        id: liq_overlap_rt
+        regimes: [range, transition]
+        risk_multiplier: 0.18
+        params:
+          swing_window: 36
+          min_sweep_atr: 0.38
+          sl_atr_buffer: 0.28
+          tp1_rr: 1.0
+          tp2_rr: 2.0
+          leg1_weight: 0.5
+          cooldown_bars: 10
+          setup_ttl_bars: 4
+          session: overlap
+      - name: pivot_bounce
+        id: pivot_chop
+        regimes: [range, transition]
+        risk_multiplier: 1.0
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 9.0
+          leg1_weight: 0.45
+          cooldown_bars: 45
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 5
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+          htf: M15
+          adx_period: 14
+          adx_max: 28.0
+          block_hours_utc: [13, 14]
+      - name: pivot_bounce
+        id: pivot_trend
+        regimes: [trend]
+        risk_multiplier: 0.6
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.6
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 2
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true

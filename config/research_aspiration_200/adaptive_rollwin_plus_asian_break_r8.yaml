@@ -1,0 +1,87 @@
+extends: adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml
+
+# FALSIFIED (Iter68): cap=0, 0/4 harness, Mar ~-2.6%, Apr ~+0.8% — no rescue.
+
+# Iter68 — **Asian break continuation** (real London break of Asian range)
+# listed first in **transition** only — hypothesis: transition ADX band often
+# holds continuation after a clean range break; pivots still handle range/trend.
+
+risk:
+  risk_per_trade_pct: 8.0
+  min_risk_per_trade_pct: 2.0
+  max_risk_per_trade_pct: 10.0
+
+strategy:
+  __replace__: true
+  name: adaptive_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 20.0
+    trend_adx_min: 25.0
+    initial_state: active
+    priority_mode: config
+    eligibility_off_threshold: -1000.0
+    probe_risk_multiplier: 1.0
+    active_risk_multiplier_floor: 1.0
+    active_risk_multiplier_cap: 1.0
+    members:
+      - name: asian_break_continuation
+        id: abc_transition
+        regimes: [transition]
+        risk_multiplier: 0.20
+        params:
+          range_start_hour: 0
+          range_end_hour: 6
+          trade_start_hour: 7
+          trade_end_hour: 10
+          atr_period: 14
+          min_range_atr: 1.15
+          break_atr: 0.24
+          sl_atr_buf: 0.32
+          max_sl_atr: 2.2
+          tp_rr: 1.85
+          cooldown_bars: 45
+      - name: pivot_bounce
+        id: pivot_chop
+        regimes: [range, transition]
+        risk_multiplier: 1.0
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 9.0
+          leg1_weight: 0.45
+          cooldown_bars: 45
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 5
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+          htf: M15
+          adx_period: 14
+          adx_max: 28.0
+          block_hours_utc: [13, 14]
+      - name: pivot_bounce
+        id: pivot_trend
+        regimes: [trend]
+        risk_multiplier: 0.6
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.6
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 2
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
