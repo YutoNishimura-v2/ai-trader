@@ -104,3 +104,17 @@ and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
 (**Mar ~+3.4%, Apr ~+4.4%**, full ~153%, cap=0) but **worst_score ~4.2** and **1/4**
 window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
 recent-month lift outweighs cross-window score.
+
+## Iter101 — single-thesis: chop `adx_max` 27 vs 28 (rollwin only)
+
+**Thesis:** tightening chop-only M15 `adx_max` from **28 → 27** improves difficult
+months without touching risk or trend legs.
+
+**Evidence:** `iter32_compare_configs.py` on `data/xauusd_m1_2026.csv` —
+`adaptive_dual_pivot_chop_moon_r8_adx27_r8.yaml` is **metric-identical** to
+`adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml` on the reported row (Mar,
+Apr, full%, PF, cap, harness wins, worst_score). **Conclusion:** on this slice
+that one-tick gate move is a **no-op**; the positive claim is **falsified** (no
+lift), with **no harm** either.
+
+Saved: `adaptive_dual_pivot_chop_moon_r8_adx27_r8.yaml`.
