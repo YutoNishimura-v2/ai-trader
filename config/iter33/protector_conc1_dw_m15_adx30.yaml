@@ -1,0 +1,82 @@
+extends: ../iter29/v4_plus_h4_protector_conc1.yaml
+
+# Iter33 (2026-04-26): HTF ADX gate on daily + weekly pivot members only
+# (M15 ADX <= 30). On Jan–Apr 2026 M1 harness: April ~+53.6% vs baseline
+# ~+31%, at cost of lower full-period return and 2/4 rolling windows.
+# Monthly + 4h pivot members unchanged.
+
+strategy:
+  params:
+    members:
+      - name: pivot_bounce
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 4
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+          htf: M15
+          adx_period: 14
+          adx_max: 30.0
+      - name: pivot_bounce
+        params:
+          pivot_period: weekly
+          atr_period: 14
+          touch_atr_buf: 0.10
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 2
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+          htf: M15
+          adx_period: 14
+          adx_max: 30.0
+      - name: pivot_bounce
+        params:
+          pivot_period: monthly
+          atr_period: 14
+          touch_atr_buf: 0.15
+          sl_atr_buf: 0.30
+          max_sl_atr: 3.0
+          tp1_rr: 1.2
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 120
+          session: london
+          use_s2r2: true
+          max_trades_per_day: 1
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        params:
+          pivot_period: 4h
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.5
+          leg1_weight: 0.5
+          cooldown_bars: 90
+          session: london
+          use_s2r2: false
+          levels: [S1, R1]
+          max_trades_per_day: 2
+          risk_multiplier: 0.35
+          confidence: 1.0
+          emit_context_meta: true
