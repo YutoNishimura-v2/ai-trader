@@ -104,3 +104,39 @@ and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
 (**Mar ~+3.4%, Apr ~+4.4%**, full ~153%, cap=0) but **worst_score ~4.2** and **1/4**
 window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
 recent-month lift outweighs cross-window score.
+
+## Iter66 — outer `regime_router` + nested `adaptive_router` (falsified)
+
+`regime_outer_dual_pivot_squeeze_tr_r8.yaml` and `regime_outer_dual_pivot_momo_tr_r8.yaml`:
+outer M15 ADX router hands **trend** to `squeeze_breakout` or `momentum_continuation`
+(listed **before** the nested `adaptive_router` so inner `pivot_trend` cannot preempt).
+On `data/xauusd_m1_2026.csv` both are **falsified** (heavy caps, **0/4** harness vs rollwin).
+
+## Iter67 — retune outer+squeeze (`scripts/iter67_outer_squeeze_retune.py`)
+
+Bounded grid over squeeze `risk_multiplier`, outer `regime_risk_multipliers.trend`,
+and squeeze `tp2_rr` / `break_atr` / `cooldown_bars`.
+
+- **`--quick` (24 trials):** **zero** rows with `cap_violations==0`.
+- **Manual ultra-low squeeze risk:** can reach **cap=0** but **Mar/Apr stay
+  deeply negative** and harness remains **0/4**.
+
+**Takeaway:** Iter66 is **not rescued by sizing alone**; shrinking the squeeze leg
+does not restore difficult months or rolling scores.
+
+## Iter68 — rollwin + liquidity / sweep / Asian continuation (same `adaptive_router`)
+
+Drastic but **nested only**: keep rollwin risk, prepend **one** session or
+microstructure member **first** (`priority_mode: config`), then unchanged dual pivots.
+
+`python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv`:
+
+| YAML | full % | Mar | Apr | wins | worst_score | cap |
+|------|-------:|----:|----:|:----:|------------:|:---:|
+| rollwin baseline | ~233 | +0.83 | +1.28 | 2/4 | ~0.10 | 0 |
+| `adaptive_rollwin_plus_liq_overlap_r8.yaml` | ~109 | **-16.8** | -3.1 | 1/4 | ~1.31 | 0 |
+| `adaptive_rollwin_plus_sweep_adx24_r8.yaml` | ~242 | +3.2 | -1.5 | 1/4 | ~1.13 | 0 |
+| `adaptive_rollwin_plus_asian_break_r8.yaml` | ~210 | -2.6 | +0.8 | **0/4** | DQ | 0 |
+
+**Takeaway:** priority-first liquidity / sweep / continuation legs **hurt**
+March/April or the harness vs rollwin on this slice — **falsified** (YAML headers).
