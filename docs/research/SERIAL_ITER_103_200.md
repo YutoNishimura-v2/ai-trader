@@ -76,6 +76,17 @@
 
 ---
 
-## Backlog (135–200)
+## Wave F (135–138)
+
+| Iter | Config | cap | W | WS | minMA | Mar | Apr | full% | Verdict |
+|------|--------|:---:|:--:|-----:|------:|----:|----:|------:|---------|
+| 135 | `iter135_rollwin_trend_adx24.yaml` | 0 | 1 | 0.381 | 3.18 | 7.66 | 3.18 | 147.1 | Trade-off (Mar/Apr↑, 1/4 wins, full%↓) |
+| 136 | `iter136_rollwin_range_adx19.yaml` | 0 | 2 | 0.101 | 1.28 | 0.83 | 1.28 | 232.7 | **NO-OP** (bit-identical vs rollwin) |
+| 137 | `iter137_rollwin_trend_tp175.yaml` | 0 | 1 | 2.944 | -6.25 | -6.25 | 2.40 | 217.7 | FALSIFIED |
+| 138 | `iter138_rollwin_chop_max4.yaml` | 0 | 2 | 0.101 | 1.28 | 0.83 | 1.28 | 232.7 | **NO-OP** (bit-identical vs rollwin) |
+
+---
+
+## Backlog (139–200)
 
 Continue with one YAML + one harness per iteration.
