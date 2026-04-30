@@ -87,6 +87,17 @@
 
 ---
 
-## Backlog (139–200)
+## Wave G (139–142)
+
+| Iter | Config | cap | W | WS | minMA | Mar | Apr | full% | Verdict |
+|------|--------|:---:|:--:|-----:|------:|----:|----:|------:|---------|
+| 139 | `iter139_rollwin_trend_adx27.yaml` | 1 | 1 | 9.018 | -3.00 | 3.23 | -3.00 | 248.3 | FALSIFIED |
+| 140 | `iter140_rollwin_router_adx10.yaml` | 1 | 1 | 8.414 | -5.34 | 18.35 | -5.34 | 198.1 | FALSIFIED |
+| 141 | `iter141_rollwin_chop_tp85.yaml` | 0 | 2 | 0.101 | -1.00 | -1.00 | 2.95 | 208.5 | FALSIFIED |
+| 142 | `iter142_rollwin_trend_sl027.yaml` | 0 | 1 | 2.171 | -3.47 | -2.05 | -3.47 | 205.1 | FALSIFIED |
+
+---
+
+## Backlog (143–200)
 
 Continue with one YAML + one harness per iteration.
