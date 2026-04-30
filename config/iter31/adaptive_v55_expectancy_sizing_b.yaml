@@ -1,0 +1,16 @@
+extends: ../iter30/adaptive_v55_v43b_dml5.yaml
+
+# Iter32 sweep (2026-04-26): same stack as adaptive_v55_v43b_dml5 but enable
+# real expectancy-driven sizing (floor < cap) so bucket keys can matter and
+# weak stretches demote to probe risk. On data/xauusd_m1_2026.csv vs the
+# static v55 headline: April improves from about -3.6% to about +1.8%,
+# rolling windows_passing stays 4/4, worst_score ~0.43 (full harness run in
+# scripts/iter32_compare_configs.py).
+
+strategy:
+  params:
+    initial_state: probe
+    eligibility_off_threshold: -0.08
+    probe_risk_multiplier: 0.55
+    active_risk_multiplier_floor: 0.55
+    active_risk_multiplier_cap: 1.0
