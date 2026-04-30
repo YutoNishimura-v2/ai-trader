@@ -244,8 +244,12 @@ class ConfigEvaluation:
     full_metrics: dict[str, Any]
     best_month_pct: float
     best_month_label: str
-    full_cap_violations: int
-    full_ruin_flag: bool
+    worst_month_pct: float = 0.0
+    worst_month_label: str = ""
+    mar_return_pct: float | None = None
+    apr_return_pct: float | None = None
+    full_cap_violations: int = 0
+    full_ruin_flag: bool = False
 
     @property
     def windows_passing(self) -> int:
@@ -327,6 +331,40 @@ def compute_best_month(metrics_full: dict[str, Any]) -> tuple[float, str]:
     return float(value), str(label)
 
 
+def compute_worst_month(metrics_full: dict[str, Any]) -> tuple[float, str]:
+    """Return (worst_month_pct, label) from full-period ``monthly_returns``."""
+    monthly = metrics_full.get("monthly_returns") or {}
+    if not monthly:
+        return 0.0, ""
+    label, value = min(monthly.items(), key=lambda kv: float(kv[1]))
+    return float(value), str(label)
+
+
+def monthly_returns_meet_floor(
+    metrics_full: dict[str, Any], *, floor_pct: float
+) -> tuple[bool, str | None]:
+    """True iff every reported calendar month is >= ``floor_pct``."""
+    monthly = metrics_full.get("monthly_returns") or {}
+    if not monthly:
+        return False, "no monthly_returns in metrics"
+    for lab, v in monthly.items():
+        if float(v) < float(floor_pct):
+            return False, f"month {lab} return {float(v):.2f}% < floor {floor_pct}%"
+    return True, None
+
+
+def mar_apr_returns(
+    metrics_full: dict[str, Any], *, year: int = 2026
+) -> tuple[float | None, float | None]:
+    """March and April monthly % from ``monthly_returns`` keys ``YYYY-03``."""
+    monthly = metrics_full.get("monthly_returns") or {}
+    mk = f"{year}-03"
+    ak = f"{year}-04"
+    mar = float(monthly[mk]) if mk in monthly else None
+    apr = float(monthly[ak]) if ak in monthly else None
+    return mar, apr
+
+
 def evaluate_config(
     cfg: dict[str, Any],
     *,
@@ -352,6 +390,8 @@ def evaluate_config(
 
     full_metrics = _run_one(full_df, cfg)
     best_month_pct, best_month_label = compute_best_month(full_metrics)
+    worst_month_pct, worst_month_label = compute_worst_month(full_metrics)
+    mar_ret, apr_ret = mar_apr_returns(full_metrics)
 
     audit_entries: list[dict[str, Any]] = []
     window_results: list[WindowResult] = []
@@ -432,6 +472,10 @@ def evaluate_config(
         full_metrics=full_metrics,
         best_month_pct=best_month_pct,
         best_month_label=best_month_label,
+        worst_month_pct=worst_month_pct,
+        worst_month_label=worst_month_label,
+        mar_return_pct=mar_ret,
+        apr_return_pct=apr_ret,
         full_cap_violations=int(full_metrics.get("cap_violations", 0)),
         full_ruin_flag=bool(full_metrics.get("ruin_flag", False)),
     )
@@ -539,11 +583,21 @@ def promotion_status(
     min_val_pf: float = 1.5,
     min_test_pf: float = 1.2,
     min_best_month_pct: float = 200.0,
+    # Iter31: optional Mar/Apr + monthly-floor gate (disabled when None).
+    min_mar_apr_return_pct: float | None = None,
+    min_month_floor_pct: float | None = None,
 ) -> PromotionVerdict:
-    """Apply the dual gate (generalization + 3x-month).
+    """Apply generalization + headline-month gate + optional Mar/Apr gate.
+
+    When ``min_mar_apr_return_pct`` and ``min_month_floor_pct`` are set
+    (Iter31), a **mar_apr_month_floor** gate must also pass for
+    ``promotable``: March and April returns must meet
+    ``min_mar_apr_return_pct``, and every calendar month must be >=
+    ``min_month_floor_pct``, with zero cap violations and no ruin on
+    the full-period metrics.
 
     Returns one of:
-      - ``promotable``: BOTH gates pass.
+      - ``promotable``: all enabled gates pass.
       - ``candidate``: one gate passes, the other doesn't.
       - ``falsified``: neither gate passes.
       - ``disqualified``: any reported window has cap_violations or
@@ -597,9 +651,38 @@ def promotion_status(
             f"best_month_pct={ev.best_month_pct:.2f} (need >= {min_best_month_pct})"
         )
 
-    if generalization_pass and month_pass:
+    mar_apr_pass = True
+    if min_mar_apr_return_pct is not None and min_month_floor_pct is not None:
+        mar_apr_pass = ev.full_cap_violations == 0 and not ev.full_ruin_flag
+        if ev.mar_return_pct is None or ev.apr_return_pct is None:
+            mar_apr_pass = False
+            reasons.append("mar_apr gate: missing March or April in monthly_returns")
+        elif (
+            ev.mar_return_pct < float(min_mar_apr_return_pct)
+            or ev.apr_return_pct < float(min_mar_apr_return_pct)
+        ):
+            mar_apr_pass = False
+            reasons.append(
+                f"mar_apr gate: Mar={ev.mar_return_pct:.2f}% Apr={ev.apr_return_pct:.2f}% "
+                f"(need >= {min_mar_apr_return_pct}%)"
+            )
+        ok_floor, floor_msg = monthly_returns_meet_floor(
+            ev.full_metrics, floor_pct=float(min_month_floor_pct)
+        )
+        if not ok_floor:
+            mar_apr_pass = False
+            if floor_msg:
+                reasons.append(f"mar_apr gate: {floor_msg}")
+    elif min_mar_apr_return_pct is not None or min_month_floor_pct is not None:
+        reasons.append(
+            "mar_apr gate misconfigured: set both min_mar_apr_return_pct "
+            "and min_month_floor_pct or neither"
+        )
+        mar_apr_pass = False
+
+    if generalization_pass and month_pass and mar_apr_pass:
         return PromotionVerdict("promotable", reasons=[])
-    if generalization_pass or month_pass:
+    if generalization_pass or month_pass or mar_apr_pass:
         return PromotionVerdict("candidate", reasons=reasons)
     if any("cap_violations" in r or "ruin_flag" in r for r in reasons):
         return PromotionVerdict("disqualified", reasons=reasons)
@@ -617,6 +700,10 @@ def score_config(ev: ConfigEvaluation) -> dict[str, Any]:
         "mean_score": ev.mean_score,
         "best_month_pct": ev.best_month_pct,
         "best_month_label": ev.best_month_label,
+        "worst_month_pct": ev.worst_month_pct,
+        "worst_month_label": ev.worst_month_label,
+        "mar_return_pct": ev.mar_return_pct,
+        "apr_return_pct": ev.apr_return_pct,
         "full_return_pct": float(ev.full_metrics.get("return_pct", 0.0)),
         "full_profit_factor": float(ev.full_metrics.get("profit_factor", 0.0)),
         "full_cap_violations": ev.full_cap_violations,
