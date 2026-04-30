@@ -104,3 +104,10 @@ and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
 (**Mar ~+3.4%, Apr ~+4.4%**, full ~153%, cap=0) but **worst_score ~4.2** and **1/4**
 window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
 recent-month lift outweighs cross-window score.
+
+## Serial journal (iter 103–126+)
+
+`docs/research/SERIAL_ITER_103_200.md` — harness tables **Wave A–C** vs rollwin on
+`data/xauusd_m1_2026.csv`. **iter115** (weekly chop + daily trend): **4/4**, cap=0,
+strong Mar/Apr, **worst_score ~2.05** vs rollwin ~0.10. **Wave C (119–126):** all falsified
+for promotion vs baseline (harness/caps/Mar-Apr floor).
