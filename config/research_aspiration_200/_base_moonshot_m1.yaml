@@ -1,0 +1,33 @@
+# Shared M1 XAUUSD + Katana-style costs for moonshot research configs.
+extends: ../default.yaml
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+
+execution:
+  spread_points: 8
+  slippage_points: 2
+  commission_per_lot: 0.0
+
+account:
+  currency: JPY
+  starting_balance: 100000.0
+  max_leverage: 100.0
+
+fx:
+  USDJPY: 150.0
+
+news:
+  csv: null
+
+risk:
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  dynamic_risk_enabled: false
