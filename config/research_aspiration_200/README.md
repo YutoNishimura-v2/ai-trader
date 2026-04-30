@@ -104,3 +104,11 @@ and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
 (**Mar ~+3.4%, Apr ~+4.4%**, full ~153%, cap=0) but **worst_score ~4.2** and **1/4**
 window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
 recent-month lift outweighs cross-window score.
+
+## Serial journal (iter 103–200)
+
+`docs/research/SERIAL_ITER_103_200.md` — **Wave A (103–110)** and **Wave B (111–118)**
+harness tables vs rollwin on `data/xauusd_m1_2026.csv`. **Highlight:** weekly chop +
+daily trend (`iter115_rollwin_weekly_chop_daily_trend.yaml`) achieves **4/4**, **cap=0**,
+**Mar ~+29% / Apr ~+51%** but **`worst_score` ~2.05** vs rollwin **~0.10** — use as a
+difficult-month **aspiration** candidate, not the default robust rollwin.
