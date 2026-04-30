@@ -105,6 +105,14 @@ and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
 window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
 recent-month lift outweighs cross-window score.
 
+## Serial journal — iterations **103–200** (thesis ledger + Wave A results)
+
+`docs/research/SERIAL_ITER_103_200.md` holds **independent iteration theses**
+103–200: Wave **A** (103–110) is **executed** with harness numbers; Waves **B–E**
+(111–200) are **backlog theses** (one experiment each when implemented — not
+grid spam). Wave A configs live as `config/research_aspiration_200/iter103_*.yaml`
+… `iter110_*.yaml`.
+
 ## Iter101 — chop `adx_max` 27 vs rollwin 28
 
 **Thesis:** tighten chop gate one tick. **Result:** metric-identical to rollwin on
