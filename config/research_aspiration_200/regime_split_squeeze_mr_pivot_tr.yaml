@@ -1,0 +1,67 @@
+# FALSIFIED (2026 M1 sample): negative return, many cap violations.
+#
+# SIMULATION-ONLY — inverse of regime_split_pivot_mr_squeeze_tr:
+# [range, transition] → squeeze (compression breakouts in chop),
+# [trend] → daily pivot_bounce (pullbacks in trend), shared sizing.
+
+extends: _base_moonshot_m1.yaml
+
+risk:
+  risk_per_trade_pct: 10.0
+  lot_cap_per_unit_balance: 0.00002
+  dynamic_risk_enabled: true
+  min_risk_per_trade_pct: 2.0
+  max_risk_per_trade_pct: 12.0
+  confidence_risk_floor: 0.9
+  confidence_risk_ceiling: 1.1
+
+strategy:
+  __replace__: true
+  name: regime_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 20.0
+    trend_adx_min: 25.0
+    regime_risk_multipliers:
+      range: 1.0
+      transition: 0.95
+      trend: 0.85
+    adx_confidence_weight: 0.4
+    members:
+      - name: squeeze_breakout
+        regimes: [range, transition]
+        params:
+          bb_n: 20
+          bb_k: 2.0
+          kc_atr_mult: 1.5
+          atr_period: 14
+          squeeze_lookback: 18
+          box_lookback: 18
+          break_atr: 0.10
+          sl_atr_buffer: 0.25
+          max_sl_atr: 2.2
+          require_volume_spike: false
+          session: london_or_ny
+          cooldown_bars: 10
+          tp1_rr: 0.55
+          tp2_rr: 2.2
+          leg1_weight: 0.5
+      - name: pivot_bounce
+        regimes: [trend]
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.8
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 3
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
