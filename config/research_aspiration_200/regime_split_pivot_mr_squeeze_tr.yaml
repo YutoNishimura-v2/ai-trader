@@ -1,0 +1,80 @@
+# FALSIFIED (2026 M1 sample): large negative return, cap violations.
+# Kept as negative control. Do not promote.
+#
+# SIMULATION-ONLY — creative split: mean-reversion when ADX says chop,
+# volatility expansion when ADX says trend.
+#
+# Outer `regime_router` (M15 ADX): [range, transition] → lone daily
+# pivot_bounce tuned like the cap-clean moonshot frontier; [trend] →
+# squeeze_breakout (London/NY). Single account risk % with
+# `dynamic_risk_enabled` + per-regime multipliers so trend legs are not
+# sized like MR legs.
+#
+# Reproduce metrics: run backtest or iter32_compare_configs.py alongside
+# other research_aspiration_200 YAMLs.
+
+extends: _base_moonshot_m1.yaml
+
+risk:
+  risk_per_trade_pct: 12.0
+  lot_cap_per_unit_balance: 0.00002
+  dynamic_risk_enabled: true
+  min_risk_per_trade_pct: 2.0
+  max_risk_per_trade_pct: 14.0
+  confidence_risk_floor: 0.85
+  confidence_risk_ceiling: 1.15
+
+strategy:
+  __replace__: true
+  name: regime_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 20.0
+    trend_adx_min: 25.0
+    regime_risk_multipliers:
+      range: 1.05
+      transition: 1.0
+      trend: 0.55
+    regime_confidence:
+      range: 0.72
+      transition: 0.55
+      trend: 0.78
+    adx_confidence_weight: 0.45
+    members:
+      - name: pivot_bounce
+        regimes: [range, transition]
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 9.5
+          leg1_weight: 0.45
+          cooldown_bars: 45
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 6
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: squeeze_breakout
+        regimes: [trend]
+        params:
+          bb_n: 20
+          bb_k: 2.0
+          kc_atr_mult: 1.5
+          atr_period: 14
+          squeeze_lookback: 16
+          box_lookback: 16
+          break_atr: 0.12
+          sl_atr_buffer: 0.28
+          max_sl_atr: 2.5
+          require_volume_spike: false
+          session: london_or_ny
+          cooldown_bars: 8
+          tp1_rr: 0.55
+          tp2_rr: 3.2
+          leg1_weight: 0.45
