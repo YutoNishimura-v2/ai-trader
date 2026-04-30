@@ -104,3 +104,18 @@ and trend `tp2_rr`. Best Mar/Apr balance in the `--quick` grid: widen block to
 (**Mar ~+3.4%, Apr ~+4.4%**, full ~153%, cap=0) but **worst_score ~4.2** and **1/4**
 window passes vs rollwin — **prefer rollwin for robustness**, use `_m131415_` only if
 recent-month lift outweighs cross-window score.
+
+## Iter101 — chop `adx_max` 27 vs rollwin 28
+
+**Thesis:** tighten chop gate one tick. **Result:** metric-identical to rollwin on
+`data/xauusd_m1_2026.csv` — no-op on reported Mar/Apr / harness.
+
+## Iter102 — chop `adx_max` 26 (two ticks below 28)
+
+**Thesis:** 27 was a no-op; **26** should bind. **Result:** still **bit-identical**
+to rollwin on the same CSV (`iter32_compare_configs.py`). Chop `adx_max` in
+**[26,28]** is not moving reported outcomes for this stack — stop micro-tuning
+here; use levers that already moved metrics (block hours, chop TP2, or other
+strategy lines).
+
+Saved: `adaptive_dual_pivot_chop_moon_r8_adx26_r8.yaml`.
