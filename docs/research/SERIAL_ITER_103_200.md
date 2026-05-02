@@ -7,6 +7,14 @@
 **Legend:** `cap` = full-sample `cap_violations`; `W` = harness wins / 4;
 `WS` = `worst_score`; `minMA` = min(Mar%, Apr%).
 
+**Wave I data note:** Waves A–H rows used the project reference M1 CSV
+(`data/xauusd_m1_2026.csv`, not tracked). **Wave I** was executed in an
+environment without that file; metrics below are from **deterministic
+synthetic** OHLCV (`generate_synthetic_ohlcv`, 130d M1, `seed=20260426`,
+start `2026-01-01` UTC) passed to `iter32_compare_configs.py` on a temp path.
+**Re-run Wave I against your local gold CSV** before treating absolute % or
+verdicts as comparable to earlier waves.
+
 ---
 
 ## Wave A (103–110)
@@ -109,6 +117,17 @@
 
 ---
 
-## Backlog (147–200)
+## Wave I (147–150) — synthetic stand-in harness
+
+| Iter | Config | cap | W | WS | minMA | Mar | Apr | full% | Verdict |
+|------|--------|:---:|:--:|-----:|------:|----:|----:|------:|---------|
+| 147 | `iter147_rollwin_trend_first.yaml` | 0 | 0 | -inf | -10.11 | -10.11 | -7.19 | -4.7 | **NO-OP** (bit-identical vs rollwin on synth) |
+| 148 | `iter148_rollwin_overlap_sessions.yaml` | 0 | 3 | 3.876 | 7.97 | 23.32 | 7.97 | 139.4 | **Revalidate** (3/4 vs 0/4 on synth; not gold CSV) |
+| 149 | `iter149_rollwin_trend_risk065.yaml` | 0 | 0 | -inf | -10.79 | -10.79 | -7.37 | -3.1 | FALSIFIED (synth) |
+| 150 | `iter150_rollwin_trend_transition_fallback.yaml` | 0 | 0 | -inf | -10.11 | -10.11 | -7.19 | -4.7 | **NO-OP** (bit-identical vs rollwin on synth) |
+
+---
+
+## Backlog (151–200)
 
 Continue with one YAML + one harness per iteration.
