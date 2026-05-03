@@ -12,8 +12,9 @@
 environment without that file; metrics below are from **deterministic
 synthetic** OHLCV (`generate_synthetic_ohlcv`, 130d M1, `seed=20260426`,
 start `2026-01-01` UTC) passed to `iter32_compare_configs.py` on a temp path.
-**Re-run Wave I against your local gold CSV** before treating absolute % or
-verdicts as comparable to earlier waves.
+**Wave J (151–154)** used the same synthetic stand-in for the harness rows
+below. **Re-run Waves I–J against your local gold CSV** before treating
+absolute % or verdicts as comparable to earlier waves.
 
 ---
 
@@ -128,6 +129,17 @@ verdicts as comparable to earlier waves.
 
 ---
 
-## Backlog (151–200)
+## Wave J (151–154) — synthetic stand-in harness
+
+| Iter | Config | cap | W | WS | minMA | Mar | Apr | full% | Verdict |
+|------|--------|:---:|:--:|-----:|------:|----:|----:|------:|---------|
+| 151 | `iter151_rollwin_trend_adx26.yaml` | 0 | 0 | -inf | -13.04 | -13.04 | -12.03 | -8.3 | FALSIFIED (synth) |
+| 152 | `iter152_rollwin_chop_leg1w040.yaml` | 0 | 0 | -inf | -10.11 | -10.11 | -7.19 | -4.7 | **NO-OP** (bit-identical vs rollwin on synth) |
+| 153 | `iter153_rollwin_chop_london_only.yaml` | 0 | 0 | -inf | -11.07 | -11.07 | -7.29 | -1.0 | FALSIFIED (synth) |
+| 154 | `iter154_rollwin_chop_tp95.yaml` | 0 | 0 | -inf | -10.11 | -10.11 | -7.19 | -4.7 | **NO-OP** (bit-identical vs rollwin on synth) |
+
+---
+
+## Backlog (155–200)
 
 Continue with one YAML + one harness per iteration.
