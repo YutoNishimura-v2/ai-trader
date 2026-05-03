@@ -2,20 +2,32 @@
 
 This is a thin CLI wrapper around ``LiveRunner`` that wires together
 the live MT5 broker and an MT5 bar fetcher. Windows-only at runtime.
+
+Credentials (recommended on VPS):
+
+- Put account number and server in YAML under ``broker:``.
+- Put secrets only in environment variables referenced by the YAML:
+
+  - ``broker.password_env`` → MT5 investor/trader password
+  - ``broker.mt5_login_env`` (optional) overrides ``broker.account``
+  - ``broker.mt5_terminal_path_env`` (optional) → path to ``terminal64.exe``
+
+Example::
+
+    set AI_TRADER_MT5_PASSWORD=your_mt5_password
+    python -m ai_trader.scripts.run_demo --config config/live_demo_hfm.template.yaml
 """
 from __future__ import annotations
 
 import argparse
-import os
-from datetime import datetime, timezone
 from pathlib import Path
 
-from ..broker.mt5_live import MT5LiveBroker
 from ..config import load_config
 from ..live.runner import LiveRunner
 from ..risk.fx import FixedFX
 from ..risk.manager import InstrumentSpec, RiskManager
 from ..strategy.registry import get_strategy
+from .broker_config import build_mt5_broker_from_config, ensure_password_if_required
 
 
 def _make_mt5_fetcher(symbol: str, timeframe: str):  # pragma: no cover
@@ -93,28 +105,26 @@ def main() -> int:  # pragma: no cover
     )
 
     live_cfg = cfg.get("live", {})
-    broker_cfg = cfg.get("broker", {})
-    password_env = broker_cfg.get("password_env")
-    password = os.environ.get(password_env) if password_env else None
-    broker = MT5LiveBroker(
+    broker_cfg = cfg.get("broker", {}) or {}
+    ensure_password_if_required(broker_cfg)
+    broker = build_mt5_broker_from_config(
         instrument=instrument,
-        magic=int(live_cfg.get("magic_number", 20260424)),
-        comment=live_cfg.get("comment", "ai-trader-demo"),
-        login=broker_cfg.get("account"),
-        server=broker_cfg.get("server"),
-        password=password,
+        live_cfg=live_cfg,
+        broker_cfg=broker_cfg,
     )
 
     strat_cfg = cfg["strategy"]
     strategy = get_strategy(strat_cfg["name"], **strat_cfg.get("params", {}))
 
     fetcher = _make_mt5_fetcher(instrument.symbol, inst_cfg["timeframe"])
+    max_it = live_cfg.get("max_iterations")
     runner = LiveRunner(
         strategy=strategy,
         risk=risk,
         broker=broker,
         fetch_bars=fetcher,
         poll_seconds=int(live_cfg.get("poll_seconds", 5)),
+        max_iterations=int(max_it) if max_it is not None else None,
     )
     runner.run()
     return 0
