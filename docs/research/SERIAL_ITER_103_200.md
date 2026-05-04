@@ -7,12 +7,12 @@
 **Legend:** `cap` = full-sample `cap_violations`; `W` = harness wins / 4;
 `WS` = `worst_score`; `minMA` = min(Mar%, Apr%).
 
-**Waves I–O data note:** Waves A–H rows used the project reference M1 CSV
-(`data/xauusd_m1_2026.csv`, not tracked). **Waves I–O** were executed in an
+**Waves I–P data note:** Waves A–H rows used the project reference M1 CSV
+(`data/xauusd_m1_2026.csv`, not tracked). **Waves I–P** were executed in an
 environment without that file; metrics for those waves are from **deterministic
 synthetic** OHLCV (`generate_synthetic_ohlcv`, 130d M1, `seed=20260426`,
 start `2026-01-01` UTC) passed to `iter32_compare_configs.py` on a temp path.
-**Re-run Waves I–O against your local gold CSV** before treating absolute %
+**Re-run Waves I–P against your local gold CSV** before treating absolute %
 or verdicts as comparable to earlier waves.
 
 ---
@@ -194,6 +194,17 @@ or verdicts as comparable to earlier waves.
 
 ---
 
-## Backlog (175–200)
+## Wave P (175–178) — synthetic stand-in harness
+
+| Iter | Config | cap | W | WS | minMA | Mar | Apr | full% | Verdict |
+|------|--------|:---:|:--:|-----:|------:|----:|----:|------:|---------|
+| 175 | `iter175_rollwin_chop_tp8.yaml` | 0 | 0 | -inf | -10.11 | -10.11 | -7.19 | -4.7 | **NO-OP** (bit-identical vs rollwin on synth) |
+| 176 | `iter176_rollwin_trend_max3.yaml` | 0 | 0 | -inf | -10.11 | -10.11 | -7.19 | -4.7 | **NO-OP** (bit-identical vs rollwin on synth) |
+| 177 | `iter177_rollwin_risk825.yaml` | 0 | 0 | -inf | -10.11 | -10.11 | -7.35 | -3.6 | **Revalidate** (synth: full% vs rollwin; gold) |
+| 178 | `iter178_rollwin_chop_sl029.yaml` | 0 | 0 | -inf | -10.28 | -10.28 | -7.10 | -4.9 | FALSIFIED (synth; Mar worse) |
+
+---
+
+## Backlog (179–200)
 
 Continue with one YAML + one harness per iteration.
