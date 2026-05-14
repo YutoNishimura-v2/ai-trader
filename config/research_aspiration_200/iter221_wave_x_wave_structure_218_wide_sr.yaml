@@ -1,0 +1,32 @@
+# Wave X — iter221 — iter218 + wide SR gate (1.75 ATR) hybrid.
+#
+# Harness (data/xauusd_m1_2026.csv): full ~+7.4%, PF ~1.92, cap=0, 0/4 wins, Mar ~+6.26%,
+# Apr ~+3.64%, worst_score=-inf.
+extends: _base_moonshot_m1.yaml
+
+instrument:
+  timeframe: M1
+
+strategy:
+  __replace__: true
+  name: wave_structure_mtf
+  params:
+    htf: H1
+    m1_zigzag_threshold_atr: 0.72
+    htf_zigzag_threshold_atr: 1.25
+    fib_entry_min: 0.382
+    fib_entry_max: 0.50
+    sl_fib_from_extreme: 0.236
+    sr_gate_enabled: true
+    sr_touch_atr: 1.75
+    rci_gate_enabled: true
+    rci_period: 14
+    rci_long_min_prev: -15.0
+    tp1_rr: 0.85
+    tp2_rr: 2.6
+    leg1_weight: 0.55
+    cooldown_bars: 5
+    session: london_or_ny
+
+risk:
+  risk_per_trade_pct: 6.0
