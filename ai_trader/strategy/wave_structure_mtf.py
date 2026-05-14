@@ -17,8 +17,11 @@ Mechanical translation of the user's discretionary rules:
      ``late_trend_only`` inverts that (proxy for "Wave 3 / extension
      only"). Default trades both except when post‑peak block fires.
 
-3. **LTF execution (M1):** ZigZag micro‑structure must agree with HTF
-   bias. Price must interact with the 38.2–61.8% retracement band of
+3. **LTF execution (M1):** By default ZigZag micro‑structure must match
+   HTF bias; ``m1_bias_mode=not_opposed`` allows M1 to be flat while HTF
+   trends (pullback / better‑price proxy). Optional ``rci_gate_enabled`` /
+   ``sr_gate_enabled`` disable the RCI or pivot‑distance filters for
+   ablations. Price must interact with the 38.2–61.8% retracement band of
    the active M1 impulse leg, print a rejection candle, pass optional
    **RCI reversal readiness**, and sit near a recent HTF pivot (S/R
    confluence).
@@ -165,8 +168,14 @@ class WaveStructureMTF(BaseStrategy):
         session: str = "london_or_ny",
         early_trend_bars: int | None = None,
         late_trend_only: bool = False,
+        rci_gate_enabled: bool = True,
+        sr_gate_enabled: bool = True,
+        m1_bias_mode: str = "match",
         min_history: int | None = None,
     ) -> None:
+        mbm = str(m1_bias_mode).lower().strip()
+        if mbm not in ("match", "not_opposed"):
+            raise ValueError("m1_bias_mode must be 'match' or 'not_opposed'")
         super().__init__(
             htf=htf,
             htf_zigzag_threshold_atr=htf_zigzag_threshold_atr,
@@ -189,6 +198,9 @@ class WaveStructureMTF(BaseStrategy):
             session=session,
             early_trend_bars=early_trend_bars,
             late_trend_only=late_trend_only,
+            rci_gate_enabled=bool(rci_gate_enabled),
+            sr_gate_enabled=bool(sr_gate_enabled),
+            m1_bias_mode=mbm,
         )
         self.min_history = min_history or max(500, atr_period_m1 * 40)
         self._last_signal_iloc: int = -(10**9)
@@ -312,7 +324,16 @@ class WaveStructureMTF(BaseStrategy):
 
         m1_pivots = self._zz_m1.confirmed_up_to(i + 1)
         m1_bias = _htf_zigzag_bias(m1_pivots)
-        if m1_bias != bias:
+        mbm = str(p.get("m1_bias_mode") or "match").lower().strip()
+        if mbm == "match":
+            if m1_bias != bias:
+                return None
+        elif mbm == "not_opposed":
+            if bias == "up" and m1_bias == "down":
+                return None
+            if bias == "down" and m1_bias == "up":
+                return None
+        else:
             return None
 
         impulse = _m1_impulse_for_fib(m1_pivots, bias)
@@ -345,6 +366,8 @@ class WaveStructureMTF(BaseStrategy):
             return None
 
         sr_tol = float(p["sr_touch_atr"]) * atr_m1
+        sr_on = bool(p.get("sr_gate_enabled", True))
+        rci_on = bool(p.get("rci_gate_enabled", True))
         if n - self._last_signal_iloc < int(p["cooldown_bars"]):
             return None
 
@@ -354,9 +377,9 @@ class WaveStructureMTF(BaseStrategy):
         buf = float(p["sl_atr_buffer"]) * atr_m1
 
         if bias == "up":
-            if self._nearest_htf_sr_distance(htf_pivots, bias, c) > sr_tol:
+            if sr_on and self._nearest_htf_sr_distance(htf_pivots, bias, c) > sr_tol:
                 return None
-            if not (rci_prev <= float(p["rci_long_min_prev"]) and rci_now > rci_prev):
+            if rci_on and not (rci_prev <= float(p["rci_long_min_prev"]) and rci_now > rci_prev):
                 return None
             bullish = c > o and lower_wick >= body * 0.75 and c > float(prev["close"])
             if not bullish:
@@ -378,9 +401,9 @@ class WaveStructureMTF(BaseStrategy):
             )
 
         if bias == "down":
-            if self._nearest_htf_sr_distance(htf_pivots, bias, c) > sr_tol:
+            if sr_on and self._nearest_htf_sr_distance(htf_pivots, bias, c) > sr_tol:
                 return None
-            if not (rci_prev >= float(p["rci_short_max_prev"]) and rci_now < rci_prev):
+            if rci_on and not (rci_prev >= float(p["rci_short_max_prev"]) and rci_now < rci_prev):
                 return None
             bearish = c < o and upper_wick >= body * 0.75 and c < float(prev["close"])
             if not bearish:

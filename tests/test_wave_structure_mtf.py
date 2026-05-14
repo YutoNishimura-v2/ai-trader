@@ -45,6 +45,16 @@ def test_w5_distribution_block_up() -> None:
     assert _w5_distribution_block(pivots, "up") is True
 
 
+def test_m1_bias_not_opposed_accepts_flat_m1() -> None:
+    s = get_strategy("wave_structure_mtf", htf="M5", min_history=120, m1_bias_mode="not_opposed")
+    assert s.params["m1_bias_mode"] == "not_opposed"
+
+
+def test_invalid_m1_bias_mode_raises() -> None:
+    with pytest.raises(ValueError, match="m1_bias_mode"):
+        get_strategy("wave_structure_mtf", m1_bias_mode="invalid")
+
+
 def test_wave_structure_smoke() -> None:
     rng = np.random.default_rng(42)
     n = 8000
