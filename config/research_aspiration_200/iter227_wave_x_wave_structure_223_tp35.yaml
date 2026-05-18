@@ -1,0 +1,33 @@
+# Wave X — iter227 — iter223 + iter226-style runner (TP2 3.5R, 50/50 legs).
+#
+# Harness (data/xauusd_m1_2026.csv): full ~+26.5%, PF ~1.68, cap=0, 2/4 wins, Mar ~+3.57%,
+# Apr ~+20.48%, worst_score ~1.64 (matches iter226 floor; beats iter226 full return).
+extends: _base_moonshot_m1.yaml
+
+instrument:
+  timeframe: M1
+
+strategy:
+  __replace__: true
+  name: wave_structure_mtf
+  params:
+    htf: H1
+    m1_bias_mode: not_opposed
+    htf_zigzag_threshold_atr: 1.25
+    m1_zigzag_threshold_atr: 0.85
+    fib_entry_min: 0.382
+    fib_entry_max: 0.50
+    sl_fib_from_extreme: 0.236
+    sr_gate_enabled: true
+    sr_touch_atr: 1.65
+    rci_gate_enabled: true
+    rci_period: 14
+    rci_long_min_prev: -15.0
+    tp1_rr: 0.75
+    tp2_rr: 3.5
+    leg1_weight: 0.5
+    cooldown_bars: 6
+    session: london_or_ny
+
+risk:
+  risk_per_trade_pct: 6.0
