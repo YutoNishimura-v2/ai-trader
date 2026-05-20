@@ -1,0 +1,15 @@
+extends: adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml
+
+# Iter42 — Iter31-style **state buckets** on the Iter40 rollwin dual-pivot stack.
+# Tracks decayed expectancy per (member × causal market bucket); priority_mode
+# stays **config** so YAML member order is preserved (same as balanced/rollwin).
+
+strategy:
+  params:
+    state_buckets_enabled: true
+    bucket_persist_tf: M15
+    bucket_m15_lookback_bars: 8
+    bucket_m15_move_thresh: 0.0008
+    bucket_atr_ewm_span: 500
+    bucket_vol_low_ratio: 0.88
+    bucket_vol_high_ratio: 1.12

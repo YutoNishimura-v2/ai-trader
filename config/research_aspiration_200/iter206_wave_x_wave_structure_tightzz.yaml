@@ -1,0 +1,29 @@
+# Wave X — iter206 — shallower HTF swings + faster M1 structure (more selective).
+#
+# Harness (data/xauusd_m1_2026.csv, 2026-05-14): full ~-3.3%, PF ~0.64, cap=0, 0/4 wins, worst=-inf.
+extends: _base_moonshot_m1.yaml
+
+instrument:
+  timeframe: M1
+
+strategy:
+  __replace__: true
+  name: wave_structure_mtf
+  params:
+    htf: H1
+    htf_zigzag_threshold_atr: 1.05
+    m1_zigzag_threshold_atr: 0.65
+    fib_entry_min: 0.382
+    fib_entry_max: 0.50
+    sl_fib_from_extreme: 0.236
+    sr_touch_atr: 0.9
+    rci_period: 12
+    rci_long_min_prev: -22.0
+    tp1_rr: 0.75
+    tp2_rr: 2.2
+    leg1_weight: 0.5
+    cooldown_bars: 10
+    session: london_or_ny
+
+risk:
+  risk_per_trade_pct: 6.0

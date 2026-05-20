@@ -15,8 +15,11 @@ from ai_trader.research.stability import (
     Window,
     build_rolling_windows,
     compute_best_month,
+    compute_worst_month,
     evaluate_config,
     generalization_score,
+    mar_apr_returns,
+    monthly_returns_meet_floor,
     promotion_status,
     score_config,
 )
@@ -119,6 +122,33 @@ def test_compute_best_month_empty() -> None:
     val, label = compute_best_month({"monthly_returns": {}})
     assert val == 0.0
     assert label == ""
+
+
+def test_compute_worst_month() -> None:
+    metrics = {"monthly_returns": {"2026-01": 5.0, "2026-02": -2.0, "2026-03": 3.0}}
+    val, label = compute_worst_month(metrics)
+    assert val == pytest.approx(-2.0)
+    assert label == "2026-02"
+
+
+def test_mar_apr_returns() -> None:
+    m = {"monthly_returns": {"2026-03": 12.5, "2026-04": 7.0}}
+    mar, apr = mar_apr_returns(m, year=2026)
+    assert mar == pytest.approx(12.5)
+    assert apr == pytest.approx(7.0)
+    assert mar_apr_returns({}, year=2026) == (None, None)
+
+
+def test_monthly_returns_meet_floor() -> None:
+    ok, _ = monthly_returns_meet_floor(
+        {"monthly_returns": {"2026-01": 0.0, "2026-02": -2.9}}, floor_pct=-3.0
+    )
+    assert ok
+    ok2, msg = monthly_returns_meet_floor(
+        {"monthly_returns": {"2026-01": 0.0, "2026-02": -3.1}}, floor_pct=-3.0
+    )
+    assert not ok2
+    assert msg is not None
 
 
 def _real_dataset_or_skip() -> Path:

@@ -303,6 +303,48 @@ class _RecordingMember(BaseStrategy):
 register_strategy(_RecordingMember)
 
 
+def test_router_bucket_mode_tags_meta_and_updates_per_bucket_state() -> None:
+    """Iter31: closes roll into the bucket named at entry time."""
+    df = generate_synthetic_ohlcv(days=3, timeframe="M5", seed=21)
+    router = AdaptiveRouterStrategy(
+        members=[
+            {"name": "_test_always_buy"},
+            {"name": "_test_never_fire"},
+        ],
+        adx_period=5,
+        range_adx_max=200.0,
+        trend_adx_min=300.0,
+        state_buckets_enabled=True,
+        initial_state="probe",
+        eligibility_on_threshold=0.05,
+        eligibility_off_threshold=-0.10,
+    )
+    router.prepare(df)
+    sig = None
+    for i in range(20, len(df)):
+        sig = router.on_bar(df.iloc[: i + 1])
+        if sig is not None:
+            break
+    assert sig is not None and sig.meta is not None
+    bkey = sig.meta.get("adaptive_bucket_key")
+    assert isinstance(bkey, str) and len(bkey) > 0
+    slot_id = router._members[0].member_id
+    router.on_trade_closed(
+        ClosedTradeContext(
+            member_name=slot_id,
+            pnl=1.0,
+            r_multiple=1.0,
+            entry_time=datetime.now(timezone.utc),
+            close_time=datetime.now(timezone.utc),
+            reason="tp",
+            comment="",
+            meta={"adaptive_bucket_key": bkey},
+        )
+    )
+    dq = router._members[0].bucket_samples.get(bkey)
+    assert dq is not None and len(dq) == 1
+
+
 def test_router_causality_close_does_not_affect_same_bar_decision() -> None:
     """The close-callback must affect only NEXT bar's decision.
 

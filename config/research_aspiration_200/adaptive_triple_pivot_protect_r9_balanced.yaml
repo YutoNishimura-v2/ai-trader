@@ -1,0 +1,99 @@
+extends: _base_moonshot_m1.yaml
+
+# FALSIFIED — weekly member listed first preempts chop/trend on overlapping
+# bars; Jan–Apr 2026 sample showed cap_violations>=1 and worse March vs
+# balanced dual-only. Kept as negative-control reference only.
+
+# SIM39 attempt — triple adaptive_router: weekly pivot protector (iter29-style)
+# runs FIRST (config order), then daily chop + daily trend split.
+# Weekly: all regimes, 0.35× sizing, S2/R2 off is default use_s2r2 true — we
+# use same as iter29 weekly (touch wider).
+#
+# Simulation-only; verify on data/xauusd_m1_2026.csv + rolling harness.
+
+risk:
+  risk_per_trade_pct: 9.0
+  lot_cap_per_unit_balance: 0.00002
+  dynamic_risk_enabled: true
+  min_risk_per_trade_pct: 2.25
+  max_risk_per_trade_pct: 11.0
+  confidence_risk_floor: 0.9
+  confidence_risk_ceiling: 1.1
+
+strategy:
+  __replace__: true
+  name: adaptive_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 20.0
+    trend_adx_min: 25.0
+    initial_state: active
+    priority_mode: config
+    eligibility_off_threshold: -1000.0
+    probe_risk_multiplier: 1.0
+    active_risk_multiplier_floor: 1.0
+    active_risk_multiplier_cap: 1.0
+    members:
+      - name: pivot_bounce
+        id: pivot_weekly_protect
+        regimes: [all]
+        risk_multiplier: 0.35
+        params:
+          pivot_period: weekly
+          atr_period: 14
+          touch_atr_buf: 0.10
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 2.5
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 2
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+      - name: pivot_bounce
+        id: pivot_chop
+        regimes: [range, transition]
+        risk_multiplier: 1.0
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.28
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 9.0
+          leg1_weight: 0.45
+          cooldown_bars: 45
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 5
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true
+          htf: M15
+          adx_period: 14
+          adx_max: 28.0
+          block_hours_utc: [13, 14]
+      - name: pivot_bounce
+        id: pivot_trend
+        regimes: [trend]
+        risk_multiplier: 0.6
+        params:
+          pivot_period: daily
+          atr_period: 14
+          touch_atr_buf: 0.05
+          sl_atr_buf: 0.30
+          max_sl_atr: 2.0
+          tp1_rr: 1.0
+          tp2_rr: 1.6
+          leg1_weight: 0.5
+          cooldown_bars: 60
+          session: london_or_ny
+          use_s2r2: true
+          max_trades_per_day: 2
+          weekdays: [0, 1, 2, 3]
+          emit_context_meta: true

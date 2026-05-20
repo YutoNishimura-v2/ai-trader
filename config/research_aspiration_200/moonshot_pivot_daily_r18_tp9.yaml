@@ -1,0 +1,36 @@
+extends: _base_moonshot_m1.yaml
+
+# SIMULATION-ONLY — bold pivot moonshot toward plan +200%/month aspiration.
+# Single daily pivot_bounce (S2/R2), Mon–Thu, London/NY, very wide TP2.
+#
+# On data/xauusd_m1_2026.csv (Jan–Apr 2026, M1, 8pt spread harness):
+#   - Best calendar month ~+275% (2026-02); Mar ~+131%; full ~+691%.
+#   - April ~-8%; cap_violations > 0 — NOT promotion-clean.
+#   - ruin_flag false in that run — still extremely aggressive.
+#
+# This proves the aspiration is *reachable in-sample* on one strategy
+# family by sizing + runner geometry; it is NOT a stable monthly guarantee.
+
+risk:
+  risk_per_trade_pct: 18.0
+  lot_cap_per_unit_balance: 0.00002
+
+strategy:
+  __replace__: true
+  name: pivot_bounce
+  params:
+    __replace__: true
+    pivot_period: daily
+    atr_period: 14
+    touch_atr_buf: 0.05
+    sl_atr_buf: 0.28
+    max_sl_atr: 2.0
+    tp1_rr: 1.0
+    tp2_rr: 9.0
+    leg1_weight: 0.45
+    cooldown_bars: 45
+    session: london_or_ny
+    use_s2r2: true
+    max_trades_per_day: 6
+    weekdays: [0, 1, 2, 3]
+    emit_context_meta: true

@@ -40,7 +40,15 @@ python -m ai_trader.scripts.run_backtest \
 For everything else (sweeps, tournament eval, live demo, architecture)
 see [`docs/HANDOFF.md`](docs/HANDOFF.md).
 
+**HFM VPS + MT5 live demo (Windows on Beeks):** see
+[`docs/live/VPS_HFM_DEMO.md`](docs/live/VPS_HFM_DEMO.md) and
+`config/live_demo_hfm.template.yaml` (use env vars for secrets; see `.env.example`).
+
 ## Specification
+
+Research priority (per user direction): evaluate **March and April** calendar
+months on `data/xauusd_m1_2026.csv` ahead of headline Jan/Feb or single-month
+moonshots; see `docs/plan.md` and `config/research_aspiration_200/README.md`.
 
 - `docs/plan.md` — locked spec (constraints, gates, instruments).
 - `docs/HANDOFF.md` — current state + how to continue.

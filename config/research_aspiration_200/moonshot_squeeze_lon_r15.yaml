@@ -1,0 +1,29 @@
+extends: _base_moonshot_m1.yaml
+
+# Simulation-only: single squeeze_breakout, London morning only, wide TP2,
+# risk 15%/trade at max lot cap (plan §A.2 still applies).
+
+risk:
+  risk_per_trade_pct: 15.0
+  lot_cap_per_unit_balance: 0.00002
+
+strategy:
+  __replace__: true
+  name: squeeze_breakout
+  params:
+    __replace__: true
+    bb_n: 20
+    bb_k: 2.0
+    kc_atr_mult: 1.5
+    atr_period: 14
+    squeeze_lookback: 16
+    box_lookback: 16
+    break_atr: 0.08
+    sl_atr_buffer: 0.22
+    max_sl_atr: 2.5
+    require_volume_spike: false
+    session: london
+    cooldown_bars: 6
+    tp1_rr: 0.5
+    tp2_rr: 4.0
+    leg1_weight: 0.45

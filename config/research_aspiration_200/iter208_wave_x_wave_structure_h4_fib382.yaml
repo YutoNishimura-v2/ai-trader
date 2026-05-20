@@ -1,0 +1,28 @@
+# Wave X — iter208 — H4 macro bias + tighter invalidation (0.382 fib SL anchor).
+#
+# Harness (data/xauusd_m1_2026.csv, 2026-05-14): full ~-4.5%, PF ~0.24, cap=0, 0/4 wins, Apr% ~-3.61.
+extends: _base_moonshot_m1.yaml
+
+instrument:
+  timeframe: M1
+
+strategy:
+  __replace__: true
+  name: wave_structure_mtf
+  params:
+    htf: H4
+    htf_zigzag_threshold_atr: 1.1
+    m1_zigzag_threshold_atr: 0.9
+    fib_entry_min: 0.382
+    fib_entry_max: 0.618
+    sl_fib_from_extreme: 0.382
+    sr_touch_atr: 1.0
+    rci_period: 18
+    tp1_rr: 1.0
+    tp2_rr: 3.0
+    leg1_weight: 0.45
+    cooldown_bars: 12
+    session: london_or_ny
+
+risk:
+  risk_per_trade_pct: 5.5

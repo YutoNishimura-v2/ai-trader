@@ -37,6 +37,9 @@ class MT5LiveBroker(Broker):
     magic: int = 20260424
     comment: str = "ai-trader"
     deviation_points: int = 10
+    # Optional path to terminal64.exe / terminal folder so Python can attach
+    # when multiple MT5 builds exist (typical on VPS).
+    terminal_path: Optional[str] = None
     login: Optional[int] = None
     server: Optional[str] = None
     password: Optional[str] = None
@@ -48,6 +51,8 @@ class MT5LiveBroker(Broker):
     def connect(self) -> None:  # pragma: no cover — requires MT5 runtime
         mt5 = _import_mt5()
         kwargs: dict[str, Any] = {}
+        if self.terminal_path:
+            kwargs["path"] = self.terminal_path
         if self.login is not None:
             kwargs["login"] = int(self.login)
         if self.server is not None:

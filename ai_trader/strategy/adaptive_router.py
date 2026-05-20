@@ -15,15 +15,22 @@ control loop runs identically in :class:`BacktestEngine` and
 Decision model (every ``on_bar``):
 
 1. Determine HTF regime: ``range`` / ``transition`` / ``trend``.
-2. Walk members in **adaptive priority order** (decayed expectancy
-   desc; ``active`` outranks ``probe``; ties broken by config order).
-3. Skip any member whose configured regimes don't include the
+2. Optionally (Iter31) derive a **state bucket key** from causal M1
+   volatility vs baseline, short-horizon HTF return persistence,
+   session, and weekday — still using only data closed at or before
+   the current bar.
+3. Walk members in **adaptive priority order** (decayed expectancy
+   desc per bucket when ``state_buckets_enabled``; else global;
+   ``active`` outranks ``probe``; ties broken by config order).
+4. Skip any member whose configured regimes don't include the
    current regime.
-4. Ask each surviving member for a Signal. First non-None wins.
-5. Attach ``risk_multiplier`` and ``confidence`` derived from the
+5. Ask each surviving member for a Signal. First non-None wins.
+6. Attach ``risk_multiplier`` and ``confidence`` derived from the
    member's expectancy state and the regime confidence prior. The
    :class:`RiskManager` (with ``dynamic_risk_enabled: true``) sizes
-   accordingly.
+   accordingly. When bucket mode is on, ``Signal.meta`` includes
+   ``adaptive_bucket_key`` so :meth:`on_trade_closed` attributes the
+   close to the correct per-bucket deque.
 
 Eligibility hysteresis:
 
@@ -59,6 +66,7 @@ import numpy as np
 import pandas as pd
 
 from ..data.mtf import MTFContext
+from ..indicators.atr import atr as _wilder_atr_series
 from .base import BaseStrategy, ClosedTradeContext, Signal
 from .registry import get_strategy, register_strategy
 
@@ -105,7 +113,7 @@ class _MemberSlot:
     strategy: BaseStrategy
     regimes: frozenset[str]
     config_priority: int
-    state: str = "probe"   # "probe" | "active"
+    state: str = "probe"   # "probe" | "active" (global; used when bucket mode off)
     # Optional per-member intrinsic sizing scalar applied AFTER the
     # router's probe/active multiplier. A "protector" member can be
     # configured with risk_multiplier=0.35 here so that the router
@@ -113,6 +121,9 @@ class _MemberSlot:
     # safe, regardless of the active/probe state.
     member_base_risk_multiplier: float = 1.0
     samples: deque = field(default_factory=lambda: deque(maxlen=64))
+    # Iter31: per-market-state decayed expectancy (member × bucket).
+    bucket_samples: dict[str, deque] = field(default_factory=dict)
+    bucket_state: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -128,6 +139,34 @@ class _DayTracker:
     day: str | None = None
     realized_pnl_pct: float = 0.0
     consecutive_losses: int = 0
+
+
+def _utc_ts(ts: Any) -> pd.Timestamp:
+    t = pd.Timestamp(ts)
+    if t.tz is None:
+        return t.tz_localize("UTC")
+    return t.tz_convert("UTC")
+
+
+def _session_bucket_utc(ts: Any) -> str:
+    """Coarse FX/gold session bucket from UTC hour (causal calendar feature)."""
+    h = int(_utc_ts(ts).hour)
+    if 0 <= h < 7:
+        return "asia"
+    if 7 <= h < 13:
+        return "london"
+    if 13 <= h < 21:
+        return "ny"
+    return "late"
+
+
+def _weekday_bucket_utc(ts: Any) -> str:
+    wd = int(_utc_ts(ts).weekday())  # Mon=0 .. Sun=6
+    if wd >= 5:
+        return "weekend"
+    if wd == 4:
+        return "fri"
+    return "mon_thu"
 
 
 def _decayed_expectancy(samples: list[float], halflife: float) -> float:
@@ -205,6 +244,15 @@ class AdaptiveRouterStrategy(BaseStrategy):
         # closes within the same UTC day, drop to probe-level risk
         # for the rest of the day. 0 disables.
         intra_day_loss_streak_pause: int = 0,
+        # Iter31: per-(member × market-state) expectancy and probe/active.
+        # Uses causal M1 ATR percentile + HTF return persistence + session/DOW.
+        state_buckets_enabled: bool = False,
+        bucket_persist_tf: str = "M15",
+        bucket_m15_lookback_bars: int = 8,
+        bucket_m15_move_thresh: float = 0.0008,
+        bucket_atr_ewm_span: int = 500,
+        bucket_vol_low_ratio: float = 0.88,
+        bucket_vol_high_ratio: float = 1.12,
     ) -> None:
         super().__init__(
             members=members or [],
@@ -230,6 +278,13 @@ class AdaptiveRouterStrategy(BaseStrategy):
             intra_day_max_scalar=intra_day_max_scalar,
             intra_day_min_scalar=intra_day_min_scalar,
             intra_day_loss_streak_pause=intra_day_loss_streak_pause,
+            state_buckets_enabled=state_buckets_enabled,
+            bucket_persist_tf=bucket_persist_tf,
+            bucket_m15_lookback_bars=bucket_m15_lookback_bars,
+            bucket_m15_move_thresh=bucket_m15_move_thresh,
+            bucket_atr_ewm_span=bucket_atr_ewm_span,
+            bucket_vol_low_ratio=bucket_vol_low_ratio,
+            bucket_vol_high_ratio=bucket_vol_high_ratio,
         )
         if not members:
             raise ValueError("AdaptiveRouterStrategy needs a non-empty 'members' list")
@@ -246,6 +301,8 @@ class AdaptiveRouterStrategy(BaseStrategy):
             raise ValueError(
                 f"priority_mode must be 'expectancy' or 'config', got {priority_mode!r}"
             )
+        if float(bucket_vol_low_ratio) >= float(bucket_vol_high_ratio):
+            raise ValueError("bucket_vol_low_ratio must be < bucket_vol_high_ratio")
 
         self._members: list[_MemberSlot] = []
         seen_ids: set[str] = set()
@@ -285,15 +342,79 @@ class AdaptiveRouterStrategy(BaseStrategy):
         self._day = _DayTracker()
         # Intra-day pyramid scalar persisted across trades within a day.
         self._intra_day_scalar: float = 1.0
+        # Prepared bucket features (aligned to df row index in prepare()).
+        self._vol_pct_arr: np.ndarray | None = None
+        self._persist_tf_rel_move: np.ndarray | None = None
 
     # ------------------------------------------------------------------
     def prepare(self, df: pd.DataFrame) -> None:
         p = self.params
-        self._mtf = MTFContext(base=df, timeframes=[p["htf"]])
+        tfs = [p["htf"]]
+        if bool(p.get("state_buckets_enabled", False)):
+            btf = str(p.get("bucket_persist_tf") or "M15")
+            if btf not in tfs:
+                tfs.append(btf)
+        self._mtf = MTFContext(base=df, timeframes=tfs)
         htf_df = self._mtf.frame(p["htf"])
         self._adx_arr = _adx(htf_df, int(p["adx_period"]))
         for slot in self._members:
             slot.strategy.prepare(df)
+
+        self._vol_pct_arr = None
+        self._persist_tf_rel_move = None
+        if not bool(p.get("state_buckets_enabled", False)):
+            return
+
+        n = len(df)
+        atr_m1 = _wilder_atr_series(df, 14).to_numpy(dtype=float)
+        span = max(20, int(p.get("bucket_atr_ewm_span", 500)))
+        lo_r = float(p.get("bucket_vol_low_ratio", 0.88))
+        hi_r = float(p.get("bucket_vol_high_ratio", 1.12))
+        atr_s = pd.Series(atr_m1, index=df.index, dtype=float)
+        baseline = atr_s.ewm(span=span, adjust=False, min_periods=span // 2).mean()
+        ratio = (atr_s / baseline.replace(0, np.nan)).to_numpy(dtype=float)
+        vol_code = np.zeros(n, dtype=np.int8)  # -1 low, 0 mid, 1 high
+        for i in range(n):
+            r = ratio[i]
+            if not np.isfinite(r):
+                vol_code[i] = 0
+            elif r < lo_r:
+                vol_code[i] = -1
+            elif r > hi_r:
+                vol_code[i] = 1
+            else:
+                vol_code[i] = 0
+        self._vol_pct_arr = vol_code.astype(np.float64)  # reuse field as vol band code
+
+        btf = str(p.get("bucket_persist_tf") or "M15")
+        persist_df = self._mtf.frame(btf)
+        close_p = persist_df["close"].to_numpy(dtype=float)
+        lb = max(2, int(p.get("bucket_m15_lookback_bars", 8)))
+        n_p = len(close_p)
+        rel_at_p = np.full(n_p, np.nan, dtype=float)
+        for pos in range(n_p):
+            j0 = max(0, pos - lb + 1)
+            c = close_p[pos]
+            if not np.isfinite(c) or c == 0.0:
+                continue
+            rel_at_p[pos] = (close_p[pos] - close_p[j0]) / c
+
+        rel_on_m1 = np.full(n, np.nan, dtype=float)
+        idx = df.index
+        ct_p = persist_df["close_time"]
+        if getattr(ct_p.dt, "tz", None) is not None:
+            ct_ns = ct_p.dt.tz_convert("UTC").dt.tz_localize(None).astype("datetime64[ns]").to_numpy()
+        else:
+            ct_ns = pd.to_datetime(ct_p).astype("datetime64[ns]").to_numpy()
+        for i in range(n):
+            ts = idx[i]
+            ts_u = _utc_ts(ts)
+            ts_naive = ts_u.tz_localize(None) if ts_u.tz is not None else ts_u
+            ts_ns = np.datetime64(ts_naive.to_numpy(), "ns")
+            pos = int(np.searchsorted(ct_ns, ts_ns, side="right")) - 1
+            if 0 <= pos < n_p and np.isfinite(rel_at_p[pos]):
+                rel_on_m1[i] = rel_at_p[pos]
+        self._persist_tf_rel_move = rel_on_m1
 
     # ------------------------------------------------------------------
     def _regime(self, ts) -> str | None:
@@ -316,10 +437,66 @@ class AdaptiveRouterStrategy(BaseStrategy):
             return "trend"
         return "transition"
 
+    def _state_bucket_key(self, ts, regime: str) -> str | None:
+        """Causal market-state key at bar close time ``ts`` (UTC).
+
+        Composed of HTF ADX regime, M1 ATR percentile (rolling), short-horizon
+        HTF return direction (chop vs directional), session, and weekday.
+        Returns ``None`` when bucket mode is disabled.
+        """
+        if not bool(self.params.get("state_buckets_enabled", False)):
+            return None
+        p = self.params
+        idx = self._mtf.base.index
+        pos = int(idx.get_loc(ts))
+        if pos < 0 or pos >= len(idx):
+            return None
+
+        vc = None
+        if self._vol_pct_arr is not None and pos < len(self._vol_pct_arr):
+            vc = int(self._vol_pct_arr[pos])
+        if vc == -1:
+            vol = "vol_low"
+        elif vc == 1:
+            vol = "vol_high"
+        else:
+            vol = "vol_mid"
+
+        thr = float(p.get("bucket_m15_move_thresh", 0.0008))
+        rm = None
+        if self._persist_tf_rel_move is not None and pos < len(self._persist_tf_rel_move):
+            rm = self._persist_tf_rel_move[pos]
+        if rm is not None and np.isfinite(rm):
+            if rm > thr:
+                persist = "persist_up"
+            elif rm < -thr:
+                persist = "persist_dn"
+            else:
+                persist = "persist_chop"
+        else:
+            persist = "persist_chop"
+
+        sess = _session_bucket_utc(ts)
+        dow = _weekday_bucket_utc(ts)
+        return f"{regime}|{vol}|{persist}|{sess}|{dow}"
+
     def _decayed_expectancy(self, slot: _MemberSlot) -> float:
         return _decayed_expectancy(
             list(slot.samples), float(self.params["expectancy_decay_halflife"])
         )
+
+    def _slot_expectancy_for_bucket(self, slot: _MemberSlot, bucket_key: str | None) -> float:
+        halflife = float(self.params["expectancy_decay_halflife"])
+        if bucket_key is None:
+            return self._decayed_expectancy(slot)
+        dq = slot.bucket_samples.get(bucket_key)
+        return _decayed_expectancy(list(dq) if dq is not None else [], halflife)
+
+    def _slot_state_for_bucket(self, slot: _MemberSlot, bucket_key: str | None) -> str:
+        if bucket_key is None:
+            return slot.state
+        init = str(self.params.get("initial_state", "probe"))
+        return slot.bucket_state.get(bucket_key, init)
 
     def _confidence(self, regime: str) -> float:
         p = self.params
@@ -337,7 +514,7 @@ class AdaptiveRouterStrategy(BaseStrategy):
             confidence = confidence * (1.0 - w) + adx_norm * w
         return float(min(1.0, max(0.0, confidence)))
 
-    def _risk_multiplier(self, slot: _MemberSlot) -> float:
+    def _risk_multiplier(self, slot: _MemberSlot, bucket_key: str | None = None) -> float:
         p = self.params
         # Members may declare an intrinsic risk_multiplier in their
         # config (e.g., a "protector" member sized at 0.35x). This
@@ -349,11 +526,12 @@ class AdaptiveRouterStrategy(BaseStrategy):
         pause_streak = int(p.get("intra_day_loss_streak_pause", 0) or 0)
         if pause_streak > 0 and self._day.consecutive_losses >= pause_streak:
             return float(p["probe_risk_multiplier"]) * member_base
-        if slot.state == "probe":
+        st = self._slot_state_for_bucket(slot, bucket_key)
+        if st == "probe":
             base = float(p["probe_risk_multiplier"])
         else:
             # Active: scale by decayed expectancy in [floor, cap].
-            exp = max(0.0, self._decayed_expectancy(slot))
+            exp = max(0.0, self._slot_expectancy_for_bucket(slot, bucket_key))
             floor = float(p["active_risk_multiplier_floor"])
             cap = float(p["active_risk_multiplier_cap"])
             ref = 0.5
@@ -372,6 +550,9 @@ class AdaptiveRouterStrategy(BaseStrategy):
         if regime is None:
             return None
 
+        bar_ts = history.index[-1]
+        bucket_key = self._state_bucket_key(bar_ts, regime)
+
         eligible: list[_MemberSlot] = [
             slot for slot in self._members
             if "all" in slot.regimes or regime in slot.regimes
@@ -383,11 +564,15 @@ class AdaptiveRouterStrategy(BaseStrategy):
         # (the "active outranks probe" rule). Within each group, sort
         # by expectancy desc OR by config order, depending on
         # priority_mode.
-        active_slots = [s for s in eligible if s.state == "active"]
-        probe_slots = [s for s in eligible if s.state == "probe"]
+        active_slots = [
+            s for s in eligible if self._slot_state_for_bucket(s, bucket_key) == "active"
+        ]
+        probe_slots = [
+            s for s in eligible if self._slot_state_for_bucket(s, bucket_key) == "probe"
+        ]
         if self.params.get("priority_mode", "expectancy") == "expectancy":
             active_slots.sort(
-                key=lambda s: (-self._decayed_expectancy(s), s.config_priority)
+                key=lambda s: (-self._slot_expectancy_for_bucket(s, bucket_key), s.config_priority)
             )
         else:
             active_slots.sort(key=lambda s: s.config_priority)
@@ -398,21 +583,24 @@ class AdaptiveRouterStrategy(BaseStrategy):
             sig = slot.strategy.on_bar(history)
             if sig is None:
                 continue
-            mult = self._risk_multiplier(slot)
+            st_here = self._slot_state_for_bucket(slot, bucket_key)
+            mult = self._risk_multiplier(slot, bucket_key)
             confidence = self._confidence(regime)
             meta = dict(sig.meta or {})
             meta.setdefault("strategy", slot.name)
             meta["member_name"] = slot.member_id
             meta["regime"] = regime
-            meta["state"] = slot.state
-            meta["expectancy"] = self._decayed_expectancy(slot)
+            meta["state"] = st_here
+            meta["expectancy"] = self._slot_expectancy_for_bucket(slot, bucket_key)
+            if bucket_key is not None:
+                meta["adaptive_bucket_key"] = bucket_key
             meta["risk_multiplier"] = float(mult)
             meta["confidence"] = float(confidence)
             if self._last_adx is not None:
                 meta["regime_adx"] = float(self._last_adx)
             object.__setattr__(sig, "meta", meta)
             tagged = (
-                f"[{slot.member_id}|{regime}|{slot.state}] {sig.reason}"
+                f"[{slot.member_id}|{regime}|{st_here}] {sig.reason}"
             )
             object.__setattr__(sig, "reason", tagged)
             return sig
@@ -464,15 +652,40 @@ class AdaptiveRouterStrategy(BaseStrategy):
             sample = float(ctx.r_multiple)
         else:
             sample = float(np.sign(ctx.pnl))
-        slot.samples.append(sample)
-        # Update probe ↔ active flag with hysteresis.
-        exp = self._decayed_expectancy(slot)
-        on_th = float(self.params["eligibility_on_threshold"])
-        off_th = float(self.params["eligibility_off_threshold"])
-        if slot.state == "probe" and exp >= on_th:
-            slot.state = "active"
-        elif slot.state == "active" and exp < off_th:
-            slot.state = "probe"
+
+        p = self.params
+        on_th = float(p["eligibility_on_threshold"])
+        off_th = float(p["eligibility_off_threshold"])
+        win = int(p["expectancy_window"])
+
+        def _update_hysteresis(
+            samples: deque, state_holder: dict[str, str], key: str | None
+        ) -> None:
+            exp_local = _decayed_expectancy(list(samples), float(p["expectancy_decay_halflife"]))
+            if key is None:
+                cur = slot.state
+                if cur == "probe" and exp_local >= on_th:
+                    slot.state = "active"
+                elif cur == "active" and exp_local < off_th:
+                    slot.state = "probe"
+                return
+            cur_b = state_holder.get(key, str(p.get("initial_state", "probe")))
+            if cur_b == "probe" and exp_local >= on_th:
+                state_holder[key] = "active"
+            elif cur_b == "active" and exp_local < off_th:
+                state_holder[key] = "probe"
+            else:
+                state_holder[key] = cur_b
+
+        meta = ctx.meta or {}
+        bkey = meta.get("adaptive_bucket_key")
+        if isinstance(bkey, str) and bool(p.get("state_buckets_enabled", False)):
+            dq = slot.bucket_samples.setdefault(bkey, deque(maxlen=win))
+            dq.append(sample)
+            _update_hysteresis(dq, slot.bucket_state, bkey)
+        else:
+            slot.samples.append(sample)
+            _update_hysteresis(slot.samples, {}, None)
 
     # ------------------------------------------------------------------
     # Test/diagnostic accessors (not part of the strategy contract).

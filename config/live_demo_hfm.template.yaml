@@ -1,0 +1,79 @@
+# HFM / MT5 **live demo** template (VPS / Windows).
+# Copy to a file that is **gitignored** and fill in your account number and server:
+#   copy this to `config/live_local_secrets.yaml` (add to .gitignore) or use env only.
+#
+# **Never** commit MT5 passwords. Use `broker.password_env` pointing at an env var.
+
+extends: default.yaml
+
+# Full strategy replace (default.yaml has a different strategy + params).
+strategy:
+  __replace__: true
+  name: pivot_bounce
+  params:
+    __replace__: true
+    pivot_period: daily
+    atr_period: 14
+    touch_atr_buf: 0.08
+    sl_atr_buf: 0.35
+    max_sl_atr: 2.0
+    tp1_rr: 1.0
+    tp2_rr: 1.5
+    leg1_weight: 0.5
+    cooldown_bars: 120
+    session: london_or_ny
+    use_s2r2: true
+    max_trades_per_day: 2
+    weekdays: [0, 1, 2, 3, 4]
+    emit_context_meta: true
+
+instrument:
+  symbol: XAUUSD
+  timeframe: M1
+  contract_size: 100
+  tick_size: 0.01
+  tick_value: 1.0
+  quote_currency: USD
+  min_lot: 0.01
+  lot_step: 0.01
+  is_24_7: false
+
+# Replace with your live demo balance when you run (RiskManager seed).
+account:
+  currency: JPY
+  starting_balance: 100000.0
+  max_leverage: 100.0
+
+risk:
+  # Conservative first live smoke test — tighten after stable wiring.
+  risk_per_trade_pct: 1.0
+  daily_profit_target_pct: 30.0
+  daily_max_loss_pct: 10.0
+  withdraw_half_of_daily_profit: false
+  max_concurrent_positions: 1
+  lot_cap_per_unit_balance: 0.000001
+  dynamic_risk_enabled: false
+
+news:
+  # Optional: path to CSV for ±30m blackout. Use null until file exists on VPS.
+  csv: null
+  window_minutes: 30
+  impact_filter: [high]
+
+broker:
+  # Prefer env for login/password on shared machines:
+  mt5_login_env: AI_TRADER_MT5_LOGIN
+  # Or set account: 12345678 here instead of using mt5_login_env.
+  account: null
+  # HFM server name exactly as shown in MT5 (verify in terminal).
+  server: "HFMarketsGlobal-Demo"
+  password_env: AI_TRADER_MT5_PASSWORD
+  # Optional: path to terminal64.exe if MetaTrader5.initialize cannot find it.
+  # mt5_terminal_path_env: AI_TRADER_MT5_TERMINAL_PATH
+
+live:
+  poll_seconds: 5
+  magic_number: 20260424
+  comment: ai-trader-hfm-demo
+  # Smoke test: stop after N bars processed (null = run forever).
+  max_iterations: 50

@@ -1,0 +1,12 @@
+extends: moonshot_pivot_daily_r18_tp9.yaml
+
+# SIMULATION-ONLY — Iter60 ceiling: **30% risk**, **tp2_rr 9** on lone daily pivot.
+# On data/xauusd_m1_2026.csv: **best month ~+297%** (Feb), **~703%** full period,
+# **cap_violations = 4** — NOT cap-clean. See `scripts/iter60_moonshot_aggressive_sweep.py`.
+
+risk:
+  risk_per_trade_pct: 30.0
+
+strategy:
+  params:
+    tp2_rr: 9.0

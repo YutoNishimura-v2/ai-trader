@@ -1,0 +1,10 @@
+extends: adaptive_dual_pivot_chop_moon_r9_tp9_balanced.yaml
+
+# Iter40 — risk grid on balanced dual pivot: **8%/trade** maximizes rolling-
+# battery worst_score (~0.10, 2/4 wins) on default windows vs 9% (~0.97).
+# Full-period Jan–Apr 2026 M1: Mar ~+0.83%, Apr ~+1.28%, cap=0, full ~+233%.
+
+risk:
+  risk_per_trade_pct: 8.0
+  min_risk_per_trade_pct: 2.0
+  max_risk_per_trade_pct: 10.0
