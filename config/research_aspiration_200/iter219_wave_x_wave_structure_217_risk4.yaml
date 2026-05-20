@@ -1,0 +1,33 @@
+# Wave X — iter219 — iter217 with lower risk per trade (4%) to tighten tail paths.
+#
+# Harness (data/xauusd_m1_2026.csv): full ~+43.9%, PF ~2.35, cap=0, 2/4 wins, Mar ~+9.38%,
+# Apr ~+13.05%, worst_score ~3.17 (worse than iter217 ~1.87 — lower risk did not help robustness here).
+extends: _base_moonshot_m1.yaml
+
+instrument:
+  timeframe: M1
+
+strategy:
+  __replace__: true
+  name: wave_structure_mtf
+  params:
+    htf: H1
+    m1_bias_mode: not_opposed
+    htf_zigzag_threshold_atr: 1.25
+    m1_zigzag_threshold_atr: 0.85
+    fib_entry_min: 0.382
+    fib_entry_max: 0.50
+    sl_fib_from_extreme: 0.236
+    sr_gate_enabled: true
+    sr_touch_atr: 2.0
+    rci_gate_enabled: true
+    rci_period: 14
+    rci_long_min_prev: -15.0
+    tp1_rr: 0.85
+    tp2_rr: 2.6
+    leg1_weight: 0.55
+    cooldown_bars: 6
+    session: london_or_ny
+
+risk:
+  risk_per_trade_pct: 4.0

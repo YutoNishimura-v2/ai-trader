@@ -1,0 +1,32 @@
+# Wave X — iter209 — disable HTF pivot-distance gate (fib + ZigZag + RCI only).
+# Thesis: SR filter was starving March; keep RCI and strict M1/HTF match.
+#
+# Harness (iter32_compare_configs.py, data/xauusd_m1_2026.csv, 2026-05-14): full ~+2.2%,
+# PF ~1.10, cap=0, 1/4 rolling wins, Mar ~+5.38%, Apr ~+3.41%, worst_score ~0.046.
+extends: _base_moonshot_m1.yaml
+
+instrument:
+  timeframe: M1
+
+strategy:
+  __replace__: true
+  name: wave_structure_mtf
+  params:
+    htf: H1
+    htf_zigzag_threshold_atr: 1.25
+    m1_zigzag_threshold_atr: 0.85
+    fib_entry_min: 0.382
+    fib_entry_max: 0.50
+    sl_fib_from_extreme: 0.236
+    sr_gate_enabled: false
+    rci_gate_enabled: true
+    rci_period: 14
+    rci_long_min_prev: -15.0
+    tp1_rr: 0.85
+    tp2_rr: 2.6
+    leg1_weight: 0.55
+    cooldown_bars: 6
+    session: london_or_ny
+
+risk:
+  risk_per_trade_pct: 6.0

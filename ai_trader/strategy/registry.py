@@ -52,6 +52,7 @@ def get_strategy(name: str, **params) -> BaseStrategy:
     from . import asian_break_continuation  # noqa: F401
     from . import atr_squeeze_breakout  # noqa: F401
     from . import adaptive_router  # noqa: F401
+    from . import wave_structure_mtf  # noqa: F401
     if name not in _REGISTRY:
         raise KeyError(f"Unknown strategy: {name}. Known: {sorted(_REGISTRY)}")
     return _REGISTRY[name](**params)
@@ -90,4 +91,5 @@ def list_strategies() -> list[str]:
     from . import asian_break_continuation  # noqa: F401
     from . import atr_squeeze_breakout  # noqa: F401
     from . import adaptive_router  # noqa: F401
+    from . import wave_structure_mtf  # noqa: F401
     return sorted(_REGISTRY)

@@ -1,0 +1,31 @@
+# Wave X — iter215 — iter209 recipe on M30 HTF (faster regime than H1).
+#
+# Harness (data/xauusd_m1_2026.csv): full ~-5.7%, PF ~0.79, cap=0, 1/4 wins, Mar ~+6.72%,
+# Apr ~-0.89%, worst_score ~2.18.
+extends: _base_moonshot_m1.yaml
+
+instrument:
+  timeframe: M1
+
+strategy:
+  __replace__: true
+  name: wave_structure_mtf
+  params:
+    htf: M30
+    htf_zigzag_threshold_atr: 1.15
+    m1_zigzag_threshold_atr: 0.85
+    fib_entry_min: 0.382
+    fib_entry_max: 0.50
+    sl_fib_from_extreme: 0.236
+    sr_gate_enabled: false
+    rci_gate_enabled: true
+    rci_period: 14
+    rci_long_min_prev: -15.0
+    tp1_rr: 0.85
+    tp2_rr: 2.6
+    leg1_weight: 0.55
+    cooldown_bars: 6
+    session: london_or_ny
+
+risk:
+  risk_per_trade_pct: 6.0
