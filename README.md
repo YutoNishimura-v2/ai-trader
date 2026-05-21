@@ -4,8 +4,9 @@ Automated XAUUSD (gold) scalping bot for MetaTrader 5 (HFM Katana).
 
 **👉 If you're new here, read [`docs/HANDOFF.md`](docs/HANDOFF.md) first.**
 It has everything you need to pick up where the project is now: strategy
-scoreboard, current best result (`news_fade`), known gotchas, and the
-next planned moves. The rest of `docs/` is supporting material.
+scoreboard, current best result (`news_fade`), simulation research on
+`main` (rollwin / Wave X / zigzag — see HANDOFF May 2026 TL;DR), known
+gotchas, and the next planned moves. The rest of `docs/` is supporting material.
 
 ## Status (one line)
 
