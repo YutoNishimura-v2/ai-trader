@@ -1,0 +1,30 @@
+extends: ../default.yaml
+
+# GOLD iter32: cap=1, 0/4, full -39.2%.
+
+# Iter197 — Wave U: `zigzag_fib_mtf` — **`zigzag_threshold_atr: 1.35` + fib_touch 0.38**
+# (combines iter189 + iter193).
+
+risk:
+  risk_per_trade_pct: 2.0
+
+instrument:
+  timeframe: M1
+
+strategy:
+  __replace__: true
+  name: zigzag_fib_mtf
+  params:
+    __replace__: true
+    htf: M5
+    zigzag_threshold_atr: 1.35
+    zigzag_atr_period: 14
+    atr_period_m1: 14
+    fib_touch_atr: 0.38
+    sl_atr_buffer: 0.35
+    tp1_rr: 1.0
+    tp2_rr: 2.5
+    leg1_weight: 0.55
+    cooldown_bars: 8
+    session: always
+    require_m1_bias_match: true

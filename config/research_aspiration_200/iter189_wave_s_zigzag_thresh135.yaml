@@ -1,0 +1,30 @@
+extends: ../default.yaml
+
+# GOLD iter32: cap=0, 0/4, Mar +23.36%, Apr -21.95%, full -45.3%.
+
+# Iter189 — Wave S: `zigzag_fib_mtf` — **mid ZigZag depth** (`zigzag_threshold_atr: 1.35`)
+# between baseline 1.2 and iter182 1.8.
+
+risk:
+  risk_per_trade_pct: 2.0
+
+instrument:
+  timeframe: M1
+
+strategy:
+  __replace__: true
+  name: zigzag_fib_mtf
+  params:
+    __replace__: true
+    htf: M5
+    zigzag_threshold_atr: 1.35
+    zigzag_atr_period: 14
+    atr_period_m1: 14
+    fib_touch_atr: 0.45
+    sl_atr_buffer: 0.35
+    tp1_rr: 1.0
+    tp2_rr: 2.5
+    leg1_weight: 0.55
+    cooldown_bars: 8
+    session: always
+    require_m1_bias_match: true

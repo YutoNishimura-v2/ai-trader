@@ -1,8 +1,12 @@
 """zigzag_fib_mtf: registration and backtest smoke."""
+from __future__ import annotations
+
 from datetime import timezone
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from ai_trader.backtest.engine import BacktestEngine
 from ai_trader.broker.paper import PaperBroker
@@ -105,3 +109,29 @@ def test_uptrend_no_short_spam():
     res = BacktestEngine(strategy=strat, risk=risk, broker=broker).run(df)
     sells = [t for t in res.trades if t.side == "sell"]
     assert len(sells) == 0
+
+
+def test_iter179_wave_q_stability_on_gold_csv_if_present() -> None:
+    """Full rolling harness on real M1 when ``data/xauusd_m1_2026.csv`` exists."""
+    csv = Path("data/xauusd_m1_2026.csv")
+    if not csv.exists():
+        pytest.skip("data/xauusd_m1_2026.csv not present; fetch Dukascopy first")
+
+    from ai_trader.config import load_config
+    from ai_trader.data.csv_loader import load_ohlcv_csv
+    from ai_trader.research.stability import build_rolling_windows, evaluate_config, score_config
+
+    df = load_ohlcv_csv(csv)
+    windows = build_rolling_windows(df)
+    cfg = load_config("config/research_aspiration_200/iter179_wave_q_zigzag_fib_baseline.yaml")
+    ev = evaluate_config(
+        cfg,
+        full_df=df,
+        windows=windows,
+        label="test-iter179-gold",
+        i_know_this_is_tournament_evaluation=True,
+    )
+    row = score_config(ev)
+    assert row["n_windows"] == 4
+    assert len(ev.windows) == 4
+    assert ev.full_cap_violations >= 0
