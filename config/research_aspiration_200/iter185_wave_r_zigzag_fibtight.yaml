@@ -1,0 +1,30 @@
+extends: ../default.yaml
+
+# GOLD iter32: cap=1, 0/4, Mar +15.31%, Apr -10.78%, full -36.2%.
+
+# Iter185 — Wave R: `zigzag_fib_mtf` — **tighter fib band** (`fib_touch_atr: 0.28`)
+# so M5/M1 must be closer to 38.2/50/61.8 before arming.
+
+risk:
+  risk_per_trade_pct: 2.0
+
+instrument:
+  timeframe: M1
+
+strategy:
+  __replace__: true
+  name: zigzag_fib_mtf
+  params:
+    __replace__: true
+    htf: M5
+    zigzag_threshold_atr: 1.2
+    zigzag_atr_period: 14
+    atr_period_m1: 14
+    fib_touch_atr: 0.28
+    sl_atr_buffer: 0.35
+    tp1_rr: 1.0
+    tp2_rr: 2.5
+    leg1_weight: 0.55
+    cooldown_bars: 8
+    session: always
+    require_m1_bias_match: true
