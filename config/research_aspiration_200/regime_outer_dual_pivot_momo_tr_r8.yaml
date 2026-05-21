@@ -1,0 +1,113 @@
+extends: adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml
+
+# FALSIFIED (Iter66): `iter32_compare` on data/xauusd_m1_2026.csv — cap=5,
+# Mar ~-3.4%, Apr ~-42.2%, 0/4 harness. Momentum continuation in trend leg
+# dominated badly on this slice.
+
+# Iter66 — Same outer `regime_router` shell as `regime_outer_dual_pivot_squeeze_tr_r8.yaml`
+# but **trend** leg is `momentum_continuation` (impulse + M15 trend/ADX gate) instead of
+# squeeze_breakout.
+
+risk:
+  risk_per_trade_pct: 8.0
+  min_risk_per_trade_pct: 2.0
+  max_risk_per_trade_pct: 10.0
+
+strategy:
+  __replace__: true
+  name: regime_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 20.0
+    trend_adx_min: 25.0
+    regime_risk_multipliers:
+      range: 1.0
+      transition: 1.0
+      trend: 0.85
+    regime_confidence:
+      range: 0.65
+      transition: 0.55
+      trend: 0.70
+    adx_confidence_weight: 0.45
+    members:
+      - name: momentum_continuation
+        regimes: [trend]
+        risk_multiplier: 0.38
+        params:
+          atr_period: 14
+          range_atr_mult: 1.35
+          body_frac_min: 0.62
+          close_frac_min: 0.62
+          sl_atr_buf: 0.38
+          max_sl_atr: 2.0
+          tp1_rr: 0.65
+          tp2_rr: 2.0
+          leg1_weight: 0.5
+          cooldown_bars: 16
+          max_trades_per_day: 4
+          htf: M15
+          htf_fast_ema: 20
+          htf_slow_ema: 50
+          htf_adx_period: 14
+          min_trend_adx: 24.0
+          session: london_or_ny
+      - name: adaptive_router
+        regimes: [range, transition]
+        risk_multiplier: 1.0
+        params:
+          __replace__: true
+          htf: M15
+          adx_period: 14
+          range_adx_max: 20.0
+          trend_adx_min: 25.0
+          initial_state: active
+          priority_mode: config
+          eligibility_off_threshold: -1000.0
+          probe_risk_multiplier: 1.0
+          active_risk_multiplier_floor: 1.0
+          active_risk_multiplier_cap: 1.0
+          members:
+            - name: pivot_bounce
+              id: pivot_chop
+              regimes: [range, transition]
+              risk_multiplier: 1.0
+              params:
+                pivot_period: daily
+                atr_period: 14
+                touch_atr_buf: 0.05
+                sl_atr_buf: 0.28
+                max_sl_atr: 2.0
+                tp1_rr: 1.0
+                tp2_rr: 9.0
+                leg1_weight: 0.45
+                cooldown_bars: 45
+                session: london_or_ny
+                use_s2r2: true
+                max_trades_per_day: 5
+                weekdays: [0, 1, 2, 3]
+                emit_context_meta: true
+                htf: M15
+                adx_period: 14
+                adx_max: 28.0
+                block_hours_utc: [13, 14]
+            - name: pivot_bounce
+              id: pivot_trend
+              regimes: [trend]
+              risk_multiplier: 0.6
+              params:
+                pivot_period: daily
+                atr_period: 14
+                touch_atr_buf: 0.05
+                sl_atr_buf: 0.30
+                max_sl_atr: 2.0
+                tp1_rr: 1.0
+                tp2_rr: 1.6
+                leg1_weight: 0.5
+                cooldown_bars: 60
+                session: london_or_ny
+                use_s2r2: true
+                max_trades_per_day: 2
+                weekdays: [0, 1, 2, 3]
+                emit_context_meta: true

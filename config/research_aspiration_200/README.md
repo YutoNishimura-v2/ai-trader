@@ -328,6 +328,18 @@ then Keltner; same ADX17/tam24 stack.
 **Harness:** **Apr ~+46%** sample but **Mar ~+24%**, only **2/4** wins, **`worst_score` ~3.93**, **cap=0**.
 Marked **FALSIFIED** in YAML — **April spike buys rolling failure** vs flagship.
 
+## Iter66–102 — rollwin adjunct probes (falsified / no-op)
+
+Pre-serial experiments on the **rollwin** shell (`adaptive_dual_pivot_chop_moon_r8_tp9_rollwin`):
+
+| Artifact | Notes |
+|----------|--------|
+| `regime_outer_dual_pivot_*_r8.yaml` (Iter66) | Outer regime router stacks — **falsified** vs rollwin |
+| `scripts/iter67_outer_squeeze_retune.py` | Squeeze retune sweep — no cap-clean rescue |
+| `adaptive_rollwin_plus_*_r8.yaml` (Iter68) | Liquidity / Asian / sweep overlays — **no lift** |
+| `iter69_100_rollwin_chop_grid.*` + `scripts/iter69_100_rollwin_chop_grid.py` | 32-cell chop micro-grid; best Mar/Apr still **worst_score ~4.5** |
+| `adaptive_dual_pivot_chop_moon_r8_adx27_r8.yaml` / `_adx26_r8.yaml` (Iter101–102) | **Bit-identical** to rollwin on 2026 M1 — ADX gate no-op |
+
 ## `zigzag_fib_mtf` + serial iterations 131–204
 
 - **Strategy:** `ai_trader/strategy/zigzag_fib_mtf.py` — M5 ZigZag bias + M1 fib pullback
