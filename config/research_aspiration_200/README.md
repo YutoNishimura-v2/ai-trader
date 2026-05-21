@@ -332,7 +332,7 @@ Marked **FALSIFIED** in YAML — **April spike buys rolling failure** vs flagshi
 
 - **Strategy:** `ai_trader/strategy/zigzag_fib_mtf.py` — M5 ZigZag bias + M1 fib pullback
   (see `scripts/validate_zigzag_fib_mtf.py`, `tests/test_zigzag_fib_mtf.py`).
-- **Configs:** `iter131_*` … `iter178_*` (rollwin thesis grid); `iter179_*` … `iter204_*`
-  (Waves Q–W zigzag ablations). Full harness table: `docs/research/SERIAL_ITER_103_200.md`.
+- **Configs:** `iter103_*` … `iter204_*` (serial rollwin + zigzag waves A–W). Full harness
+  table: `docs/research/SERIAL_ITER_103_200.md`.
 - **Best zigzag rolling floor (Wave W):** `iter202_wave_w_zigzag195_tp22.yaml` — **3/4**
   harness wins, **cap=0**, **`worst_score ~0.81`** (still below rollwin on Mar/Apr/full).
