@@ -11,6 +11,49 @@ other doc. The rest of `docs/` is supporting material:
 - `docs/lessons_learned.md` — append-only insights.
 - `docs/log.md` — chronological session diary.
 - `docs/todo.md` — living task list.
+- `docs/research/SERIAL_ITER_103_200.md` — serial iter 103–204 harness journal.
+- `docs/research/STALE_PRS.md` — open PRs superseded by #79–#84 (close manually).
+
+## TL;DR (2026-05-21 — research backlog merged; simulation lines on `main`)
+
+**Repo hygiene:** All unique content from agent PRs **#49–#78** (and **#38–#43**)
+is on `main` via **[#79](https://github.com/YutoNishimura-v2/ai-trader/pull/79)–[#84](https://github.com/YutoNishimura-v2/ai-trader/pull/84)**.
+**30 draft PRs remain OPEN on GitHub** — the cloud agent cannot close them;
+run the bulk-close snippet in `docs/research/STALE_PRS.md`.
+
+### What to run first
+
+| Goal | Config / doc |
+|------|----------------|
+| **Walk-forward / live candidate** (conservative) | `config/news_fade.yaml` — still the only family clearing full research+val+tournament gates |
+| **Mar/Apr simulation benchmark** | `config/research_aspiration_200/adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml` |
+| **Higher Apr sample (worse harness)** | `iter227_wave_x_wave_structure_223_tp35.yaml` or `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_m131415_tp16.yaml` |
+| **Compare any YAML** | `python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv <configs…>` |
+| **Serial falsification log** | `docs/research/SERIAL_ITER_103_200.md` |
+
+### New on `main` (May 2026)
+
+- **Strategies:** `wave_structure_mtf` (ZigZag + RCI + fib, iter205–230), `zigzag_fib_mtf` (M5/M1 fib pullback, iter179–204).
+- **Research tree:** `config/research_aspiration_200/` — iter103–230 YAMLs + iter66–102 falsification artifacts.
+- **MT5 demo plumbing:** `ai_trader/scripts/mt5_connectivity_check.py`, `config/live_demo_hfm.template.yaml`, `docs/live/VPS_HFM_DEMO.md`.
+- **Mar/Apr priority** locked in `docs/plan.md` (evaluation order for simulation work).
+- **+200%/month moonshot:** iter60 grid proves **no cap-clean 200%+ month** on the 2026 M1 slice under the daily moonshot template.
+
+### Simulation headline (Jan–Apr 2026 M1, same CSV)
+
+- **Rollwin** (`adaptive_dual_pivot_chop_moon_r8_tp9_rollwin`): best **rolling robustness** (2/4 wins, `worst_score ~0.10`, cap=0); modest Mar/Apr (~+0.8% / +1.3%).
+- **Wave X iter227:** best **April** in the wave line (~+20.5%) with acceptable tail (`worst_score ~1.64`); use for April-focused probes, not as default deploy.
+- **Zigzag iter202:** best **zigzag** rolling floor (3/4, `worst_score ~0.81`); still below rollwin on Mar/Apr/full.
+
+**Do not conflate** iter30 Jan +256% adaptive_router results with the rollwin/wave/zigzag Mar/Apr work — different objectives and gates.
+
+### Honest next moves
+
+1. **Close stale PRs** (#49–#78) on GitHub (see `STALE_PRS.md`).
+2. **April regime work:** branch from rollwin or iter227; use stability harness + Mar/Apr sweeps (`iter42`, `iter38` scripts).
+3. **Live demo:** Windows host + `mt5_connectivity_check.py` + `run_demo.py` (blocked on host access per README).
+
+---
 
 ## TL;DR (2026-04-26 ITER30 — 100k -> 356k in one month achieved)
 

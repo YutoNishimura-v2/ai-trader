@@ -3,6 +3,29 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-21 — Research backlog merged to main (#79–#84)
+
+Consolidated **45 open agent PRs** into six squash merges on `main`:
+
+| PR | Content |
+|----|---------|
+| #79 | iter60 Keltner/moonshot, Wave X (`wave_structure_mtf`, iter205–230), Mar/Apr docs, MT5 demo helpers |
+| #80 | `zigzag_fib_mtf` + iter131–204 configs + `SERIAL_ITER_103_200.md` |
+| #81 | iter103–130 configs (Waves A–D) |
+| #82 | README iter103–204 range note |
+| #83 | iter66–102 falsification YAMLs/scripts (regime-outer, chop grid, ADX no-op) |
+| #84 | `docs/research/STALE_PRS.md` |
+
+**Verification:** zero files unique to open branches #49–#78 vs `main` after #83.
+`pytest`: 218 passed, 3 skipped.
+
+**Simulation takeaways (unchanged vs branch notes):** rollwin remains best rolling
+robustness; Wave X **iter227** best April in wave line; zigzag **iter202** best
+zigzag harness floor; cap-clean **+200%/month** moonshot still **0** cells (iter60).
+
+**Housekeeping:** 30 draft PRs still OPEN on GitHub — maintainer must close
+(see `docs/research/STALE_PRS.md`). `docs/HANDOFF.md` TL;DR updated for May state.
+
 ## 2026-04-26 — Iter30 adaptive router + 100k -> 356k in one month
 
 User issued a hard directive: "do not come back until you've built a

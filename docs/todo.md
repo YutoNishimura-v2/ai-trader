@@ -47,6 +47,16 @@ Current spec: **plan v3** (see `docs/plan.md`).
 Status: 9 strategy families tried; `news_fade` is the only
 walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 
+### 2026-05-21 housekeeping (post #79–#84 merge)
+
+- [x] Merge open agent PR backlog to `main` (#79–#84).
+- [ ] **Close stale GitHub PRs #49–#78** (and #38–#43 if still open) —
+      `docs/research/STALE_PRS.md` has the bulk-close command.
+- [ ] **April regime:** iterate from rollwin or `iter227_wave_x_*` with
+      `iter32_compare_configs.py` + stability harness (target: lift Mar/Apr
+      without `worst_score` regression).
+- [x] `wave_structure_mtf` + `zigzag_fib_mtf` on `main` with serial configs.
+
 ### Already done
 
 - [x] Falsified: `trend_pullback_fib`, `donchian_retest`,
