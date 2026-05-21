@@ -1,0 +1,24 @@
+{
+  "iters": "69-100",
+  "n_rows": 32,
+  "jsonl": "config/research_aspiration_200/iter69_100_rollwin_chop_grid.jsonl",
+  "best_cap_clean_by_min_mar_apr_then_wins_then_worst_score": {
+    "iter": 83,
+    "adx_max": 26.0,
+    "block_hours_utc": [
+      13,
+      14,
+      15
+    ],
+    "chop_tp2_rr": 9.5,
+    "full_return_pct": 173.6799683462159,
+    "full_cap_violations": 0,
+    "mar_return_pct": 4.684897983183278,
+    "apr_return_pct": 5.200512813315505,
+    "min_mar_apr_pct": 4.684897983183278,
+    "windows_passing": 1,
+    "n_windows": 4,
+    "worst_score": 4.515630584262141,
+    "profit_factor": 1.5949025909178731
+  }
+}

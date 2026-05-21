@@ -1,0 +1,118 @@
+extends: adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml
+
+# FALSIFIED (Iter66): `iter32_compare` on data/xauusd_m1_2026.csv — cap=3,
+# Mar ~-7.1%, Apr ~+0.7%, 0/4 harness. Outer squeeze in trend + dual pivot
+# in chop/transition is too lossy / cap-heavy on this sample vs rollwin alone.
+
+# Iter66 — DRASTIC (simulation): **outer** `regime_router` (M15 ADX) per common
+# “adaptive regime” framing (trend vs chop use different mechanics; see e.g.
+# regime + volatility discussion on gold systems). **Chop/transition** keeps
+# the validated **adaptive_router** dual-pivot stack unchanged. **Trend** runs
+# only `squeeze_breakout` (London/NY), sized down — hypothesis: pivots in
+# strong ADX miss impulse continuation that squeeze catches.
+#
+# Falsifiable on harness + caps vs `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin`.
+
+risk:
+  risk_per_trade_pct: 8.0
+  min_risk_per_trade_pct: 2.0
+  max_risk_per_trade_pct: 10.0
+
+strategy:
+  __replace__: true
+  name: regime_router
+  params:
+    __replace__: true
+    htf: M15
+    adx_period: 14
+    range_adx_max: 20.0
+    trend_adx_min: 25.0
+    regime_risk_multipliers:
+      range: 1.0
+      transition: 1.0
+      trend: 0.85
+    regime_confidence:
+      range: 0.65
+      transition: 0.55
+      trend: 0.70
+    adx_confidence_weight: 0.45
+    members:
+      # Trend-only members **first** — if `adaptive_router` were first, its inner
+      # `pivot_trend` would still answer in ADX-trend and preempt the squeeze leg.
+      - name: squeeze_breakout
+        regimes: [trend]
+        risk_multiplier: 0.42
+        params:
+          bb_n: 20
+          bb_k: 2.0
+          kc_atr_mult: 1.5
+          atr_period: 14
+          squeeze_lookback: 18
+          box_lookback: 18
+          break_atr: 0.15
+          sl_atr_buffer: 0.30
+          max_sl_atr: 2.4
+          require_volume_spike: false
+          session: london_or_ny
+          cooldown_bars: 14
+          tp1_rr: 0.55
+          tp2_rr: 2.4
+          leg1_weight: 0.5
+      - name: adaptive_router
+        regimes: [range, transition]
+        risk_multiplier: 1.0
+        params:
+          __replace__: true
+          htf: M15
+          adx_period: 14
+          range_adx_max: 20.0
+          trend_adx_min: 25.0
+          initial_state: active
+          priority_mode: config
+          eligibility_off_threshold: -1000.0
+          probe_risk_multiplier: 1.0
+          active_risk_multiplier_floor: 1.0
+          active_risk_multiplier_cap: 1.0
+          members:
+            - name: pivot_bounce
+              id: pivot_chop
+              regimes: [range, transition]
+              risk_multiplier: 1.0
+              params:
+                pivot_period: daily
+                atr_period: 14
+                touch_atr_buf: 0.05
+                sl_atr_buf: 0.28
+                max_sl_atr: 2.0
+                tp1_rr: 1.0
+                tp2_rr: 9.0
+                leg1_weight: 0.45
+                cooldown_bars: 45
+                session: london_or_ny
+                use_s2r2: true
+                max_trades_per_day: 5
+                weekdays: [0, 1, 2, 3]
+                emit_context_meta: true
+                htf: M15
+                adx_period: 14
+                adx_max: 28.0
+                block_hours_utc: [13, 14]
+            - name: pivot_bounce
+              id: pivot_trend
+              regimes: [trend]
+              risk_multiplier: 0.6
+              params:
+                pivot_period: daily
+                atr_period: 14
+                touch_atr_buf: 0.05
+                sl_atr_buf: 0.30
+                max_sl_atr: 2.0
+                tp1_rr: 1.0
+                tp2_rr: 1.6
+                leg1_weight: 0.5
+                cooldown_bars: 60
+                session: london_or_ny
+                use_s2r2: true
+                max_trades_per_day: 2
+                weekdays: [0, 1, 2, 3]
+                emit_context_meta: true
