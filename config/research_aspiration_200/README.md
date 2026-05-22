@@ -348,3 +348,9 @@ Pre-serial experiments on the **rollwin** shell (`adaptive_dual_pivot_chop_moon_
   table: `docs/research/SERIAL_ITER_103_200.md`.
 - **Best zigzag rolling floor (Wave W):** `iter202_wave_w_zigzag195_tp22.yaml` — **3/4**
   harness wins, **cap=0**, **`worst_score ~0.81`** (still below rollwin on Mar/Apr/full).
+
+### Wave X iter231 (2026-05-22 revalidation on `data/xauusd_m1_2026.csv`)
+
+**`iter231_wave_x_wave_structure_227_fast_m1.yaml`** — iter227 + M1 ZZ **0.72**: **FALSIFIED**.
+Full **+15.5%**, Apr **+18.9%**, Mar **+0.34%**, **2/4**, **`worst_score ~1.66`** — worse than
+**iter227** on every Mar/Apr/full metric. Prefer **iter227** for April-focused Wave X work.

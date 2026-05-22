@@ -3,6 +3,21 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-22 — iter231 falsified; headline harness revalidated on live CSV
+
+Fetched `data/xauusd_m1_2026.csv` (108,871 M1 bars, Jan–Apr 2026) and re-ran
+`scripts/compare_mar_apr_headliners.py` plus iter231 vs iter230.
+
+| Config | full % | Mar % | Apr % | wpass | worst_score |
+|--------|-------:|------:|------:|:-----:|------------:|
+| rollwin | +232.7 | +0.83 | +1.28 | 2/4 | ~0.10 |
+| iter227 | +26.5 | +3.57 | +20.48 | 2/4 | ~1.64 |
+| **iter231** | +15.5 | +0.34 | +18.9 | 2/4 | ~1.66 |
+| iter202 | −28.3 | −4.51 | −13.7 | 3/4 | ~0.81 |
+
+**iter231** (iter227 + M1 ZZ 0.72) **falsified** — no Mar/Apr/full lift vs iter227.
+Added `scripts/compare_mar_apr_headliners.py`, `.github/workflows/close-superseded-prs.yml`.
+
 ## 2026-05-21 — Research backlog merged to main (#79–#84)
 
 Consolidated **45 open agent PRs** into six squash merges on `main`:

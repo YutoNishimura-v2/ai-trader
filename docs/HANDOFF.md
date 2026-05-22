@@ -28,6 +28,7 @@ run the bulk-close snippet in `docs/research/STALE_PRS.md`.
 | **Walk-forward / live candidate** (conservative) | `config/news_fade.yaml` — still the only family clearing full research+val+tournament gates |
 | **Mar/Apr simulation benchmark** | `config/research_aspiration_200/adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml` |
 | **Higher Apr sample (worse harness)** | `iter227_wave_x_wave_structure_223_tp35.yaml` or `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_m131415_tp16.yaml` |
+| **Compare headline YAMLs** | `python3 scripts/compare_mar_apr_headliners.py` (needs `data/xauusd_m1_2026.csv`) |
 | **Compare any YAML** | `python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv <configs…>` |
 | **Serial falsification log** | `docs/research/SERIAL_ITER_103_200.md` |
 
@@ -39,11 +40,19 @@ run the bulk-close snippet in `docs/research/STALE_PRS.md`.
 - **Mar/Apr priority** locked in `docs/plan.md` (evaluation order for simulation work).
 - **+200%/month moonshot:** iter60 grid proves **no cap-clean 200%+ month** on the 2026 M1 slice under the daily moonshot template.
 
-### Simulation headline (Jan–Apr 2026 M1, same CSV)
+### Simulation headline (Jan–Apr 2026 M1, revalidated 2026-05-22 on fetched CSV)
 
-- **Rollwin** (`adaptive_dual_pivot_chop_moon_r8_tp9_rollwin`): best **rolling robustness** (2/4 wins, `worst_score ~0.10`, cap=0); modest Mar/Apr (~+0.8% / +1.3%).
-- **Wave X iter227:** best **April** in the wave line (~+20.5%) with acceptable tail (`worst_score ~1.64`); use for April-focused probes, not as default deploy.
-- **Zigzag iter202:** best **zigzag** rolling floor (3/4, `worst_score ~0.81`); still below rollwin on Mar/Apr/full.
+| Config | full % | Mar % | Apr % | wpass | worst_score |
+|--------|-------:|------:|------:|:-----:|------------:|
+| **rollwin** | +232.7 | +0.83 | +1.28 | 2/4 | **~0.10** |
+| rollwin `_m131415_tp16` | +152.8 | +3.38 | +4.42 | 1/4 | ~4.16 |
+| **iter227** (Wave X) | +26.5 | +3.57 | **+20.48** | 2/4 | ~1.64 |
+| iter231 (227+fast M1) | +15.5 | +0.34 | +18.9 | 2/4 | ~1.66 — **falsified** |
+| iter202 (zigzag) | −28.3 | −4.51 | −13.7 | 3/4 | ~0.81 |
+
+- **Rollwin:** best **rolling robustness**; use as simulation default.
+- **iter227:** best **April** in Wave X; **iter231** did not improve on the hybrid thesis.
+- **Zigzag iter202:** strong `worst_score` / 3/4 wins but **negative** Mar/Apr on this slice.
 
 **Do not conflate** iter30 Jan +256% adaptive_router results with the rollwin/wave/zigzag Mar/Apr work — different objectives and gates.
 

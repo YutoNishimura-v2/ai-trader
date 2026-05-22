@@ -25,7 +25,10 @@ Close each open PR with a short comment, for example:
 Bulk close (requires repo write):
 
 ```bash
-for n in $(seq 49 78); do
-  gh pr close "$n" -c "Superseded by #79-#84 on main."
+for n in $(seq 38 43) $(seq 49 78); do
+  gh pr close "$n" -c "Superseded by #79-#85 on main."
 done
 ```
+
+Or run the GitHub Action **Close superseded research PRs** (`.github/workflows/close-superseded-prs.yml`)
+with `dry_run=false` from the Actions tab (uses `GITHUB_TOKEN` with pull-request write).
