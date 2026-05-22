@@ -3,6 +3,19 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-22 — Wave Y iter246–250: iter244 tail peel batch (all falsified)
+
+Five single-thesis peels on **iter244** (lunch block + wave overlap). Harness on
+Jan–Apr 2026 M1 CSV vs **iter235** / **iter244**:
+
+| iter | wpass | worst | Note |
+|------|:-----:|------:|------|
+| 244 | **4/4** | **~0.34** | unchanged Pareto 4/4 pick |
+| 246–248, 250 | 4/4 | ~0.34 | no tail improvement vs 244 |
+| 249 block [14] only | 1/4 | ~3.45 | falsified |
+
+**iter235** still best tail (~0.04). Journal: `docs/research/WAVE_Y_ITER232_235.md`.
+
 ## 2026-05-22 — Wave Y iter236–241: lunch blocks + peels
 
 Follow-ups on **iter235** handoff shell:
