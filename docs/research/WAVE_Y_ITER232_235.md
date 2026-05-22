@@ -70,7 +70,25 @@ Why it matters under `docs/plan.md` Mar/Apr priority:
 
 **Pick:** **`iter235`** — best tail (~0.04). **`iter244`** — best **4/4** + Mar/Apr with tail ~0.34.
 
+## iter246–250 — iter244 tail peel (2026-05-22)
+
+Goal: push **iter244** `worst_score` toward **~0.1** while keeping **4/4** and cap=0.
+
+| Iter | Change | full % | Mar % | Apr % | wpass | worst | cap | Verdict |
+|------|--------|-------:|------:|------:|:-----:|------|:---:|---------|
+| 244 | baseline | +192.3 | +18.50 | +7.70 | **4/4** | **~0.34** | 0 | **Pareto 4/4** |
+| 246 | wave 0.28×, cd 18 | +192.0 | +18.52 | +7.71 | 4/4 | ~0.34 | 0 | FALSIFIED (tail↑) |
+| 247 | wave TP2 2.6, cd 16 | +193.7 | +17.18 | +7.83 | 4/4 | ~0.34 | 0 | FALSIFIED (Mar↓) |
+| 248 | chop max 4/day | +192.3 | +18.50 | +7.70 | 4/4 | ~0.34 | 0 | FALSIFIED (no-op) |
+| 249 | block UTC [14] only | +151.5 | +6.93 | +6.34 | 1/4 | ~3.45 | 0 | FALSIFIED |
+| 250 | combo 0.27×, TP2 2.6, cd 20, max4 | +194.4 | +18.18 | +7.82 | 4/4 | ~0.34 | 0 | FALSIFIED (tail↑) |
+
+**Takeaway:** No peel beat **iter244** on rolling tail. **iter244** remains the **4/4** pick;
+**iter235** remains the conservative tail pick (~0.04). Next: held-out windows or non-overlap
+wave session peels (not lunch-block narrowing).
+
 ## Next probes
 
 1. Held-out validation for **iter235** / **iter244**.
 2. **iter227** April sleeve alongside handoff core (two-config).
+3. Single-thesis peels on **iter244** only (e.g. wave cd / SR gate), not combo stacks.
