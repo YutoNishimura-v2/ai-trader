@@ -70,7 +70,54 @@ Why it matters under `docs/plan.md` Mar/Apr priority:
 
 **Pick:** **`iter235`** — best tail (~0.04). **`iter244`** — best **4/4** + Mar/Apr with tail ~0.34.
 
+## iter246–260 (PRs #93–#95)
+
+Member-param peels (wave risk/TP/block, cd/SR/session, pivot, zigzag): mostly **no-op** or
+**tail regression**. **iter253** proved **wave `session: overlap`** is required for ~0.34 tail.
+
+## iter261–265 — router ADX boundaries (2026-05-22)
+
+| Iter | Change | full % | Mar % | Apr % | wpass | worst | cap | Verdict |
+|------|--------|-------:|------:|------:|:-----:|------:|:---:|---------|
+| 244 | baseline | +192.3 | +18.50 | +7.70 | **4/4** | **~0.34** | 0 | **Pareto 4/4** |
+| 261 | range_adx_max 18 | +149.6 | +15.33 | **+24.91** | 4/4 | ~4.57 | 0 | FALSIFIED (tail) |
+| 262 | range_adx_max 22 | +257.3 | +2.94 | +6.69 | 2/4 | ~3.36 | **2** | FALSIFIED |
+| 263 | trend_adx_min 23 | +156.8 | **+34.77** | −4.76 | 2/4 | ~5.79 | 0 | FALSIFIED |
+| 264 | trend_adx_min 27 | +196.2 | +15.45 | +3.12 | 4/4 | ~0.35 | 0 | ≈244, Mar/Apr↓ |
+| 265 | range18 + trend27 | +155.2 | +13.34 | +17.65 | 4/4 | ~3.05 | 0 | FALSIFIED (tail) |
+
+**Takeaway:** Default **20 / 25** ADX cutoffs are near-optimal for **iter244**. Widening transition
+(more wave) hurts tail; **iter264** is the only near-tie on worst but trades away Mar/Apr.
+
+**Picks unchanged:** **iter235**, **iter244**.
+
+## Held-out validation (2026-05-22)
+
+Script: `scripts/wave_y_heldout_validate.py` — split at **2026-03-01** (jan-feb vs mar-apr).
+
+**Mar–Apr slice (held-out calendar window):**
+
+| Config | ret % | Mar % | Apr % | wpass |
+|--------|------:|------:|------:|:-----:|
+| iter244 | +11.2 | +5.6 | +5.3 | 0/2 |
+| iter235 | +10.8 | +4.7 | +5.8 | 0/2 |
+| iter227 | **+23.8** | +3.1 | **+20.0** | **2/2** |
+| rollwin | −6.2 | −6.5 | +0.4 | 1/2 |
+
+Full-period Mar/Apr keys (**iter244** +18.5% / +7.7%) include Jan–Feb routing context; held-out
+slice numbers are the honest forward view for the priority months. **iter227** wins the held-out
+window — see `docs/research/WAVE_Y_TWO_CONFIG.md`.
+
+## Wave Y status
+
+Micro-peels on **iter244** (iter246–265) are **closed**. Frozen simulation picks:
+
+- **iter235** — best rolling tail (~0.04), 3/4
+- **iter244** — best full-sample **4/4** + Mar/Apr combo, tail ~0.34
+- **iter227** — optional **April sleeve** (separate YAML; do not merge into router)
+
 ## Next probes
 
-1. Held-out validation for **iter235** / **iter244**.
-2. **iter227** April sleeve alongside handoff core (two-config).
+1. Fetch **post-Apr 2026** M1 CSV and re-run held-out script (true out-of-sample extension).
+2. MT5 demo plumbing for frozen picks (`docs/live/VPS_HFM_DEMO.md`).
+3. No further single-knob YAML grids on **iter244**.
