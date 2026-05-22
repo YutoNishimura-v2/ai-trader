@@ -20,7 +20,7 @@ DEFAULT_CSV = ROOT / "data" / "xauusd_m1_2026.csv"
 HEADLINERS = [
     "config/research_aspiration_200/adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml",
     "config/research_aspiration_200/iter235_rollwin_handoff_wave_lowrisk.yaml",
-    "config/research_aspiration_200/iter236_handoff_lunchblock_chop.yaml",
+    "config/research_aspiration_200/iter244_handoff_overlap_lunchblock.yaml",
     "config/research_aspiration_200/iter227_wave_x_wave_structure_223_tp35.yaml",
     "config/research_aspiration_200/iter202_wave_w_zigzag195_tp22.yaml",
 ]

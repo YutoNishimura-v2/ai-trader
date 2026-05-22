@@ -28,7 +28,8 @@ See `docs/research/STALE_PRS.md`.
 |------|----------------|
 | **Walk-forward / live candidate** (conservative) | `config/news_fade.yaml` — still the only family clearing full research+val+tournament gates |
 | **Mar/Apr simulation benchmark** | `config/research_aspiration_200/adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml` |
-| **Mar/Apr + harness (Wave Y, 2026-05-22)** | `iter235_rollwin_handoff_wave_lowrisk.yaml` — 3/4, worst ~0.04, Mar ~+12%, Apr ~+7% |
+| **Mar/Apr + harness (best tail)** | `iter235_rollwin_handoff_wave_lowrisk.yaml` — 3/4, worst ~0.04 |
+| **Mar/Apr + 4/4 windows** | `iter244_handoff_overlap_lunchblock.yaml` — **4/4**, worst ~0.34, Mar ~+18.5% |
 | **Higher Apr sample (worse harness)** | `iter227_wave_x_wave_structure_223_tp35.yaml` or `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_m131415_tp16.yaml` |
 | **Compare headline YAMLs** | `python3 scripts/compare_mar_apr_headliners.py` (needs `data/xauusd_m1_2026.csv`) |
 | **Compare any YAML** | `python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv <configs…>` |
