@@ -1,0 +1,7 @@
+# Iter273 — vol gate high 0.70 — **PARTIAL** (2026-05-22): train 4/4 Mar **+22.9%**, worst **~2.14**; May **−2.7%**.
+extends: iter244_handoff_overlap_lunchblock.yaml
+
+strategy:
+  params:
+    vol_risk_cap_gate_enabled: true
+    vol_risk_cap_high_vol: 0.70

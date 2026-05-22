@@ -253,6 +253,11 @@ class AdaptiveRouterStrategy(BaseStrategy):
         bucket_atr_ewm_span: int = 500,
         bucket_vol_low_ratio: float = 0.88,
         bucket_vol_high_ratio: float = 1.12,
+        # Wave Z: causal M1 ATR-band risk cap (high vol → lower active cap).
+        vol_risk_cap_gate_enabled: bool = False,
+        vol_risk_cap_high_vol: float = 0.70,
+        vol_risk_cap_mid_vol: float | None = None,
+        vol_risk_cap_low_vol: float | None = None,
     ) -> None:
         super().__init__(
             members=members or [],
@@ -285,6 +290,10 @@ class AdaptiveRouterStrategy(BaseStrategy):
             bucket_atr_ewm_span=bucket_atr_ewm_span,
             bucket_vol_low_ratio=bucket_vol_low_ratio,
             bucket_vol_high_ratio=bucket_vol_high_ratio,
+            vol_risk_cap_gate_enabled=vol_risk_cap_gate_enabled,
+            vol_risk_cap_high_vol=vol_risk_cap_high_vol,
+            vol_risk_cap_mid_vol=vol_risk_cap_mid_vol,
+            vol_risk_cap_low_vol=vol_risk_cap_low_vol,
         )
         if not members:
             raise ValueError("AdaptiveRouterStrategy needs a non-empty 'members' list")
@@ -346,25 +355,14 @@ class AdaptiveRouterStrategy(BaseStrategy):
         self._vol_pct_arr: np.ndarray | None = None
         self._persist_tf_rel_move: np.ndarray | None = None
 
-    # ------------------------------------------------------------------
-    def prepare(self, df: pd.DataFrame) -> None:
+    def _needs_m1_vol_bands(self) -> bool:
         p = self.params
-        tfs = [p["htf"]]
-        if bool(p.get("state_buckets_enabled", False)):
-            btf = str(p.get("bucket_persist_tf") or "M15")
-            if btf not in tfs:
-                tfs.append(btf)
-        self._mtf = MTFContext(base=df, timeframes=tfs)
-        htf_df = self._mtf.frame(p["htf"])
-        self._adx_arr = _adx(htf_df, int(p["adx_period"]))
-        for slot in self._members:
-            slot.strategy.prepare(df)
+        return bool(p.get("state_buckets_enabled", False)) or bool(
+            p.get("vol_risk_cap_gate_enabled", False)
+        )
 
-        self._vol_pct_arr = None
-        self._persist_tf_rel_move = None
-        if not bool(p.get("state_buckets_enabled", False)):
-            return
-
+    def _prepare_m1_vol_bands(self, df: pd.DataFrame) -> None:
+        p = self.params
         n = len(df)
         atr_m1 = _wilder_atr_series(df, 14).to_numpy(dtype=float)
         span = max(20, int(p.get("bucket_atr_ewm_span", 500)))
@@ -384,8 +382,52 @@ class AdaptiveRouterStrategy(BaseStrategy):
                 vol_code[i] = 1
             else:
                 vol_code[i] = 0
-        self._vol_pct_arr = vol_code.astype(np.float64)  # reuse field as vol band code
+        self._vol_pct_arr = vol_code.astype(np.float64)
 
+    def _vol_band_at(self, ts) -> int:
+        if self._vol_pct_arr is None or self._mtf is None:
+            return 0
+        pos = int(self._mtf.base.index.get_loc(ts))
+        if pos < 0 or pos >= len(self._vol_pct_arr):
+            return 0
+        return int(self._vol_pct_arr[pos])
+
+    def _effective_active_cap(self, ts) -> float:
+        p = self.params
+        base = float(p["active_risk_multiplier_cap"])
+        if not bool(p.get("vol_risk_cap_gate_enabled", False)):
+            return base
+        band = self._vol_band_at(ts)
+        if band == 1:
+            return float(p.get("vol_risk_cap_high_vol", base))
+        if band == -1:
+            low = p.get("vol_risk_cap_low_vol")
+            return float(low if low is not None else base)
+        mid = p.get("vol_risk_cap_mid_vol")
+        return float(mid if mid is not None else base)
+
+    # ------------------------------------------------------------------
+    def prepare(self, df: pd.DataFrame) -> None:
+        p = self.params
+        tfs = [p["htf"]]
+        if bool(p.get("state_buckets_enabled", False)):
+            btf = str(p.get("bucket_persist_tf") or "M15")
+            if btf not in tfs:
+                tfs.append(btf)
+        self._mtf = MTFContext(base=df, timeframes=tfs)
+        htf_df = self._mtf.frame(p["htf"])
+        self._adx_arr = _adx(htf_df, int(p["adx_period"]))
+        for slot in self._members:
+            slot.strategy.prepare(df)
+
+        self._vol_pct_arr = None
+        self._persist_tf_rel_move = None
+        if self._needs_m1_vol_bands():
+            self._prepare_m1_vol_bands(df)
+        if not bool(p.get("state_buckets_enabled", False)):
+            return
+
+        n = len(df)
         btf = str(p.get("bucket_persist_tf") or "M15")
         persist_df = self._mtf.frame(btf)
         close_p = persist_df["close"].to_numpy(dtype=float)
@@ -514,7 +556,13 @@ class AdaptiveRouterStrategy(BaseStrategy):
             confidence = confidence * (1.0 - w) + adx_norm * w
         return float(min(1.0, max(0.0, confidence)))
 
-    def _risk_multiplier(self, slot: _MemberSlot, bucket_key: str | None = None) -> float:
+    def _risk_multiplier(
+        self,
+        slot: _MemberSlot,
+        bucket_key: str | None = None,
+        *,
+        bar_ts=None,
+    ) -> float:
         p = self.params
         # Members may declare an intrinsic risk_multiplier in their
         # config (e.g., a "protector" member sized at 0.35x). This
@@ -533,7 +581,11 @@ class AdaptiveRouterStrategy(BaseStrategy):
             # Active: scale by decayed expectancy in [floor, cap].
             exp = max(0.0, self._slot_expectancy_for_bucket(slot, bucket_key))
             floor = float(p["active_risk_multiplier_floor"])
-            cap = float(p["active_risk_multiplier_cap"])
+            cap = (
+                self._effective_active_cap(bar_ts)
+                if bar_ts is not None
+                else float(p["active_risk_multiplier_cap"])
+            )
             ref = 0.5
             scaled = floor + (cap - floor) * min(exp / ref, 1.0)
             base = float(min(cap, max(floor, scaled)))
@@ -584,7 +636,7 @@ class AdaptiveRouterStrategy(BaseStrategy):
             if sig is None:
                 continue
             st_here = self._slot_state_for_bucket(slot, bucket_key)
-            mult = self._risk_multiplier(slot, bucket_key)
+            mult = self._risk_multiplier(slot, bucket_key, bar_ts=bar_ts)
             confidence = self._confidence(regime)
             meta = dict(sig.meta or {})
             meta.setdefault("strategy", slot.name)

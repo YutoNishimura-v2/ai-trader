@@ -69,3 +69,29 @@ python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv \
 | **May+ OOS sleeve** | `iter268_wavez_cap070.yaml` / `config/simulation/wave_y_iter268_may_sleeve.yaml` |
 
 Still **no live promotion** — May OOS remains **negative** even for iter268; cap sleeve only reduces loss.
+
+## Wave Z vol gate (iter273–277, 2026-05-22)
+
+New causal **`vol_risk_cap_gate_enabled`** on `adaptive_router`: M1 ATR band sets
+`active_risk_multiplier_cap` per bar (high vol → lower cap).
+
+### May-only OOS
+
+| Config | May ret % | PF |
+|--------|----------:|---:|
+| iter268 (static cap 0.70) | **−1.5** | 0.86 |
+| **iter274** (tiered 0.65/0.85/1.0) | **−2.1** | 0.81 |
+| iter273 (high 0.70 only) | −2.7 | 0.76 |
+| iter244 | −3.0 | 0.79 |
+
+### Train CSV
+
+| Config | Mar % | wpass | worst |
+|--------|------:|:-----:|------:|
+| iter244 | +18.5 | 4/4 | ~0.34 |
+| iter273 | **+22.9** | 4/4 | ~2.14 |
+| iter274 | +18.3 | 4/4 | ~2.11 |
+| iter268 | +11.4 | 3/4 | ~0.65 |
+
+**Pick:** **iter268** for best May OOS; **iter274** if you want **dynamic** cap + **4/4** on train (worse tail than 244).
+**iter244** remains primary for tail/Mar Pareto on train slice.

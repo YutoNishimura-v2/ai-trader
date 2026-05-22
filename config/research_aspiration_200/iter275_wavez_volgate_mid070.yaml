@@ -1,0 +1,9 @@
+# Iter275 — vol gate mid 0.70 — **FALSIFIED** OOS (2026-05-22): May **−2.7%** (≈273, not 268).
+extends: iter244_handoff_overlap_lunchblock.yaml
+
+strategy:
+  params:
+    vol_risk_cap_gate_enabled: true
+    vol_risk_cap_high_vol: 0.70
+    vol_risk_cap_mid_vol: 0.70
+    vol_risk_cap_low_vol: 1.0

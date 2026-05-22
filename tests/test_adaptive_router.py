@@ -386,3 +386,30 @@ def test_router_causality_close_does_not_affect_same_bar_decision() -> None:
     # Whatever happened, the slot's recorded samples count is bounded
     # by the engine's actual trade count (no spurious adds).
     assert len(router._members[0].samples) <= 1
+
+
+def test_vol_risk_cap_gate_lowers_cap_on_high_vol_band() -> None:
+    df = generate_synthetic_ohlcv(days=3, timeframe="M1", seed=99)
+    router = AdaptiveRouterStrategy(
+        members=[{"name": "_test_always_buy"}],
+        adx_period=5,
+        range_adx_max=200.0,
+        trend_adx_min=300.0,
+        initial_state="active",
+        active_risk_multiplier_cap=1.0,
+        vol_risk_cap_gate_enabled=True,
+        vol_risk_cap_high_vol=0.55,
+        vol_risk_cap_mid_vol=0.90,
+        vol_risk_cap_low_vol=1.0,
+    )
+    router.prepare(df)
+    ts = df.index[-1]
+    slot = router._members[0]
+    # Force high-vol band on last bar for the test.
+    assert router._vol_pct_arr is not None
+    router._vol_pct_arr[-1] = 1.0
+    assert router._effective_active_cap(ts) == pytest.approx(0.55)
+    router._vol_pct_arr[-1] = -1.0
+    assert router._effective_active_cap(ts) == pytest.approx(1.0)
+    router._vol_pct_arr[-1] = 0.0
+    assert router._effective_active_cap(ts) == pytest.approx(0.90)

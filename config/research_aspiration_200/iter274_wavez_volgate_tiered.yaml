@@ -1,0 +1,9 @@
+# Iter274 — vol gate tiered — **PROMISING** (2026-05-22): May **−2.1%** (2nd); train 4/4, worst **~2.11**.
+extends: iter244_handoff_overlap_lunchblock.yaml
+
+strategy:
+  params:
+    vol_risk_cap_gate_enabled: true
+    vol_risk_cap_high_vol: 0.65
+    vol_risk_cap_mid_vol: 0.85
+    vol_risk_cap_low_vol: 1.0
