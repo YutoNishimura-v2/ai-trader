@@ -18,8 +18,9 @@ other doc. The rest of `docs/` is supporting material:
 
 **Repo hygiene:** All unique content from agent PRs **#49–#78** (and **#38–#43**)
 is on `main` via **[#79](https://github.com/YutoNishimura-v2/ai-trader/pull/79)–[#84](https://github.com/YutoNishimura-v2/ai-trader/pull/84)**.
-**30 draft PRs remain OPEN on GitHub** — the cloud agent cannot close them;
-run the bulk-close snippet in `docs/research/STALE_PRS.md`.
+**All stale PRs #34–#78 cleared** (2026-05-22): content on `main` via #79–#86;
+head branches aligned to `main` → GitHub closed/merged empty diffs. **0 open PRs.**
+See `docs/research/STALE_PRS.md`.
 
 ### What to run first
 
@@ -58,9 +59,8 @@ run the bulk-close snippet in `docs/research/STALE_PRS.md`.
 
 ### Honest next moves
 
-1. **Close stale PRs** (#49–#78) on GitHub (see `STALE_PRS.md`).
-2. **April regime work:** branch from rollwin or iter227; use stability harness + Mar/Apr sweeps (`iter42`, `iter38` scripts).
-3. **Live demo:** Windows host + `mt5_connectivity_check.py` + `run_demo.py` (blocked on host access per README).
+1. **April regime work:** branch from rollwin or iter227; use stability harness + Mar/Apr sweeps (`iter42`, `iter38` scripts).
+2. **Live demo:** Windows host + `mt5_connectivity_check.py` + `run_demo.py` (blocked on host access per README).
 
 ---
 
