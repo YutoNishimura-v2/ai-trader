@@ -1,4 +1,4 @@
-# Iter269 — Wave Z: wave **0.15×**, cooldown **22**.
+# Iter269 — wave 0.15× — **FALSIFIED** OOS (2026-05-22): no-op vs iter244 on May.
 extends: iter244_handoff_overlap_lunchblock.yaml
 
 strategy:

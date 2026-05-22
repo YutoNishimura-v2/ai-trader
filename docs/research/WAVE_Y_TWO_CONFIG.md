@@ -43,13 +43,12 @@ On the **held-out calendar window**, iter227 leads April and slice return; iter2
 positive but with **weaker** Mar/Apr than full-period monthly keys (tuning context included Jan–Feb).
 Use **two-config** policy: **iter244** for full-sample 4/4 stability; **iter227** optional April sleeve.
 
-## Post-Apr OOS (2026-05-22)
+## Post-Apr OOS + Wave Z (2026-05-22)
 
-Fetched `data/xauusd_m1_2026_oos.csv` (Apr26–May20). **May-only returns are negative**
-for iter244/235/227 (~−3% each). See `docs/research/WAVE_Y_OOS_MAY.md`.
+May-only OOS: all frozen picks ~**−3%**; **iter268** (router cap **0.70**) best at **−1.5%**
+(still negative). See `docs/research/WAVE_Z_MAY.md`.
 
-Jan–Apr picks remain valid **on the training slice**; live promotion requires May+
-re-validation or explicit regime switch — not automatic from iter244 4/4 alone.
+**Three-config + May sleeve:** iter244 primary, iter227 April (train), **iter268** May+ risk reduction.
 
 ## Live / demo
 

@@ -1,4 +1,4 @@
-# Iter268 — Wave Z: router **active_risk_multiplier_cap 0.70**.
+# Iter268 — cap 0.70 — **May+ sleeve** (2026-05-22): OOS may **−1.5%** vs 244 **−3.0%**; train **3/4**, Mar/Apr↓.
 extends: iter244_handoff_overlap_lunchblock.yaml
 
 strategy:

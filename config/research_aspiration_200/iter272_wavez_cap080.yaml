@@ -1,4 +1,4 @@
-# Iter267 — probe eligibility — **FALSIFIED** OOS (2026-05-22): may **−4.7%** (worse than 244).
+# Iter272 — cap 0.80 — **FALSIFIED** OOS (2026-05-22): may **−3.6%** (worse than iter268).
 extends: iter244_handoff_overlap_lunchblock.yaml
 
 strategy:
@@ -10,13 +10,13 @@ strategy:
     adx_period: 14
     range_adx_max: 20.0
     trend_adx_min: 25.0
-    initial_state: probe
+    initial_state: active
     priority_mode: config
     eligibility_on_threshold: 0.05
-    eligibility_off_threshold: -0.1
-    probe_risk_multiplier: 0.5
+    eligibility_off_threshold: -1000.0
+    probe_risk_multiplier: 1.0
     active_risk_multiplier_floor: 1.0
-    active_risk_multiplier_cap: 0.85
+    active_risk_multiplier_cap: 0.80
     members:
       - name: pivot_bounce
         id: pivot_chop
@@ -63,7 +63,7 @@ strategy:
       - name: wave_structure_mtf
         id: wave_transition
         regimes: [transition]
-        risk_multiplier: 0.3
+        risk_multiplier: 0.30
         params:
           htf: H1
           m1_bias_mode: not_opposed
@@ -77,9 +77,8 @@ strategy:
           rci_gate_enabled: true
           rci_period: 14
           rci_long_min_prev: -15.0
-          tp1_rr: 0.75
+          tp1_rr: 0.80
           tp2_rr: 2.8
           leg1_weight: 0.55
           cooldown_bars: 14
           session: overlap
-

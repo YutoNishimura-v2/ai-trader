@@ -1,4 +1,4 @@
-# Iter266 — Wave Z: wave **0.20×**, chop tp2 **6**, max **3**/day.
+# Iter266 — defensive wave20 — **FALSIFIED** OOS (2026-05-22): identical to iter244 on May slice.
 extends: iter244_handoff_overlap_lunchblock.yaml
 
 strategy:

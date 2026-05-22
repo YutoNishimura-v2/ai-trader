@@ -30,7 +30,11 @@ See `docs/research/STALE_PRS.md`.
 | **Mar/Apr simulation benchmark** | `config/research_aspiration_200/adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml` |
 | **Mar/Apr + harness (best tail)** | `iter235_rollwin_handoff_wave_lowrisk.yaml` — 3/4, worst ~0.04 |
 | **Mar/Apr + 4/4 windows** | `iter244_handoff_overlap_lunchblock.yaml` — **4/4**, worst ~0.34, Mar ~+18.5% |
-| **Higher Apr sample (worse harness)** | `iter227_wave_x_wave_structure_223_tp35.yaml` or `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_m131415_tp16.yaml` |
+| **May+ OOS sleeve (cap 0.70)** | `iter268_wavez_cap070.yaml` — May OOS **−1.5%** vs 244 **−3%** (still negative) |
+| **April train sleeve** | `iter227_wave_x_wave_structure_223_tp35.yaml` — see `docs/research/WAVE_Y_TWO_CONFIG.md` |
+| **OOS / held-out scripts** | `scripts/wave_y_oos_compare.py`, `scripts/wave_y_heldout_validate.py` |
+| **Simulation aliases** | `config/simulation/wave_y_*.yaml` |
+| **Wave Z journal** | `docs/research/WAVE_Z_MAY.md` |
 | **Compare headline YAMLs** | `python3 scripts/compare_mar_apr_headliners.py` (needs `data/xauusd_m1_2026.csv`) |
 | **Compare any YAML** | `python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv <configs…>` |
 | **Serial falsification log** | `docs/research/SERIAL_ITER_103_200.md` |
@@ -53,9 +57,11 @@ See `docs/research/STALE_PRS.md`.
 | iter231 (227+fast M1) | +15.5 | +0.34 | +18.9 | 2/4 | ~1.66 — **falsified** |
 | iter202 (zigzag) | −28.3 | −4.51 | −13.7 | 3/4 | ~0.81 |
 | **iter235** (handoff) | +182.6 | **+11.93** | **+6.93** | **3/4** | **~0.04** |
+| **iter244** (handoff+lunch+overlap) | +192.3 | **+18.50** | **+7.70** | **4/4** | **~0.34** |
 
-- **iter235:** regime handoff (range→pivot, transition→low-risk wave) — best **Mar/Apr + harness**
-  combo so far; see `docs/research/WAVE_Y_ITER232_235.md`.
+- **iter244:** best **4/4** + Mar/Apr on train slice — `docs/research/WAVE_Y_ITER232_235.md`.
+- **iter235:** best rolling **tail** (~0.04).
+- **iter268:** May+ **risk cap 0.70** sleeve — less bad OOS May; train **3/4** only — `WAVE_Z_MAY.md`.
 - **Rollwin:** still best **full-period** headline; use when Jan/Feb matter most.
 - **iter227:** best **April** in Wave X; **iter231** did not improve on the hybrid thesis.
 - **Zigzag iter202:** strong `worst_score` / 3/4 wins but **negative** Mar/Apr on this slice.

@@ -36,6 +36,36 @@ python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv \
   ...
 ```
 
-## Results
+## Results (2026-05-22)
 
-_(filled after harness run)_
+### May-only OOS (`xauusd_m1_2026_oos.csv`, 2026-05-01+)
+
+| Config | ret % | PF | vs iter244 |
+|--------|------:|---:|------------|
+| iter244 | −3.0 | 0.79 | baseline |
+| iter227 | −2.8 | — | ≈ tie |
+| **iter268** (cap **0.70**) | **−1.5** | **0.86** | **best** |
+| iter271 (cap 0.75) | −2.0 | 0.82 | better |
+| iter272 (cap 0.80) | −3.6 | 0.71 | worse |
+| iter266–270 (other) | −3.0 | 0.79 | no-op or worse |
+
+### Training CSV (Jan–Apr) — do not drop iter244 for iter268
+
+| Config | full % | Mar % | Apr % | wpass | worst |
+|--------|-------:|------:|------:|:-----:|------:|
+| **iter244** | **+192.3** | **+18.5** | **+7.7** | **4/4** | **~0.34** |
+| iter268 | +114.2 | +11.4 | +4.7 | 3/4 | ~0.65 |
+| iter266 | +171.9 | +18.4 | +24.8* | 4/4 | ~0.34 |
+
+\*iter266 Apr spike on train slice; **no** May OOS lift.
+
+## Picks (three-config)
+
+| Role | YAML |
+|------|------|
+| Primary (train / 4/4) | `iter244_handoff_overlap_lunchblock.yaml` |
+| Tail harness | `iter235_rollwin_handoff_wave_lowrisk.yaml` |
+| April train sleeve | `iter227_wave_x_wave_structure_223_tp35.yaml` |
+| **May+ OOS sleeve** | `iter268_wavez_cap070.yaml` / `config/simulation/wave_y_iter268_may_sleeve.yaml` |
+
+Still **no live promotion** — May OOS remains **negative** even for iter268; cap sleeve only reduces loss.

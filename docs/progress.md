@@ -3,6 +3,11 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-22 — Wave Z iter266–272: May+ defensive; iter268 May sleeve
+
+OOS May: **iter268** (router cap 0.70) **−1.5%** vs iter244 **−3.0%**; train **3/4** (keep iter244 primary).
+Caps 0.75/0.80 falsified on May. Journal: `docs/research/WAVE_Z_MAY.md`.
+
 ## 2026-05-22 — Wave Y iter236–241: lunch blocks + peels
 
 Follow-ups on **iter235** handoff shell:
