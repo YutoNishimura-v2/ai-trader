@@ -351,9 +351,11 @@ Pre-serial experiments on the **rollwin** shell (`adaptive_dual_pivot_chop_moon_
 
 ### Wave Y iter232–235 — rollwin + regime handoff (2026-05-22)
 
-**`iter235_rollwin_handoff_wave_lowrisk.yaml`** — **PROMISING**: Mar ~**+12%**, Apr ~**+7%**,
-**3/4** harness wins, **worst_score ~0.04**, cap=0 (vs rollwin Mar/Apr ~+0.8% / +1.3%, 2/4,
-~0.10). See `docs/research/WAVE_Y_ITER232_235.md`.
+**`iter235_rollwin_handoff_wave_lowrisk.yaml`** — **PROMISING** (balanced): Mar ~**+12%**, Apr ~**+7%**,
+**3/4**, **worst_score ~0.04**, cap=0.
+
+**`iter236_handoff_lunchblock_chop.yaml`** / **`iter240_…`** — **4/4** windows, Mar ~**+18–19%**,
+but **worst_score ~0.8–1.4** (less conservative tail). See `docs/research/WAVE_Y_ITER232_235.md`.
 
 ### Wave X iter231 (2026-05-22 revalidation on `data/xauusd_m1_2026.csv`)
 
