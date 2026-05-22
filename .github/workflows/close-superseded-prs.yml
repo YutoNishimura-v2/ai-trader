@@ -1,0 +1,42 @@
+# Maintainer-only: close draft PRs whose content is already on main (#79-#85).
+# Run manually from Actions tab (workflow_dispatch).
+name: Close superseded research PRs
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "List PRs only (true) or close them (false)"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+permissions:
+  pull-requests: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close superseded PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          DRY="${{ inputs.dry_run }}"
+          for n in $(seq 38 43) $(seq 49 78); do
+            state=$(gh pr view "$n" --json state -q .state 2>/dev/null || echo MISSING)
+            if [ "$state" != "OPEN" ]; then
+              echo "PR #$n: skip ($state)"
+              continue
+            fi
+            if [ "$DRY" = "true" ]; then
+              echo "PR #$n: would close"
+            else
+              gh pr close "$n" -c "Superseded by #79-#85 on main. Closed via workflow."
+              echo "PR #$n: closed"
+            fi
+          done
