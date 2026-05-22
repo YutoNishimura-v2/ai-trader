@@ -1,4 +1,4 @@
-# Iter253 — iter244 wave session **london_or_ny** (not overlap).
+# Iter253 — wave london_or_ny — **FALSIFIED** (2026-05-22): 4/4, Mar **+19.4%**, worst **~1.40** (overlap required).
 extends: iter244_handoff_overlap_lunchblock.yaml
 
 strategy:

@@ -70,7 +70,30 @@ Why it matters under `docs/plan.md` Mar/Apr priority:
 
 **Pick:** **`iter235`** — best tail (~0.04). **`iter244`** — best **4/4** + Mar/Apr with tail ~0.34.
 
+## iter246–250 — iter244 risk/TP/block peels (PR #93)
+
+Five peels (wave risk, TP2, chop cap, block narrowing, combo): **none** improved
+`worst_score` vs **iter244** while keeping **4/4**. See branch `cursor/wave-y-iter246-250-24f1`.
+
+## iter251–255 — wave cd / SR / session peels (2026-05-22)
+
+| Iter | Change | full % | Mar % | Apr % | wpass | worst | cap | Verdict |
+|------|--------|-------:|------:|------:|:-----:|------|:---:|---------|
+| 244 | baseline | +192.3 | +18.50 | +7.70 | **4/4** | **~0.34** | 0 | **Pareto 4/4** |
+| 251 | wave cd 20 | +192.3 | +18.50 | +7.70 | 4/4 | ~0.34 | 0 | FALSIFIED (no-op) |
+| 252 | wave SR 1.72 | +192.3 | +18.50 | +7.70 | 4/4 | ~0.34 | 0 | FALSIFIED (no-op) |
+| 253 | wave session london_or_ny | +192.4 | **+19.35** | +7.70 | 4/4 | **~1.40** | 0 | FALSIFIED (tail→236) |
+| 254 | wave SR 1.55 | +192.3 | +18.50 | +7.70 | 4/4 | ~0.34 | 0 | FALSIFIED (no-op) |
+| 255 | wave 0.29× | +192.0 | +18.52 | +7.71 | 4/4 | ~0.34 | 0 | FALSIFIED |
+
+**Insight:** **iter244**’s low rolling tail depends on **wave `session: overlap`** — reverting to
+`london_or_ny` restores **iter236**-class tail (~1.4) even with lunch block. SR and cd tweaks
+were no-ops at tested values.
+
+**Picks unchanged:** **iter235** (tail), **iter244** (4/4 + Mar/Apr).
+
 ## Next probes
 
 1. Held-out validation for **iter235** / **iter244**.
 2. **iter227** April sleeve alongside handoff core (two-config).
+3. Overlap-only *pivot* tweaks (keep wave overlap); or H1/M1 zigzag thresholds on wave only.

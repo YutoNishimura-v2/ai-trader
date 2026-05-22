@@ -1,4 +1,4 @@
-# Iter255 — iter244 wave risk **0.29×** only.
+# Iter255 — wave 0.29× — **FALSIFIED** (2026-05-22): 4/4, worst **~0.34** (no tail gain).
 extends: iter244_handoff_overlap_lunchblock.yaml
 
 strategy:

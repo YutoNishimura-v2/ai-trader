@@ -1,4 +1,4 @@
-# Iter251 — iter244 wave cooldown **20** (single thesis).
+# Iter251 — wave cd 20 — **FALSIFIED** (2026-05-22): no-op vs **iter244**.
 extends: iter244_handoff_overlap_lunchblock.yaml
 
 strategy:
