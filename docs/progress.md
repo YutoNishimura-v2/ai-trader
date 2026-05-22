@@ -3,6 +3,21 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-22 — Wave Y iter232–235: regime handoff + iter235 PROMISING
+
+Creative/conservative thesis: **don't run wave standalone** — route M15 **transition**
+to low-risk `wave_structure_mtf`, **range** to pivot chop, **trend** to pivot trend.
+
+| iter | Result |
+|------|--------|
+| 232 wave satellite (3rd member) | FALSIFIED — cap=1, Apr −17.6% |
+| 233 regime handoff | Mar/Apr ↑, worst ~2.19 |
+| 234 aprilblock + satellite | FALSIFIED — cap=1 |
+| **235** handoff + wave 0.30× | **3/4**, worst **~0.04**, Mar **+11.9%**, Apr **+6.9%**, cap=0 |
+
+Journal: `docs/research/WAVE_Y_ITER232_235.md`. Config:
+`iter235_rollwin_handoff_wave_lowrisk.yaml`.
+
 ## 2026-05-22 — All open PRs cleared (#34–#78); zero open on GitHub
 
 After #79–#86, **45** stale PRs remained open (conflicting or draft). Verified

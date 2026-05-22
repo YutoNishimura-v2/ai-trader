@@ -28,6 +28,7 @@ See `docs/research/STALE_PRS.md`.
 |------|----------------|
 | **Walk-forward / live candidate** (conservative) | `config/news_fade.yaml` — still the only family clearing full research+val+tournament gates |
 | **Mar/Apr simulation benchmark** | `config/research_aspiration_200/adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml` |
+| **Mar/Apr + harness (Wave Y, 2026-05-22)** | `iter235_rollwin_handoff_wave_lowrisk.yaml` — 3/4, worst ~0.04, Mar ~+12%, Apr ~+7% |
 | **Higher Apr sample (worse harness)** | `iter227_wave_x_wave_structure_223_tp35.yaml` or `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_m131415_tp16.yaml` |
 | **Compare headline YAMLs** | `python3 scripts/compare_mar_apr_headliners.py` (needs `data/xauusd_m1_2026.csv`) |
 | **Compare any YAML** | `python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv <configs…>` |
@@ -50,8 +51,11 @@ See `docs/research/STALE_PRS.md`.
 | **iter227** (Wave X) | +26.5 | +3.57 | **+20.48** | 2/4 | ~1.64 |
 | iter231 (227+fast M1) | +15.5 | +0.34 | +18.9 | 2/4 | ~1.66 — **falsified** |
 | iter202 (zigzag) | −28.3 | −4.51 | −13.7 | 3/4 | ~0.81 |
+| **iter235** (handoff) | +182.6 | **+11.93** | **+6.93** | **3/4** | **~0.04** |
 
-- **Rollwin:** best **rolling robustness**; use as simulation default.
+- **iter235:** regime handoff (range→pivot, transition→low-risk wave) — best **Mar/Apr + harness**
+  combo so far; see `docs/research/WAVE_Y_ITER232_235.md`.
+- **Rollwin:** still best **full-period** headline; use when Jan/Feb matter most.
 - **iter227:** best **April** in Wave X; **iter231** did not improve on the hybrid thesis.
 - **Zigzag iter202:** strong `worst_score` / 3/4 wins but **negative** Mar/Apr on this slice.
 
