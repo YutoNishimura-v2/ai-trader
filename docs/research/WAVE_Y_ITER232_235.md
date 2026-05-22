@@ -42,8 +42,25 @@ Why it matters under `docs/plan.md` Mar/Apr priority:
 
 **Not a live promotion** until re-checked on held-out windows and demo plumbing.
 
-## Next probes (single-thesis)
+## Wave Y continued (iter236–241, 2026-05-22)
 
-1. iter236: iter235 with `block_hours_utc: [13,14]` on **range** chop only.
-2. iter237: wave `sr_touch_atr: 1.72` at 0.30× (iter229 peel inside handoff).
-3. Compare vs `iter227` for **April-only** sleeve (iter227 still wins Apr %).
+| Iter | Change | full % | Mar % | Apr % | wpass | worst | cap | Verdict |
+|------|--------|-------:|------:|------:|:-----:|------|:---:|---------|
+| 235 | handoff baseline | +182.6 | +11.93 | +6.93 | 3/4 | **~0.04** | 0 | **Balanced PROMISING** |
+| 236 | lunch block 13–14 chop | +192.4 | **+19.35** | +7.70 | **4/4** | ~1.40 | 0 | Mar hero, tail fail |
+| 237 | wave SR 1.72 | +182.6 | +11.93 | +6.93 | 3/4 | ~0.04 | 0 | no-op vs 235 |
+| 238 | wave TP2 3.5 @ 0.28× | +186.0 | +11.14 | +7.56 | 2/4 | ~1.40 | 0 | FALSIFIED vs 235 |
+| 239 | router risk 7% | +142.1 | +12.76 | +4.41 | 1/4 | ~2.57 | 0 | FALSIFIED |
+| 240 | 236 + wave 0.22× TP2 2.6 | +194.3 | +18.34 | +7.82 | **4/4** | ~0.84 | 0 | 4/4 peel; tail still >>235 |
+| 241 | block 13–14–15 chop | +124.6 | +17.99 | **+8.15** | **4/4** | ~1.40 | 0 | Apr↑, full↓, tail fail |
+
+**Takeaway:** Two Pareto styles —
+
+- **`iter235`** — best **worst_score** + solid Mar/Apr (conservative default).
+- **`iter236` / `iter240`** — best **Mar** and **4/4** windows; use only if you accept **~0.8–1.4** rolling tail.
+
+## Next probes
+
+1. iter242: iter235 + overlap session filter on wave only (if param exists).
+2. Held-out re-run of **iter235** before any demo promotion.
+3. **iter227** sleeve for max April % alongside **iter235** core (two-config, not merged YAML).

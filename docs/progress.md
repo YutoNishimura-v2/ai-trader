@@ -3,6 +3,21 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-22 — Wave Y iter236–241: lunch blocks + peels
+
+Follow-ups on **iter235** handoff shell:
+
+| iter | Note |
+|------|------|
+| 236 | block 13–14 → **4/4**, Mar +19.4%, worst ~1.40 |
+| 237 | SR 1.72 no-op |
+| 238–239 | falsified |
+| 240 | 236 + wave 0.22× → 4/4, worst ~0.84 |
+| 241 | block 13–15 → 4/4, Apr +8.2%, full +124.6% |
+
+**iter235** remains best **worst_score (~0.04)**; **iter236/240** for max Mar + 4/4 if tail accepted.
+Journal updated: `docs/research/WAVE_Y_ITER232_235.md`.
+
 ## 2026-05-22 — Wave Y iter232–235: regime handoff + iter235 PROMISING
 
 Creative/conservative thesis: **don't run wave standalone** — route M15 **transition**

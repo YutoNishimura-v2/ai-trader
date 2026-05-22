@@ -1,0 +1,7 @@
+# Iter239 — router 7% — **FALSIFIED** (1/4, worst ~2.57).
+extends: iter235_rollwin_handoff_wave_lowrisk.yaml
+
+risk:
+  risk_per_trade_pct: 7.0
+  min_risk_per_trade_pct: 2.0
+  max_risk_per_trade_pct: 9.0
