@@ -32,6 +32,8 @@ See `docs/research/STALE_PRS.md`.
 | **Mar/Apr + 4/4 windows** | `iter244_handoff_overlap_lunchblock.yaml` — **4/4**, worst ~0.34, Mar ~+18.5% |
 | **April sleeve (separate YAML)** | `iter227_wave_x_wave_structure_223_tp35.yaml` — best held-out Apr; see `docs/research/WAVE_Y_TWO_CONFIG.md` |
 | **Held-out Mar–Apr check** | `python3 scripts/wave_y_heldout_validate.py` (split at 2026-03-01) |
+| **Post-Apr OOS check** | `python3 scripts/wave_y_oos_compare.py` + `docs/research/WAVE_Y_OOS_MAY.md` |
+| **Simulation YAML aliases** | `config/simulation/wave_y_iter244_primary.yaml` (+ iter235, iter227) |
 | **Higher Apr sample (worse harness)** | `iter227` or `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_m131415_tp16.yaml` |
 | **Compare headline YAMLs** | `python3 scripts/compare_mar_apr_headliners.py` (needs `data/xauusd_m1_2026.csv`) |
 | **Compare any YAML** | `python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv <configs…>` |
@@ -70,7 +72,7 @@ See `docs/research/STALE_PRS.md`.
 ### Honest next moves
 
 1. **Wave Y closed for micro-peels** — picks frozen: **iter235** (tail), **iter244** (4/4), **iter227** (April sleeve).
-2. **Extend held-out:** fetch M1 data after 2026-04-24 and re-run `wave_y_heldout_validate.py`.
+2. **May+ OOS (done 2026-05-22):** post-Apr slice is **negative** for frozen picks — see `WAVE_Y_OOS_MAY.md`; re-tune or gate before live.
 3. **Live demo:** Windows host + `mt5_connectivity_check.py` + `run_demo.py` (blocked on host access per README).
 
 ---

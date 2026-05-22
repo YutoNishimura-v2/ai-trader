@@ -13,6 +13,7 @@ Example::
 
     python3 scripts/wave_y_heldout_validate.py
     python3 scripts/wave_y_heldout_validate.py --csv data/xauusd_m1_2026.csv
+    python3 scripts/wave_y_heldout_validate.py --oos-csv data/xauusd_m1_2026_oos.csv
 """
 from __future__ import annotations
 
@@ -73,6 +74,7 @@ DEFAULT_CONFIGS = [
     "config/research_aspiration_200/iter227_wave_x_wave_structure_223_tp35.yaml",
 ]
 HOLDOUT_START = pd.Timestamp("2026-03-01", tz="UTC")
+MAY_START = pd.Timestamp("2026-05-01", tz="UTC")
 
 
 def _slice(df: pd.DataFrame, *, before: bool | None) -> pd.DataFrame:
@@ -129,30 +131,52 @@ def _run_slice(
         )
 
 
+def _may_slice(df: pd.DataFrame) -> pd.DataFrame:
+    return df.loc[df.index >= MAY_START].copy()
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--csv", type=Path, default=ROOT / "data" / "xauusd_m1_2026.csv")
+    ap.add_argument(
+        "--oos-csv",
+        type=Path,
+        default=None,
+        help="Post-training OOS file (e.g. data/xauusd_m1_2026_oos.csv from fetch_dukascopy)",
+    )
     ap.add_argument("configs", nargs="*", help="Extra YAML paths")
     args = ap.parse_args()
-    if not args.csv.exists():
-        print(f"Missing {args.csv}", file=sys.stderr)
-        sys.exit(1)
 
     paths = [ROOT / p for p in DEFAULT_CONFIGS]
     for raw in args.configs:
         p = Path(raw)
         paths.append(p if p.is_absolute() else ROOT / p)
 
-    df = load_ohlcv_csv(args.csv)
-    print(f"dataset: {df.index.min()} → {df.index.max()} ({len(df)} bars)")
-    print(f"holdout split at {HOLDOUT_START.isoformat()}")
+    if args.csv.exists():
+        df = load_ohlcv_csv(args.csv)
+        print(f"dataset: {df.index.min()} → {df.index.max()} ({len(df)} bars)")
+        print(f"holdout split at {HOLDOUT_START.isoformat()}")
+        for name, part in (
+            ("full", df),
+            ("jan-feb (in-sample)", _slice(df, before=True)),
+            ("mar-apr (held-out)", _slice(df, before=False)),
+        ):
+            _run_slice(name, part, paths)
+    else:
+        print(f"skip --csv: missing {args.csv}", file=sys.stderr)
 
-    for name, part in (
-        ("full", df),
-        ("jan-feb (in-sample)", _slice(df, before=True)),
-        ("mar-apr (held-out)", _slice(df, before=False)),
-    ):
-        _run_slice(name, part, paths)
+    if args.oos_csv is not None:
+        if not args.oos_csv.exists():
+            print(f"Missing --oos-csv {args.oos_csv}", file=sys.stderr)
+            sys.exit(1)
+        oos = load_ohlcv_csv(args.oos_csv)
+        print(f"\n=== OOS extension: {oos.index.min()} → {oos.index.max()} ({len(oos)} bars) ===")
+        _run_slice("oos full (post-Apr)", oos, paths)
+        may = _may_slice(oos)
+        if len(may) > 0:
+            _run_slice("oos may-only (true OOS month)", may, paths)
+        else:
+            print("(no May bars in OOS file)")
 
 
 if __name__ == "__main__":

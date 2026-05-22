@@ -116,8 +116,14 @@ Micro-peels on **iter244** (iter246–265) are **closed**. Frozen simulation pic
 - **iter244** — best full-sample **4/4** + Mar/Apr combo, tail ~0.34
 - **iter227** — optional **April sleeve** (separate YAML; do not merge into router)
 
+## Post-Apr OOS (2026-05-22)
+
+`data/xauusd_m1_2026_oos.csv` (Apr26–May20): **May-only ~−3%** for iter244/235/227.
+Training-slice picks **do not carry** to this extension without new work.
+Details: `docs/research/WAVE_Y_OOS_MAY.md`.
+
 ## Next probes
 
-1. Fetch **post-Apr 2026** M1 CSV and re-run held-out script (true out-of-sample extension).
-2. MT5 demo plumbing for frozen picks (`docs/live/VPS_HFM_DEMO.md`).
+1. **May+ regime research** — new hypotheses on post-Apr chop (not iter244 micro-peels).
+2. MT5 demo plumbing (`config/simulation/wave_y_*.yaml`, `docs/live/VPS_HFM_DEMO.md`).
 3. No further single-knob YAML grids on **iter244**.

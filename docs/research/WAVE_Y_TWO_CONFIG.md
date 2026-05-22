@@ -43,6 +43,15 @@ On the **held-out calendar window**, iter227 leads April and slice return; iter2
 positive but with **weaker** Mar/Apr than full-period monthly keys (tuning context included Jan–Feb).
 Use **two-config** policy: **iter244** for full-sample 4/4 stability; **iter227** optional April sleeve.
 
+## Post-Apr OOS (2026-05-22)
+
+Fetched `data/xauusd_m1_2026_oos.csv` (Apr26–May20). **May-only returns are negative**
+for iter244/235/227 (~−3% each). See `docs/research/WAVE_Y_OOS_MAY.md`.
+
+Jan–Apr picks remain valid **on the training slice**; live promotion requires May+
+re-validation or explicit regime switch — not automatic from iter244 4/4 alone.
+
 ## Live / demo
 
-Still blocked on **news_fade** for walk-forward gates. Wave Y configs are **simulation candidates** until held-out CSV extension (post-Apr 2026) and MT5 demo plumbing pass.
+Still blocked on **news_fade** for walk-forward gates. Use `config/simulation/wave_y_*.yaml`
+for paper runs. MT5 demo plumbing: `docs/live/VPS_HFM_DEMO.md`.

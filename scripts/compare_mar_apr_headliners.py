@@ -7,6 +7,10 @@ Example::
 
     python3 scripts/compare_mar_apr_headliners.py
     python3 scripts/compare_mar_apr_headliners.py --csv data/xauusd_m1_2026.csv
+
+Post-Apr OOS (short slice)::
+
+    python3 scripts/wave_y_oos_compare.py --csv data/xauusd_m1_2026_oos.csv
 """
 from __future__ import annotations
 
