@@ -70,7 +70,26 @@ Why it matters under `docs/plan.md` Mar/Apr priority:
 
 **Pick:** **`iter235`** — best tail (~0.04). **`iter244`** — best **4/4** + Mar/Apr with tail ~0.34.
 
+## iter246–255 (branches PR #93, #94)
+
+iter246–250 risk/TP/block peels and iter251–255 wave cd/SR/session: **no tail gain** vs **iter244**.
+**iter253** (`london_or_ny` wave) regresses tail to **~1.40** — **overlap session required**.
+
+## iter256–260 — pivot + wave zigzag peels (2026-05-22)
+
+| Iter | Change | full % | Mar % | Apr % | wpass | worst | Verdict |
+|------|--------|-------:|------:|------:|:-----:|------:|---------|
+| 244 | baseline | +192.3 | +18.50 | +7.70 | 4/4 | ~0.34 | **Pareto 4/4** |
+| 256 | chop adx_max 26 | +192.3 | +18.50 | +7.70 | 4/4 | ~0.34 | no-op |
+| 257 | chop cd 50 | +192.3 | +18.50 | +7.70 | 4/4 | ~0.34 | no-op |
+| 258 | chop touch 0.04 | +192.3 | +18.50 | +7.70 | 4/4 | ~0.34 | no-op |
+| 259 | wave H1 zz 1.15 | +192.3 | +18.50 | +7.70 | 4/4 | ~0.34 | no-op |
+| 260 | wave M1 zz 0.80 | +192.3 | +18.50 | +7.70 | 4/4 | ~0.34 | no-op |
+
+**iter244** shell is locally flat for tested member-param micro-tweaks.
+
 ## Next probes
 
 1. Held-out validation for **iter235** / **iter244**.
 2. **iter227** April sleeve alongside handoff core (two-config).
+3. Router `range_adx_max` / `trend_adx_min` peels (M15 regime boundaries).
