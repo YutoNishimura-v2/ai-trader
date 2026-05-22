@@ -59,8 +59,18 @@ Why it matters under `docs/plan.md` Mar/Apr priority:
 - **`iter235`** — best **worst_score** + solid Mar/Apr (conservative default).
 - **`iter236` / `iter240`** — best **Mar** and **4/4** windows; use only if you accept **~0.8–1.4** rolling tail.
 
+## iter242–245 (2026-05-22)
+
+| Iter | Change | full % | Mar % | Apr % | wpass | worst | cap |
+|------|--------|-------:|------:|------:|:-----:|------|:---:|
+| 242 | wave overlap only | +186.5 | +10.83 | +7.32 | 3/4 | ~0.039 | 0 |
+| 243 | wave RCI off | +183.4 | +12.53 | −2.05 | 1/4 | ~8.35 | 0 |
+| **244** | lunch block + wave overlap | **+192.3** | **+18.50** | **+7.70** | **4/4** | **~0.34** | 0 |
+| 245 | 244 + wave 0.25× | +187.2 | +17.67 | +6.72 | 4/4 | ~0.34 | 0 |
+
+**Pick:** **`iter235`** — best tail (~0.04). **`iter244`** — best **4/4** + Mar/Apr with tail ~0.34.
+
 ## Next probes
 
-1. iter242: iter235 + overlap session filter on wave only (if param exists).
-2. Held-out re-run of **iter235** before any demo promotion.
-3. **iter227** sleeve for max April % alongside **iter235** core (two-config, not merged YAML).
+1. Held-out validation for **iter235** / **iter244**.
+2. **iter227** April sleeve alongside handoff core (two-config).
