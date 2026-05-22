@@ -3,6 +3,16 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-22 — Wave Y iter251–255: wave cd/SR/session peels on iter244
+
+| iter | Note |
+|------|------|
+| 251–252, 254 | no-op vs iter244 |
+| 253 | wave `london_or_ny` → 4/4, Mar +19.4%, worst **~1.40** (overlap session required) |
+| 255 | wave 0.29× — no tail gain |
+
+**iter244** / **iter235** picks unchanged. Journal: `docs/research/WAVE_Y_ITER232_235.md`.
+
 ## 2026-05-22 — Wave Y iter236–241: lunch blocks + peels
 
 Follow-ups on **iter235** handoff shell:
