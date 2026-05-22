@@ -3,6 +3,11 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-22 — Wave Y held-out validation + two-config doc
+
+`scripts/wave_y_heldout_validate.py` splits at 2026-03-01. Mar–Apr held-out: iter227 +23.8% /
+Apr +20% (2/2); iter244 +11.2% (0/2). `docs/research/WAVE_Y_TWO_CONFIG.md`; HANDOFF frozen picks.
+
 ## 2026-05-22 — Wave Y iter236–241: lunch blocks + peels
 
 Follow-ups on **iter235** handoff shell:
