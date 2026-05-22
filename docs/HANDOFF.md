@@ -30,9 +30,14 @@ See `docs/research/STALE_PRS.md`.
 | **Mar/Apr simulation benchmark** | `config/research_aspiration_200/adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml` |
 | **Mar/Apr + harness (best tail)** | `iter235_rollwin_handoff_wave_lowrisk.yaml` — 3/4, worst ~0.04 |
 | **Mar/Apr + 4/4 windows** | `iter244_handoff_overlap_lunchblock.yaml` — **4/4**, worst ~0.34, Mar ~+18.5% |
-| **Higher Apr sample (worse harness)** | `iter227_wave_x_wave_structure_223_tp35.yaml` or `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_m131415_tp16.yaml` |
+| **April sleeve (separate YAML)** | `iter227_wave_x_wave_structure_223_tp35.yaml` — best held-out Apr; see `docs/research/WAVE_Y_TWO_CONFIG.md` |
+| **Held-out Mar–Apr check** | `python3 scripts/wave_y_heldout_validate.py` (split at 2026-03-01) |
+| **Post-Apr OOS check** | `python3 scripts/wave_y_oos_compare.py` + `docs/research/WAVE_Y_OOS_MAY.md` |
+| **Simulation YAML aliases** | `config/simulation/wave_y_iter244_primary.yaml` (+ iter235, iter227) |
+| **Higher Apr sample (worse harness)** | `iter227` or `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_m131415_tp16.yaml` |
 | **Compare headline YAMLs** | `python3 scripts/compare_mar_apr_headliners.py` (needs `data/xauusd_m1_2026.csv`) |
 | **Compare any YAML** | `python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv <configs…>` |
+| **Wave Y journal** | `docs/research/WAVE_Y_ITER232_235.md` (iter232–265 + held-out) |
 | **Serial falsification log** | `docs/research/SERIAL_ITER_103_200.md` |
 
 ### New on `main` (May 2026)
@@ -53,9 +58,11 @@ See `docs/research/STALE_PRS.md`.
 | iter231 (227+fast M1) | +15.5 | +0.34 | +18.9 | 2/4 | ~1.66 — **falsified** |
 | iter202 (zigzag) | −28.3 | −4.51 | −13.7 | 3/4 | ~0.81 |
 | **iter235** (handoff) | +182.6 | **+11.93** | **+6.93** | **3/4** | **~0.04** |
+| **iter244** (handoff+lunch+overlap) | +192.3 | **+18.50** | **+7.70** | **4/4** | **~0.34** |
 
-- **iter235:** regime handoff (range→pivot, transition→low-risk wave) — best **Mar/Apr + harness**
-  combo so far; see `docs/research/WAVE_Y_ITER232_235.md`.
+- **iter235:** regime handoff — best **rolling tail** (~0.04); see `docs/research/WAVE_Y_ITER232_235.md`.
+- **iter244:** same handoff + lunch block + **wave overlap session** — best **4/4** + Mar/Apr on full CSV.
+- **Two-config:** do not merge iter227 into iter244; use iter227 as optional **April sleeve** (`docs/research/WAVE_Y_TWO_CONFIG.md`).
 - **Rollwin:** still best **full-period** headline; use when Jan/Feb matter most.
 - **iter227:** best **April** in Wave X; **iter231** did not improve on the hybrid thesis.
 - **Zigzag iter202:** strong `worst_score` / 3/4 wins but **negative** Mar/Apr on this slice.
@@ -64,8 +71,9 @@ See `docs/research/STALE_PRS.md`.
 
 ### Honest next moves
 
-1. **April regime work:** branch from rollwin or iter227; use stability harness + Mar/Apr sweeps (`iter42`, `iter38` scripts).
-2. **Live demo:** Windows host + `mt5_connectivity_check.py` + `run_demo.py` (blocked on host access per README).
+1. **Wave Y closed for micro-peels** — picks frozen: **iter235** (tail), **iter244** (4/4), **iter227** (April sleeve).
+2. **May+ OOS (done 2026-05-22):** post-Apr slice is **negative** for frozen picks — see `WAVE_Y_OOS_MAY.md`; re-tune or gate before live.
+3. **Live demo:** Windows host + `mt5_connectivity_check.py` + `run_demo.py` (blocked on host access per README).
 
 ---
 
