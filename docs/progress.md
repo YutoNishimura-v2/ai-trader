@@ -3,6 +3,16 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-22 — Wave Y iter261–265: router ADX boundary peels
+
+| iter | Note |
+|------|------|
+| 261–263, 265 | tail/harness fail or cap violations |
+| 262 | cap=2, 2/4 |
+| 264 | 4/4, worst ~0.35 but Mar/Apr below **iter244** |
+
+**iter244** / **iter235** unchanged. iter244 member+router micro-peels exhausted.
+
 ## 2026-05-22 — Wave Y iter236–241: lunch blocks + peels
 
 Follow-ups on **iter235** handoff shell:

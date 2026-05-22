@@ -1,4 +1,4 @@
-# Iter263 — router trend_adx_min **23**.
+# Iter263 — trend_adx_min 23 — **FALSIFIED** (2026-05-22): **2/4**, Apr **−4.8%**, worst **~5.79**.
 extends: iter244_handoff_overlap_lunchblock.yaml
 
 strategy:

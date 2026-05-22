@@ -1,4 +1,4 @@
-# Iter262 — router range_adx_max **22**.
+# Iter262 — range_adx_max 22 — **FALSIFIED** (2026-05-22): **2/4**, cap=**2**, worst **~3.36**.
 extends: iter244_handoff_overlap_lunchblock.yaml
 
 strategy:

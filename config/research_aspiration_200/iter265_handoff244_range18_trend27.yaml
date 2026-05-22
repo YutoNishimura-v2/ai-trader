@@ -1,4 +1,4 @@
-# Iter265 — router range **18** + trend **27** (wider transition band).
+# Iter265 — range18+trend27 — **FALSIFIED** (2026-05-22): 4/4, worst **~3.05**.
 extends: iter244_handoff_overlap_lunchblock.yaml
 
 strategy:
