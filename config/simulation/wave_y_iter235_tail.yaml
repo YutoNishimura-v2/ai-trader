@@ -1,0 +1,2 @@
+# Simulation tail mode — best rolling worst_score (~0.04).
+extends: ../research_aspiration_200/iter235_rollwin_handoff_wave_lowrisk.yaml

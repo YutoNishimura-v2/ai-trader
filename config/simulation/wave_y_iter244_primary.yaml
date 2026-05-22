@@ -1,0 +1,2 @@
+# Simulation primary — Wave Y handoff 4/4 pick (see docs/research/WAVE_Y_TWO_CONFIG.md).
+extends: ../research_aspiration_200/iter244_handoff_overlap_lunchblock.yaml
