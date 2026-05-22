@@ -50,8 +50,7 @@ walk-forward winner. See `docs/HANDOFF.md` for the full scoreboard.
 ### 2026-05-21 housekeeping (post #79–#84 merge)
 
 - [x] Merge open agent PR backlog to `main` (#79–#84).
-- [ ] **Close stale GitHub PRs #49–#78** (and #38–#43 if still open) —
-      `docs/research/STALE_PRS.md` has the bulk-close command.
+- [x] **Close stale GitHub PRs #34–#78** (2026-05-22: force-push heads to `main`, 0 open).
 - [ ] **April regime:** iterate from rollwin or `iter227_wave_x_*` with
       `iter32_compare_configs.py` + stability harness (target: lift Mar/Apr
       without `worst_score` regression).

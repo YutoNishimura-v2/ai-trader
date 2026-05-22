@@ -3,6 +3,12 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-22 — All open PRs cleared (#34–#78); zero open on GitHub
+
+After #79–#86, **45** stale PRs remained open (conflicting or draft). Verified
+**0 unique files** vs `main`, force-pushed `main` to each head branch; GitHub
+auto-**closed** empty PRs (most) or **merged** (#78). **Open PR count: 0.**
+
 ## 2026-05-22 — iter231 falsified; headline harness revalidated on live CSV
 
 Fetched `data/xauusd_m1_2026.csv` (108,871 M1 bars, Jan–Apr 2026) and re-ran
