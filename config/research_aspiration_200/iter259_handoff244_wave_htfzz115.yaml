@@ -1,4 +1,4 @@
-# Iter259 — wave H1 zigzag **1.15**.
+# Iter259 — wave H1 zz 1.15 — **FALSIFIED** (2026-05-22): no-op vs **iter244**.
 extends: iter244_handoff_overlap_lunchblock.yaml
 
 strategy:

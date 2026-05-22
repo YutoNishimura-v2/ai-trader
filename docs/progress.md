@@ -3,6 +3,11 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-22 — Wave Y iter256–260: pivot + wave zz peels (all no-op vs iter244)
+
+Chop adx26, cd50, touch 0.04; wave H1 zz 1.15, M1 zz 0.80 — identical harness to **iter244**.
+**iter244** / **iter235** picks unchanged. Next: held-out or router ADX boundary peels.
+
 ## 2026-05-22 — Wave Y iter236–241: lunch blocks + peels
 
 Follow-ups on **iter235** handoff shell:
