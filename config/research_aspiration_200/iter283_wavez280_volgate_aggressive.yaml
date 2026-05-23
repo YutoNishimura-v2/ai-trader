@@ -1,0 +1,7 @@
+# Iter283 — vol high 0.60 — **FALSIFIED** (2026-05-22): May full **+0.9%** vs iter280 **+1.7%**.
+extends: iter280_wavez_chop_overlap_only.yaml
+
+strategy:
+  params:
+    vol_risk_cap_high_vol: 0.60
+    vol_risk_cap_mid_vol: 0.80

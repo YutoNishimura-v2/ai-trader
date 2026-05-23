@@ -48,7 +48,7 @@ Use **two-config** policy: **iter244** for full-sample 4/4 stability; **iter227*
 May-only OOS: all frozen picks ~**−3%**; **iter268** (router cap **0.70**) best at **−1.5%**
 (still negative). See `docs/research/WAVE_Z_MAY.md`.
 
-**Three-config + May sleeve:** iter244 primary, iter227 April (train), **iter268** May+ risk reduction.
+**Multi-config:** iter244 primary, iter227 April (train), iter268 least-loss May (−1.5%), **iter280** positive May OOS (+0.9%, `wave_y_iter280_may_positive.yaml`).
 
 ## Live / demo
 

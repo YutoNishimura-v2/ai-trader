@@ -111,3 +111,15 @@ Engine: `chop_vol_stand_down_enabled` (causal mid-vol + low M15 persistence → 
 **seasonal sleeve** with **iter244** primary, not a full replacement.
 
 Simulation: `config/simulation/wave_y_iter280_may_positive.yaml`
+
+## Extended May (combined CSV through 2026-05-22)
+
+`python3 scripts/build_combined_m1_csv.py` + `wave_y_monthly_compare.py`:
+
+| Config | May 2026 (full month) |
+|--------|---------------------:|
+| iter244 | −2.2% |
+| iter268 | −0.6% |
+| **iter280** | **+1.7%** |
+
+Calendar policy: `docs/research/WAVE_Y_CALENDAR.md`, `scripts/wave_y_resolve_config.py`.

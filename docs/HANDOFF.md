@@ -30,7 +30,8 @@ See `docs/research/STALE_PRS.md`.
 | **Mar/Apr simulation benchmark** | `config/research_aspiration_200/adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml` |
 | **Mar/Apr + harness (best tail)** | `iter235_rollwin_handoff_wave_lowrisk.yaml` — 3/4, worst ~0.04 |
 | **Mar/Apr + 4/4 windows** | `iter244_handoff_overlap_lunchblock.yaml` — **4/4**, worst ~0.34, Mar ~+18.5% |
-| **May+ OOS sleeve (cap 0.70)** | `iter268_wavez_cap070.yaml` — May OOS **−1.5%** vs 244 **−3%** (still negative) |
+| **May+ OOS (least loss)** | `iter268_wavez_cap070.yaml` — May **−1.5%** |
+| **May+ (positive month)** | `iter280` — May 2026 **+1.7%** full month through May 22 (`WAVE_Y_CALENDAR.md`) |
 | **April train sleeve** | `iter227_wave_x_wave_structure_223_tp35.yaml` — see `docs/research/WAVE_Y_TWO_CONFIG.md` |
 | **OOS / held-out scripts** | `scripts/wave_y_oos_compare.py`, `scripts/wave_y_heldout_validate.py` |
 | **Simulation aliases** | `config/simulation/wave_y_*.yaml` |
@@ -71,7 +72,7 @@ See `docs/research/STALE_PRS.md`.
 
 ### Honest next moves
 
-1. **Wave Y/Z simulation:** three-config + **iter268** May sleeve — not live until post-Apr turns positive or regime gate exists.
+1. **Wave Y/Z simulation:** **iter244** primary + **iter280** May sleeve (+0.9% OOS May) — paper/demo only; confirm on fresh May 20+ data.
 2. **Fetch more OOS M1** (May 20+) and re-run `wave_y_oos_compare.py`.
 3. **Live demo:** Windows host + `mt5_connectivity_check.py` (blocked on host access per README).
 
