@@ -1,0 +1,6 @@
+# Iter279 — cap070 stand-down — **FALSIFIED** OOS (2026-05-22): no-op vs iter268 on May.
+extends: iter268_wavez_cap070.yaml
+
+strategy:
+  params:
+    chop_vol_stand_down_enabled: true

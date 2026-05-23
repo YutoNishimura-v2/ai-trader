@@ -3,6 +3,26 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-22 — Wave Z calendar: iter280 **+1.7%** full May 2026
+
+Combined CSV through May 22: monthly compare + `wave_y_resolve_config.py` (Jan–Apr→244, May+→280).
+iter283–284 falsified on May. `docs/research/WAVE_Y_CALENDAR.md`.
+
+## 2026-05-22 — Wave Z iter280: first **positive** May OOS (+0.9%)
+
+Chop **overlap-only** + vol gate tiered. Train: 4/4, Mar **+21.4%**, Apr **+8.4%**, worst **~3.43**.
+`chop_vol_stand_down` added to router (278–282 mostly no-op). `wave_y_iter280_may_positive.yaml`.
+
+## 2026-05-22 — Wave Z iter273–277: M1 vol risk-cap gate + OOS harness
+
+`adaptive_router` gains `vol_risk_cap_gate_enabled`. **iter274** tiered gate: May OOS **−2.1%**
+(2nd to iter268 **−1.5%**); train **4/4** but worst **~2.11**. **iter273** Mar **+22.9%** on train, bad tail.
+
+## 2026-05-22 — Wave Z iter266–272: May+ defensive; iter268 May sleeve
+
+OOS May: **iter268** (router cap 0.70) **−1.5%** vs iter244 **−3.0%**; train **3/4** (keep iter244 primary).
+Caps 0.75/0.80 falsified on May. Journal: `docs/research/WAVE_Z_MAY.md`.
+
 ## 2026-05-22 — Wave Y iter236–241: lunch blocks + peels
 
 Follow-ups on **iter235** handoff shell:

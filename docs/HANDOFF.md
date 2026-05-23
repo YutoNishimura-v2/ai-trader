@@ -30,7 +30,12 @@ See `docs/research/STALE_PRS.md`.
 | **Mar/Apr simulation benchmark** | `config/research_aspiration_200/adaptive_dual_pivot_chop_moon_r8_tp9_rollwin.yaml` |
 | **Mar/Apr + harness (best tail)** | `iter235_rollwin_handoff_wave_lowrisk.yaml` — 3/4, worst ~0.04 |
 | **Mar/Apr + 4/4 windows** | `iter244_handoff_overlap_lunchblock.yaml` — **4/4**, worst ~0.34, Mar ~+18.5% |
-| **Higher Apr sample (worse harness)** | `iter227_wave_x_wave_structure_223_tp35.yaml` or `adaptive_dual_pivot_chop_moon_r8_tp9_rollwin_m131415_tp16.yaml` |
+| **May+ OOS (least loss)** | `iter268_wavez_cap070.yaml` — May **−1.5%** |
+| **May+ (positive month)** | `iter280` — May 2026 **+1.7%** full month through May 22 (`WAVE_Y_CALENDAR.md`) |
+| **April train sleeve** | `iter227_wave_x_wave_structure_223_tp35.yaml` — see `docs/research/WAVE_Y_TWO_CONFIG.md` |
+| **OOS / held-out scripts** | `scripts/wave_y_oos_compare.py`, `scripts/wave_y_heldout_validate.py` |
+| **Simulation aliases** | `config/simulation/wave_y_*.yaml` |
+| **Wave Z journal** | `docs/research/WAVE_Z_MAY.md` |
 | **Compare headline YAMLs** | `python3 scripts/compare_mar_apr_headliners.py` (needs `data/xauusd_m1_2026.csv`) |
 | **Compare any YAML** | `python3 scripts/iter32_compare_configs.py --csv data/xauusd_m1_2026.csv <configs…>` |
 | **Serial falsification log** | `docs/research/SERIAL_ITER_103_200.md` |
@@ -53,9 +58,12 @@ See `docs/research/STALE_PRS.md`.
 | iter231 (227+fast M1) | +15.5 | +0.34 | +18.9 | 2/4 | ~1.66 — **falsified** |
 | iter202 (zigzag) | −28.3 | −4.51 | −13.7 | 3/4 | ~0.81 |
 | **iter235** (handoff) | +182.6 | **+11.93** | **+6.93** | **3/4** | **~0.04** |
+| **iter244** (handoff+lunch+overlap) | +192.3 | **+18.50** | **+7.70** | **4/4** | **~0.34** |
 
-- **iter235:** regime handoff (range→pivot, transition→low-risk wave) — best **Mar/Apr + harness**
-  combo so far; see `docs/research/WAVE_Y_ITER232_235.md`.
+- **iter244:** best **4/4** + Mar/Apr on train slice — `docs/research/WAVE_Y_ITER232_235.md`.
+- **iter235:** best rolling **tail** (~0.04).
+- **iter268:** May cap **0.70** sleeve — least-loss May OOS (−1.5%).
+- **iter280:** chop **overlap-only** + vol gate — **first positive May OOS (+0.9%)**; train 4/4, tail ~3.43 — seasonal sleeve with iter244.
 - **Rollwin:** still best **full-period** headline; use when Jan/Feb matter most.
 - **iter227:** best **April** in Wave X; **iter231** did not improve on the hybrid thesis.
 - **Zigzag iter202:** strong `worst_score` / 3/4 wins but **negative** Mar/Apr on this slice.
@@ -64,8 +72,9 @@ See `docs/research/STALE_PRS.md`.
 
 ### Honest next moves
 
-1. **April regime work:** branch from rollwin or iter227; use stability harness + Mar/Apr sweeps (`iter42`, `iter38` scripts).
-2. **Live demo:** Windows host + `mt5_connectivity_check.py` + `run_demo.py` (blocked on host access per README).
+1. **Wave Y/Z simulation:** **iter244** primary + **iter280** May sleeve (+0.9% OOS May) — paper/demo only; confirm on fresh May 20+ data.
+2. **Fetch more OOS M1** (May 20+) and re-run `wave_y_oos_compare.py`.
+3. **Live demo:** Windows host + `mt5_connectivity_check.py` (blocked on host access per README).
 
 ---
 

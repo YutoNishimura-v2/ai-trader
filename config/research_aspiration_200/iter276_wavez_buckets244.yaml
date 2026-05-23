@@ -1,0 +1,12 @@
+# Iter276 — state_buckets — **FALSIFIED** OOS (2026-05-22): no-op vs iter244.
+extends: iter244_handoff_overlap_lunchblock.yaml
+
+strategy:
+  params:
+    state_buckets_enabled: true
+    bucket_persist_tf: M15
+    bucket_m15_lookback_bars: 8
+    bucket_m15_move_thresh: 0.0008
+    bucket_atr_ewm_span: 500
+    bucket_vol_low_ratio: 0.88
+    bucket_vol_high_ratio: 1.12
