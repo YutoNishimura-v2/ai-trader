@@ -61,7 +61,8 @@ See `docs/research/STALE_PRS.md`.
 
 - **iter244:** best **4/4** + Mar/Apr on train slice — `docs/research/WAVE_Y_ITER232_235.md`.
 - **iter235:** best rolling **tail** (~0.04).
-- **iter268:** May+ **risk cap 0.70** sleeve — less bad OOS May; train **3/4** only — `WAVE_Z_MAY.md`.
+- **iter268:** May cap **0.70** sleeve — least-loss May OOS (−1.5%).
+- **iter280:** chop **overlap-only** + vol gate — **first positive May OOS (+0.9%)**; train 4/4, tail ~3.43 — seasonal sleeve with iter244.
 - **Rollwin:** still best **full-period** headline; use when Jan/Feb matter most.
 - **iter227:** best **April** in Wave X; **iter231** did not improve on the hybrid thesis.
 - **Zigzag iter202:** strong `worst_score` / 3/4 wins but **negative** Mar/Apr on this slice.
@@ -70,8 +71,9 @@ See `docs/research/STALE_PRS.md`.
 
 ### Honest next moves
 
-1. **April regime work:** branch from rollwin or iter227; use stability harness + Mar/Apr sweeps (`iter42`, `iter38` scripts).
-2. **Live demo:** Windows host + `mt5_connectivity_check.py` + `run_demo.py` (blocked on host access per README).
+1. **Wave Y/Z simulation:** three-config + **iter268** May sleeve — not live until post-Apr turns positive or regime gate exists.
+2. **Fetch more OOS M1** (May 20+) and re-run `wave_y_oos_compare.py`.
+3. **Live demo:** Windows host + `mt5_connectivity_check.py` (blocked on host access per README).
 
 ---
 

@@ -95,3 +95,19 @@ New causal **`vol_risk_cap_gate_enabled`** on `adaptive_router`: M1 ATR band set
 
 **Pick:** **iter268** for best May OOS; **iter274** if you want **dynamic** cap + **4/4** on train (worse tail than 244).
 **iter244** remains primary for tail/Mar Pareto on train slice.
+
+## iter278–282 — chop overlap + stand-down (2026-05-22)
+
+| Iter | Change | May OOS | Train wpass | worst | Verdict |
+|------|--------|--------:|:-----------:|------:|---------|
+| iter268 | cap 0.70 | −1.5% | 3/4 | ~0.65 | May sleeve |
+| iter274 | vol gate tiered | −2.1% | 4/4 | ~2.11 | Dynamic cap |
+| 278–279, 281–282 | stand-down / max2 | ≈274/268 | — | — | no-op on May |
+| **280** | chop **overlap** + vol gate | **+0.9%** | **4/4** | **~3.43** | **First positive May OOS** |
+
+Engine: `chop_vol_stand_down_enabled` (causal mid-vol + low M15 persistence → skip bar).
+
+**iter280** is the **May+ positive** candidate; tail on train slice is high (~3.43) — use as
+**seasonal sleeve** with **iter244** primary, not a full replacement.
+
+Simulation: `config/simulation/wave_y_iter280_may_positive.yaml`

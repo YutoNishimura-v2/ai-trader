@@ -413,3 +413,24 @@ def test_vol_risk_cap_gate_lowers_cap_on_high_vol_band() -> None:
     assert router._effective_active_cap(ts) == pytest.approx(1.0)
     router._vol_pct_arr[-1] = 0.0
     assert router._effective_active_cap(ts) == pytest.approx(0.90)
+
+
+def test_chop_vol_stand_down_skips_on_bar() -> None:
+    df = generate_synthetic_ohlcv(days=3, timeframe="M1", seed=7)
+    router = AdaptiveRouterStrategy(
+        members=[{"name": "_test_always_buy"}],
+        adx_period=5,
+        range_adx_max=200.0,
+        trend_adx_min=300.0,
+        chop_vol_stand_down_enabled=True,
+        chop_vol_stand_down_regimes=("range", "transition", "trend"),
+        chop_vol_stand_down_vol_bands=(0,),
+        bucket_m15_move_thresh=0.0008,
+    )
+    router.prepare(df)
+    ts = df.index[-1]
+    assert router._vol_pct_arr is not None
+    router._vol_pct_arr[-1] = 0.0
+    router._persist_tf_rel_move[-1] = 0.0
+    assert router._chop_vol_stand_down(ts, "range") is True
+    assert router.on_bar(df) is None

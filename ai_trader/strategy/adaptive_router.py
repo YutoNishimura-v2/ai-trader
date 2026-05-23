@@ -258,6 +258,10 @@ class AdaptiveRouterStrategy(BaseStrategy):
         vol_risk_cap_high_vol: float = 0.70,
         vol_risk_cap_mid_vol: float | None = None,
         vol_risk_cap_low_vol: float | None = None,
+        # Wave Z: skip new signals in mid-vol + low HTF-persistence chop.
+        chop_vol_stand_down_enabled: bool = False,
+        chop_vol_stand_down_regimes: tuple[str, ...] = ("range", "transition"),
+        chop_vol_stand_down_vol_bands: tuple[int, ...] = (0,),
     ) -> None:
         super().__init__(
             members=members or [],
@@ -294,6 +298,9 @@ class AdaptiveRouterStrategy(BaseStrategy):
             vol_risk_cap_high_vol=vol_risk_cap_high_vol,
             vol_risk_cap_mid_vol=vol_risk_cap_mid_vol,
             vol_risk_cap_low_vol=vol_risk_cap_low_vol,
+            chop_vol_stand_down_enabled=chop_vol_stand_down_enabled,
+            chop_vol_stand_down_regimes=chop_vol_stand_down_regimes,
+            chop_vol_stand_down_vol_bands=chop_vol_stand_down_vol_bands,
         )
         if not members:
             raise ValueError("AdaptiveRouterStrategy needs a non-empty 'members' list")
@@ -357,8 +364,16 @@ class AdaptiveRouterStrategy(BaseStrategy):
 
     def _needs_m1_vol_bands(self) -> bool:
         p = self.params
+        return (
+            bool(p.get("state_buckets_enabled", False))
+            or bool(p.get("vol_risk_cap_gate_enabled", False))
+            or bool(p.get("chop_vol_stand_down_enabled", False))
+        )
+
+    def _needs_persist_move(self) -> bool:
+        p = self.params
         return bool(p.get("state_buckets_enabled", False)) or bool(
-            p.get("vol_risk_cap_gate_enabled", False)
+            p.get("chop_vol_stand_down_enabled", False)
         )
 
     def _prepare_m1_vol_bands(self, df: pd.DataFrame) -> None:
@@ -406,11 +421,36 @@ class AdaptiveRouterStrategy(BaseStrategy):
         mid = p.get("vol_risk_cap_mid_vol")
         return float(mid if mid is not None else base)
 
+    def _persist_move_at(self, ts) -> float | None:
+        if self._persist_tf_rel_move is None or self._mtf is None:
+            return None
+        pos = int(self._mtf.base.index.get_loc(ts))
+        if pos < 0 or pos >= len(self._persist_tf_rel_move):
+            return None
+        rm = float(self._persist_tf_rel_move[pos])
+        return rm if np.isfinite(rm) else None
+
+    def _chop_vol_stand_down(self, ts, regime: str) -> bool:
+        p = self.params
+        if not bool(p.get("chop_vol_stand_down_enabled", False)):
+            return False
+        allowed = p.get("chop_vol_stand_down_regimes") or ("range", "transition")
+        if regime not in allowed:
+            return False
+        bands = p.get("chop_vol_stand_down_vol_bands") or (0,)
+        if self._vol_band_at(ts) not in bands:
+            return False
+        rm = self._persist_move_at(ts)
+        if rm is None:
+            return False
+        thr = float(p.get("bucket_m15_move_thresh", 0.0008))
+        return abs(rm) <= thr
+
     # ------------------------------------------------------------------
     def prepare(self, df: pd.DataFrame) -> None:
         p = self.params
         tfs = [p["htf"]]
-        if bool(p.get("state_buckets_enabled", False)):
+        if self._needs_persist_move():
             btf = str(p.get("bucket_persist_tf") or "M15")
             if btf not in tfs:
                 tfs.append(btf)
@@ -424,7 +464,7 @@ class AdaptiveRouterStrategy(BaseStrategy):
         self._persist_tf_rel_move = None
         if self._needs_m1_vol_bands():
             self._prepare_m1_vol_bands(df)
-        if not bool(p.get("state_buckets_enabled", False)):
+        if not self._needs_persist_move():
             return
 
         n = len(df)
@@ -598,11 +638,13 @@ class AdaptiveRouterStrategy(BaseStrategy):
         n = len(history)
         if n < self.min_history:
             return None
-        regime = self._regime(history.index[-1])
+        bar_ts = history.index[-1]
+        regime = self._regime(bar_ts)
         if regime is None:
             return None
+        if self._chop_vol_stand_down(bar_ts, regime):
+            return None
 
-        bar_ts = history.index[-1]
         bucket_key = self._state_bucket_key(bar_ts, regime)
 
         eligible: list[_MemberSlot] = [

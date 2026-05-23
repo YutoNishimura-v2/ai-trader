@@ -3,6 +3,11 @@
 Append-only. One entry per iteration of the self-improvement loop.
 Format: `YYYY-MM-DD — <headline>`. **Newest entry first.**
 
+## 2026-05-22 — Wave Z iter280: first **positive** May OOS (+0.9%)
+
+Chop **overlap-only** + vol gate tiered. Train: 4/4, Mar **+21.4%**, Apr **+8.4%**, worst **~3.43**.
+`chop_vol_stand_down` added to router (278–282 mostly no-op). `wave_y_iter280_may_positive.yaml`.
+
 ## 2026-05-22 — Wave Z iter273–277: M1 vol risk-cap gate + OOS harness
 
 `adaptive_router` gains `vol_risk_cap_gate_enabled`. **iter274** tiered gate: May OOS **−2.1%**
